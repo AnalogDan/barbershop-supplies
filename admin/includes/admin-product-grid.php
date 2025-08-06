@@ -1,4 +1,30 @@
 <?php
+$perPage = 15;
+$countSql = "SELECT COUNT(*) FROM products p
+            JOIN categories c ON p.category_id = c.id
+            JOIN main_categories m ON c.main_category_id = m.id
+            WHERE 1=1";
+$countParams = [];
+if ($searchQuery !== ''){
+    $countSql .= " AND p.name LIKE :search";
+    $countParams[':search'] = '%' .$searchQuery . '%';
+}
+if ($mainCategoryId !== null) {
+    $countSql .= " AND m.id = :main";
+    $countParams[':main'] = $mainCategoryId;
+}
+if ($subCategoryId !== null) {
+    $countSql .= " AND c.id = :subcategory";
+    $countParams[':subcategory'] = $subCategoryId;
+}
+if ($outOfStock !== null) {
+    $countSql .= " AND p.stock = 0";
+}
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($countParams);
+$totalProducts = $countStmt->fetchColumn();
+$totalPages = ceil($totalProducts / $perPage);
+
 $sql = "SELECT p.cutout_image, p.name, p.stock, p.id FROM products p 
         JOIN categories c ON p.category_id = c.id
         JOIN main_categories m ON c.main_category_id = m.id
@@ -24,12 +50,20 @@ if ($outOfStock !== null) {
     $sql .= " AND p.stock = 0";
 }
 
+$currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($currentPage - 1) * $perPage;
+$sql .= " ORDER BY p.name ASC LIMIT :limit OFFSET :offset";
+$params[':limit'] = $perPage;
+$params[':offset'] = $offset;
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+foreach($params as $key => $value){
+    $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+    $stmt->bindValue($key, $value, $paramType);
+}
+$stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $selectedCategoryLabel = '';
-
 if (isset($_GET['subcategory'])) {
     $stmt = $pdo->prepare("SELECT name FROM categories WHERE id = ?");
     $stmt->execute([$_GET['subcategory']]);

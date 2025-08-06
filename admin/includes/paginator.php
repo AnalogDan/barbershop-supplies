@@ -8,6 +8,10 @@
         justify-content: center;
         align-items: center;
     }
+    .pagination a.page,
+    .pagination a.next {
+        text-decoration: none;
+    }
     .page{
         color: gray;
         cursor: pointer;
@@ -40,9 +44,19 @@
 </style>
 
 <div class="pagination">
-    <span class="page current">1</span>
-    <span class="page">2</span>
-    <span class="page">3</span>
-    <span class="page">4</span>
-    <span class="next">Next ></span>
+    <?php if ($currentPage > 1): ?>
+        <a class="next" href="?page=<?= $currentPage - 1 ?>">&lt; Prev</a>
+    <?php endif; ?>
+
+    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <?php if ($i == $currentPage): ?>
+            <span class="page current"><?= $i ?></span>
+        <?php else: ?>
+            <a class="page" href="?page=<?= $i ?>"><?= $i ?></a>
+        <?php endif; ?>
+    <?php endfor; ?>
+
+    <?php if ($currentPage < $totalPages): ?>
+        <a class="next" href="?page=<?= $currentPage + 1 ?>">Next &gt;</a>
+    <?php endif; ?>
 </div>

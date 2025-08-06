@@ -13,7 +13,10 @@
         <?php $currentPage = 'products'; ?>
         <?php include 'includes/admin_navbar.php'; ?>
         <main>
-            <?php include 'includes/edit-product-form.php'?>
+            <div class="section-title">
+				<h2>Edit product</h2>
+		    </div>
+            <?php include 'includes/product-form-edit.php'?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
     </body>
