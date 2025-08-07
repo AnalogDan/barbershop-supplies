@@ -34,7 +34,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <div id="category-grid">
                 <?php include 'includes/main-category-grid.php'; ?>
             </div>
-            <?php include 'includes/paginator.php'; ?>
+            <?php 
+            // include 'includes/paginator.php'; 
+            ?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
         <script>

@@ -14,7 +14,7 @@
     $mainImgUrl = !empty($product['main_image']) ? '/barbershopSupplies/public/' . $product['main_image'] : '';
     $stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
     $stmt->execute([$product['id']]);
-    $galleryImages = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $galleryImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>  
 
 <style>
@@ -149,6 +149,7 @@
     </div>
     <div class="upload-circle" id="thumbnailCircle" style="display:none;">+</div>
     <input type="file" id="thumbnail" name="thumbnail" accept="image/*" style="display:none;">
+    <input type="hidden" name="existingThumbnail" value="<?= htmlspecialchars($thumbnailUrl) ?>">
 
     <label for="mainImg">Main Image</label>
     <div class="image-input" id="mainImgPreview">
@@ -162,18 +163,32 @@
     <div class="upload-circle" id="mainImgCircle" style="display:none;">+</div>
     <input type="file" id="mainImg" name="mainImg" accept="image/*" style="display:none;">
     <div class="error-message" id="mainImgError" style="color: red; display: none;"></div>
+    <input type="hidden" name="existingMainImg" value="<?= htmlspecialchars($mainImgUrl) ?>">
 
     <label for="gallery">Gallery</label>
     <div class="gallery-strip" id="galleryStrip">
+        <?php if(!empty($galleryImages)): ?>
+            <?php foreach ($galleryImages as $image): ?>
+                <div class="image-input existing-image" data-filename="<?= htmlspecialchars($image['image_path']) ?>">
+                    <img src="/barbershopSupplies/public/<?= htmlspecialchars($image['image_path']) ?>" alt="Gallery image">
+                    <div class="overlay">
+                        <button type="button" class="edit-icon-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach ?>
+        <?php endif ?>
         <div class="upload-circle" id="galleryCircle">+</div>
     </div>
     <input type="file" id="gallery" name="gallery[]" accept="image/*" multiple style="display:none;">
 
     <div class="button-row">
-        <button type="submit" class="btn btn-third">Add product</button>
+        <button type="submit" class="btn btn-third">Confirm changes</button>
         <a href="products.php" class="btn btn-fourth">Cancel</a>
     </div>
     <?php include 'includes/modals.php'; ?>
+    <input type="hidden" name="id" value="<?= htmlspecialchars($product['id']) ?>">
 </form>
 
 <script>
@@ -216,6 +231,18 @@
     });
 
     let galleryFiles = [];
+    document.querySelectorAll('.existing-image').forEach(div => {
+        const filename = div.dataset.filename;
+        galleryFiles.push({existing: true, filename: filename});
+        const btn = div.querySelector('.edit-icon-btn');
+        btn.addEventListener('click', () => {
+            const index = galleryFiles.findIndex(f => f.existing && f.filename === filename);
+            if (index !== -1){
+                galleryFiles.splice(index, 1);
+            }
+            div.remove();
+        });
+    });
     document.getElementById('galleryCircle').addEventListener('click', () => {
         document.getElementById('gallery').click();
     });
@@ -258,25 +285,11 @@
 
     document.querySelector('.product-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        const mainImgInput = document.getElementById('mainImg');
-        if (!mainImgInput.files.length){
-            const errorMsg = document.getElementById('mainImgError');
-            errorMsg.textContent = 'Please select a main image.';
-            errorMsg.style.display = 'block';
-            return;
-        }else{
-            document.getElementById('mainImgError').style.display = 'none';
-        }
-        const thumbnailInput = document.getElementById('thumbnail');
-        if(!thumbnailInput.files.length){
-            showConfirmModal(
-                "Are you sure? If there's no thumbnail cutout, the main image will be used as a thumbnail.",
-                () => sendFormData(this),
-                () => {}     
-            );
-        }else{
-            sendFormData(this);
-        }
+        showConfirmModal(
+            "Are you sure?",
+            () => sendFormData(this),
+            () => {}     
+        );
     })
     function showConfirmModal(message, onYes, onNo) {
         const template = document.getElementById('confirmModal');
@@ -323,13 +336,17 @@
     }
 
     function sendFormData(form){
+        const formData = new FormData(form);
+        galleryFiles.forEach(file => {
+            if (file instanceof File){
+                formData.append('gallery[]', file);
+            }else if (file.existing) {
+                formData.append('existingGallery[]', file.filename);
+            }
+        });
         const galleryInput = document.getElementById('gallery');
         galleryInput.parentNode.removeChild(galleryInput);
-        const formData = new FormData(form);
-        galleryFiles.forEach((file) => {
-            formData.append('gallery[]', file);
-        });
-        fetch('/barbershopSupplies/admin/includes/products-add-handler.php', {
+        fetch('/barbershopSupplies/admin/includes/products-edit-handler.php', {
             method: 'POST',
             body: formData
         })
@@ -350,6 +367,6 @@
     }
 
     function reload(){
-        window.location.href = 'products-add.php';
+        window.location.reload();
     }
 </script>
