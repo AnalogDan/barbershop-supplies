@@ -220,12 +220,18 @@
                 btn.type = 'button';
                 btn.innerHTML = '<i class ="fas fa-trash"></i>';
                 btn.addEventListener('click', () => {
-                    const allImages = Array.from(strip.querySelectorAll('.image-input'));
-                    const index = allImages.indexOf(imageContainer);
-                    if(index !== -1){
-                        galleryFiles.splice(index, 1);
-                    }
-                    imageContainer.remove();
+                    showConfirmModal(
+                        "Delete image?",
+                        () => {
+                            const allImages = Array.from(strip.querySelectorAll('.image-input'));
+                            const index = allImages.indexOf(imageContainer);
+                            if(index !== -1){
+                                galleryFiles.splice(index, 1);
+                            }
+                            imageContainer.remove();
+                        },
+                        () => {}     
+                    );
                 });
                 overlay.appendChild(btn);
                 imageContainer.appendChild(img);

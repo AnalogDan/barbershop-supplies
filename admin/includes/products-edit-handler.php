@@ -60,7 +60,7 @@
    
     $existingGallery = $_POST['existingGallery'] ?? [];
     if(!is_array($existingGallery)){
-        $existingGallery = [];
+        $existingGallery = [$existingGallery];
     }
     $stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
     $stmt->execute([$product_id]);
@@ -76,7 +76,7 @@
         }
     }
     $galleryPaths = [];
-    if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'][0])) {
+    if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'][1])) {
         foreach ($_FILES['gallery']['tmp_name'] as $key => $tmpName) {
             if ($_FILES['gallery']['error'][$key] === UPLOAD_ERR_OK) {
                 $ext = pathinfo($_FILES['gallery']['name'][$key], PATHINFO_EXTENSION);
@@ -116,7 +116,6 @@
             ':cutout_image' => $thumbnailPath,
             ':product_id' => $product_id
         ]);
-        $product_id = $pdo->lastInsertId();
     }catch(PDOException $e){
         http_response_code(500);
         echo 'Database error: ' . $e->getMessage();

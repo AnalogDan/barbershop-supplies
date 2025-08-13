@@ -106,6 +106,10 @@ if (isset($_GET['subcategory'])) {
         outline: 0.5px solid black;
         background: #e2e2e2;
     }
+
+    .product-row {
+        display: contents;
+    }
 </style>
 
 <div class="categ-admin-grid">
@@ -118,22 +122,25 @@ if (isset($_GET['subcategory'])) {
     <div class="header actions">Actions</div>
 
     <?php foreach ($products as $product): ?>
-        <div class="thumbnail">
-            <img src="/barbershopSupplies/public/<?= htmlspecialchars($product['cutout_image']) ?>" 
-                 alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
-        </div>
-        <div class="name"><?= htmlspecialchars($product['name']) ?></div>
-        <div class="stock" contenteditable="true" data-product-id="<?= $product['id'] ?>">
-            <?= intval($product['stock']) ?>
-        </div>
-        <div class="actions">
-            <a href="products-edit.php?id=<?= $product['id'] ?>" class="edit-link" style="text-decoration: underline; cursor: pointer;">Edit details</a>
-            <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
-                <i class="fas fa-trash" style="color: black;"></i>
-            </span>
-        </div>
+        <div class="product-row" data-product-id="<?= $product['id'] ?>">
+            <div class="thumbnail">
+                <img src="/barbershopSupplies/public/<?= htmlspecialchars($product['cutout_image']) ?>" 
+                    alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
+            </div>
+            <div class="name"><?= htmlspecialchars($product['name']) ?></div>
+            <div class="stock" contenteditable="true" data-product-id="<?= $product['id'] ?>">
+                <?= intval($product['stock']) ?>
+            </div>
+            <div class="actions">
+                <a href="products-edit.php?id=<?= $product['id'] ?>" class="edit-link" style="text-decoration: underline; cursor: pointer;">Edit details</a>
+                <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
+                    <i class="fas fa-trash" style="color: black;"></i>
+                </span>
+            </div>
+        </div>  
     <?php endforeach; ?>
 </div>
+<?php include 'includes/modals.php'; ?>
 
 <script>
     document.querySelectorAll('.stock[contenteditable="true"]').forEach(div => {
@@ -164,4 +171,57 @@ if (isset($_GET['subcategory'])) {
             });
         });
     });
+
+    
+    document.querySelectorAll('.delete-icon').forEach(icon => {
+        icon.addEventListener('click', () => {
+            showConfirmModal(
+                "Delete product?",
+                () => {
+                        const productRow = icon.closest('.product-row');
+                        const productId = productRow.dataset.productId;
+                        fetch('/barbershopSupplies/admin/includes/products-delete-handler.php', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ id: productId })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success){
+                                productRow.remove();
+                            } else {
+                                alert('Failed to delete product: ' + data.message);
+                            }
+                        })
+                        .catch(() => alert('Something went wrong.'));
+                    },
+                () => {}     
+            );
+        });
+    });
+
+    function showConfirmModal(message, onYes, onNo) {
+        const template = document.getElementById('confirmModal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+        modal.querySelector('p').textContent = message;
+        modal.classList.add('show');
+        const yesBtn = modal.querySelector('#confirmYes');
+        const noBtn = modal.querySelector('#confirmNo');
+        function cleanup() {
+            yesBtn.removeEventListener('click', yesHandler);
+            noBtn.removeEventListener('click', noHandler);
+            modal.remove();
+        }
+        function yesHandler() {
+            cleanup();
+            if (typeof onYes === 'function') onYes();
+        }
+        function noHandler() {
+            cleanup();
+            if (typeof onNo === 'function') onNo();
+        }
+        yesBtn.addEventListener('click', yesHandler);
+        noBtn.addEventListener('click', noHandler);
+    }
 </script>

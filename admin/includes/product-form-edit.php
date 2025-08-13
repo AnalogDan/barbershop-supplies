@@ -236,11 +236,17 @@
         galleryFiles.push({existing: true, filename: filename});
         const btn = div.querySelector('.edit-icon-btn');
         btn.addEventListener('click', () => {
-            const index = galleryFiles.findIndex(f => f.existing && f.filename === filename);
-            if (index !== -1){
-                galleryFiles.splice(index, 1);
-            }
-            div.remove();
+            showConfirmModal(
+                "Delete image?",
+                () => {
+                    const index = galleryFiles.findIndex(f => f.existing && f.filename === filename);
+                    if (index !== -1){
+                        galleryFiles.splice(index, 1);
+                    }
+                    div.remove();
+                },
+                () => {}     
+            );
         });
     });
     document.getElementById('galleryCircle').addEventListener('click', () => {
@@ -266,12 +272,18 @@
                 btn.type = 'button';
                 btn.innerHTML = '<i class ="fas fa-trash"></i>';
                 btn.addEventListener('click', () => {
-                    const allImages = Array.from(strip.querySelectorAll('.image-input'));
-                    const index = allImages.indexOf(imageContainer);
-                    if(index !== -1){
-                        galleryFiles.splice(index, 1);
-                    }
-                    imageContainer.remove();
+                    showConfirmModal(
+                        "Delete image?",
+                        () => {
+                            const allImages = Array.from(strip.querySelectorAll('.image-input'));
+                            const index = allImages.indexOf(imageContainer);
+                            if(index !== -1){
+                                galleryFiles.splice(index, 1);
+                            }
+                            imageContainer.remove();
+                        },
+                        () => {}     
+                    );
                 });
                 overlay.appendChild(btn);
                 imageContainer.appendChild(img);
@@ -353,7 +365,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success){
-                showAlertModal("Product added successfully!", 
+                showAlertModal("Product updated successfully!", 
                     () => reload()
                 );
             }else{
