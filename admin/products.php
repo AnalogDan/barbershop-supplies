@@ -70,7 +70,6 @@ function buildLinkWithParams(array $overrides = []){
         </main>
         <?php include 'includes/admin_footer.php'; ?>
         <script>
-            // document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('out_of_stock').addEventListener('change', function () {
                 const url = new URL(window.location);
                 if (this.checked) {
@@ -80,7 +79,6 @@ function buildLinkWithParams(array $overrides = []){
                 }
                 window.location = url.toString();
                 });
-            // });
         </script>
     </body>
 </html>

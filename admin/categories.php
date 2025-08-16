@@ -18,12 +18,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <main>
             <div class="top-bar">
                 <div class="category-toggle">
-                    <div class="toggle-option active" data-target="main">Main categories</div>
-                    <div class="toggle-option" data-target="sub">Sub categories</div>  
+                    <?php $grid = $_GET['grid'] ?? 'main'; ?>
+                    <div class="toggle-option <?= ($grid === 'main') ? 'active' : '' ?>" data-target="main">Main categories</div>
+                    <div class="toggle-option <?= ($grid === 'sub') ? 'active' : '' ?>" data-target="sub">Sub categories</div> 
                 </div>
                 <form id="product-search-form" class="search-bar" action="#" method="GET">
+                    <input type="hidden" name="grid" id="grid-type" value="<?= htmlspecialchars($_GET['grid'] ?? 'main') ?>">
                     <div class="search-wrapper">
-                        <input type="text" name="query" id="search-query"/>
+                        <input type="text" name="query" id="search-query" value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
                         <button type="submit" class="search-button" aria-label="Search">
                             <i class="fa fa-search"></i>
                         </button>
@@ -32,40 +34,113 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </div>
             <a href="categories-add-main.php" id="add-button" class="btn btn-third">Add</a>
             <div id="category-grid">
-                <?php include 'includes/main-category-grid.php'; ?>
+                <?php 
+                    $grid = $_GET['grid'] ?? 'main';
+                    if($grid === 'sub'){
+                        include 'includes/sub-category-grid.php';
+                    } else {
+                        include 'includes/main-category-grid.php';
+                    }
+                ?>
             </div>
             <?php 
-            // include 'includes/paginator.php'; 
             ?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
+        <?php include 'includes/sub-category-grid-script.php'; ?>
+        <?php include 'includes/main-category-grid-script.php'; ?>
+        <?php include 'includes/modals.php'; ?>
         <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const grid = '<?= $grid ?>';
+                if (!window.location.search.includes('grid=')) {
+                    const newUrl = window.location.pathname + '?grid=' + grid;
+                    window.history.replaceState(null, '', newUrl);
+                }
+
+                const currentGrid = getCurrentGrid(); 
+                if (currentGrid === 'sub') {
+                    addEventSubName();    
+                } else {
+                    addEventMainName();
+                    addEventMainDelete();  
+                }
+            });
+            function getCurrentGrid() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('grid') || 'main';
+            }
+
+            window.addEventListener('popstate', () => {
+                const currentGrid = getCurrentGrid();
+                handleGridChange(currentGrid);
+            });
+            function handleGridChange(grid) {
+                if (grid === 'main') {
+                    document.querySelectorAll('.product-grid .name[contenteditable="true"]').forEach(div => {
+                        div.removeEventListener('blur', handleBlurSub);
+                    });
+                    document.querySelectorAll('.parent-category').forEach(select => {
+                        select.removeEventListener('change', handleParentSub);
+                    });
+                    document.querySelectorAll('.delete-icon').forEach(btn => {
+                        btn.removeEventListener('click', handleDeleteSub);
+                    });
+                } else if (grid === 'sub') {
+                    document.querySelectorAll('.name').forEach(el => {
+                        el.removeEventListener('blur', handleNameBlur);
+                    });
+                    document.querySelectorAll('.delete-icon').forEach(el => {
+                        el.removeEventListener('click', handleDeleteMain);
+                    });
+                }
+            }
+
+
             const options = document.querySelectorAll('.category-toggle .toggle-option');
             const gridContainer = document.getElementById('category-grid');
             const addButton = document.getElementById('add-button');
             options.forEach(option => {
                 option.addEventListener('click', () => {
+                    const selected = option.dataset.target;
+                    document.getElementById('search-query').value = '';
+                    const searchValue = document.getElementById('search-query').value; 
+                    const newUrl = window.location.pathname + '?grid=' + selected;
+                    window.history.replaceState(null, '', newUrl);
                     options.forEach(opt => opt.classList.remove('active'));
                     option.classList.add('active');
-                    const selected = option.dataset.target;
+                    document.getElementById('grid-type').value = selected;
                     let gridUrl = '';
                     let addUrl = '#';
                     if(selected === 'main'){
                         gridUrl = 'includes/main-category-grid.php';
                         addUrl = 'categories-add-main.php';
-                    }
-                    else if(selected === 'sub'){
-                        gridUrl = 'includes/sub-category-grid.php';
-                        addUrl = 'categories-add-sub.php';
-                    }
-                    fetch(gridUrl)
+
+                        fetch(gridUrl + '?query=' + encodeURIComponent(searchValue))
                         .then(res => res.text()) 
                         .then(html => {
                             gridContainer.innerHTML = html;
                             addButton.href = addUrl; 
+                            addEventMainName();
+                            addEventMainDelete();
                         });
-                })
-            })
+
+                    }
+                    else if(selected === 'sub'){
+                        gridUrl = 'includes/sub-category-grid.php';
+                        addUrl = 'categories-add-sub.php';
+
+                        fetch(gridUrl + '?query=' + encodeURIComponent(searchValue))
+                        .then(res => res.text()) 
+                        .then(html => {
+                            gridContainer.innerHTML = html;
+                            addButton.href = addUrl; 
+                            addEventSubName();
+                        });
+                    }
+                });
+            });
+
         </script>
     </body>
 </html>

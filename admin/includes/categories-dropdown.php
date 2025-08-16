@@ -59,6 +59,12 @@
         gap: 20px;
         justify-content: center;
     }
+    .subcategories-list a:hover {
+        color: #555;
+    }
+    .subcategories-list a {
+        text-decoration: none;
+    }
 
     .subcategory {
         padding: 6px 10px;

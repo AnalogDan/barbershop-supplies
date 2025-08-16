@@ -1,13 +1,15 @@
 <?php
-session_start();
+    session_start();
 
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: login.php");
-    exit;
-}
-?>
-<?php
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        header("Location: login.php");
+        exit;
+    }
+
 	require_once __DIR__ . '/../includes/db.php';
+
+    $stmt = $pdo->query("SELECT id, name FROM main_categories ORDER BY name");
+    $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 
@@ -61,10 +63,10 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 <input type="text" id="name" name="name">
                 <label for="category">Main category</label>
                 <select id="category" name="category">
-                    <option value="">Select a category</option>
-                    <option value="clippers">Tools & electricals</option>
-                    <option value="combs">Hair products</option>
-                    <option value="scissors">Beard care</option>
+                    <option value="">Select a main category</option>
+                    <?php foreach ($mainCategories as $cat): ?>
+                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                    <?php endforeach; ?>
                 </select>
                 <div class="button-row">
                     <button type="submit" class="btn btn-5">Add</button>
@@ -73,5 +75,106 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </form>
         </main>
         <?php include 'includes/admin_footer.php'; ?> 
+        <?php include 'includes/modals.php'; ?>
     </body>
 </html>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('.product-form');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const mainCategoryId = document.getElementById('category').value;
+
+            if (!name || !mainCategoryId) {
+                showAlertModal("Please fill in all fields.", () => {});
+                return;
+            }
+
+            fetch('/barbershopSupplies/admin/includes/check-duplicate-sub.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `name=${encodeURIComponent(name)}&main_category_id=${encodeURIComponent(mainCategoryId)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.exists) {
+                    showAlertModal("This subcategory already exists.", () => {});
+                } else {
+                    showConfirmModal(
+                        `Do you want to add "${name}" as a new subcategory?`,
+                        () => {
+                            fetch('/barbershopSupplies/admin/includes/add-subcategory-handler.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `name=${encodeURIComponent(name)}&main_category_id=${encodeURIComponent(mainCategoryId)}`
+                            })
+                            .then(res => res.json())
+                            .then(result => {
+                                if (result.success) {
+                                    showAlertModal("Subcategory added successfully!", () => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    showAlertModal("Failed to add subcategory: " + result.error, () => {});
+                                }
+                            })
+                            .catch(err => showAlertModal("Error: " + err, () => {}));
+                        },
+                        () => {
+                        }
+                    );
+                }
+            })
+            .catch(err => showAlertModal("Error checking duplicate: " + err, () => {}));
+        });
+    });
+
+    function showConfirmModal(message, onYes, onNo) {
+        const template = document.getElementById('confirmModal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+        modal.querySelector('p').textContent = message;
+        modal.classList.add('show');
+        const yesBtn = modal.querySelector('#confirmYes');
+        const noBtn = modal.querySelector('#confirmNo');
+        function cleanup() {
+            yesBtn.removeEventListener('click', yesHandler);
+            noBtn.removeEventListener('click', noHandler);
+            modal.remove();
+        }
+        function yesHandler() {
+            cleanup();
+            if (typeof onYes === 'function') onYes();
+        }
+        function noHandler() {
+            cleanup();
+            if (typeof onNo === 'function') onNo();
+        }
+        yesBtn.addEventListener('click', yesHandler);
+        noBtn.addEventListener('click', noHandler);
+    }
+
+    function showAlertModal(message, onOk){
+        const template = document.getElementById('alertModal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+        modal.querySelector('p').textContent = message;
+        modal.classList.add('show');
+        const okBtn = modal.querySelector('#confirmOk');
+        function cleanup() {
+            okBtn.removeEventListener('click', okHandler);
+            modal.remove();
+        }
+        function okHandler(){
+            cleanup();
+            if (typeof onOk === 'function'){ onOk()}
+            else{};
+        }
+        okBtn.addEventListener('click', okHandler);
+    }
+</script>

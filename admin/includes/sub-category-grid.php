@@ -1,3 +1,51 @@
+<?php
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+
+    $perPage = 15;
+    $searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
+    $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $countSql = "SELECT COUNT(*) 
+                FROM categories c 
+                JOIN main_categories mc ON c.main_category_id = mc.id
+                WHERE 1=1";
+    $countParams = [];
+    if ($searchQuery !== '') {
+        $countSql .= " AND c.name LIKE :search";
+        $countParams[':search'] = '%' . $searchQuery . '%';
+    }
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($countParams);
+    $totalItems = $countStmt->fetchColumn();
+    $totalPages = ceil($totalItems / $perPage);
+
+    $offset = ($currentPage - 1) * $perPage;
+    $sql = "SELECT c.id, c.name, c.main_category_id, mc.name AS parent_name
+        FROM categories c
+        LEFT JOIN main_categories mc ON c.main_category_id = mc.id
+        WHERE 1=1";
+    $params = [];
+    if ($searchQuery !== '') {
+        $sql .= " AND c.name LIKE :search"; 
+        $params[':search'] = '%' . $searchQuery . '%';
+    }
+    $sql .= " ORDER BY c.name ASC
+            LIMIT :limit OFFSET :offset";
+    $params[':limit'] = $perPage;
+    $params[':offset'] = $offset;
+    $stmt = $pdo->prepare($sql);
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $mainCategories = [];
+    $stmt = $pdo->query("SELECT id, name FROM main_categories ORDER BY name ASC");
+    while ($cat = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $mainCategories[] = $cat;
+    }
+?>
+
 <style>
     .product-grid{
         display: grid;
@@ -29,6 +77,9 @@
         background-color: #e2e2e2;
         /* appearance: none;  */
     }
+    .subcategory-row {
+        display: contents; 
+    }
 </style>
 
 <div class="product-grid">
@@ -36,36 +87,34 @@
     <div class="header parent-categ">Parent category</div>
     <div class="header action">Action</div>
 
-    <div class="name" contenteditable="true">Trimmers</div>
-    <select id="parent-category" name="parent-category" class="parent-category">
-        <option value="clippers">Tools & electricals</option>
-        <option value="combs">Hair products</option>
-        <option value="scissors">Beard care</option>
-        <option value="furniture">Furniture & Mirrors</option>
-        <option value="accessories">Barber Accessories</option>
-    </select>
-    <div class="action">
-        <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
-            <i class ="fas fa-trash" style="color: black;"></i>
-        </span>
-    </div>
-
     <?php
-    for ($i = 0; $i < 10; $i++) {
-        ?>
-        <div class="name" contenteditable="true">Trimmers</div>
-        <select id="parent-category" name="parent-category" class="parent-category">
-            <option value="clippers">Tools & electricals</option>
-            <option value="combs">Hair products</option>
-            <option value="scissors">Beard care</option>
-            <option value="furniture">Furniture & Mirrors</option>
-            <option value="accessories">Barber Accessories</option>
-        </select>
-        <div class="action">
-            <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
-                <i class ="fas fa-trash" style="color: black;"></i>
-            </span>
-        </div>
-    <?php }
-        ?>
+    if ($rows) {
+        foreach ($rows as $row) {
+            ?>
+            <div class="subcategory-row" data-id="<?= $row['id'] ?>">
+                <div class="name" contenteditable="true" data-id="<?= $row['id'] ?>">
+                    <?= htmlspecialchars($row['name']) ?>
+                </div>
+                <select class="parent-category" data-id="<?= $row['id'] ?>">
+                    <?php foreach ($mainCategories as $mainCat): ?>
+                        <option value="<?= $mainCat['id'] ?>" 
+                            <?= $mainCat['id'] == $row['main_category_id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($mainCat['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="action">
+                    <span class="delete-icon" data-id="<?= $row['id'] ?>" style="cursor: pointer; margin-left: 10px;">
+                        <i class="fas fa-trash" style="color: black;"></i>
+                    </span>
+                </div>
+            </div>
+            <?php
+        }
+    } else {
+        echo "<p>No sub-categories found.</p>";
+    }
+    ?>
 </div>
+
+<?php include 'paginator.php'; ?>

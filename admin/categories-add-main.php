@@ -56,7 +56,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <?php $currentPage = 'categories'; ?>
         <?php include 'includes/admin_navbar.php'; ?>
         <main>
-            <form class="product-form">
+            <form class="product-form" id="add-main-form" method="POST">
                 <label for="name">Main category name</label>
                 <input type="text" id="name" name="name">
                 <div class="button-row">
@@ -66,6 +66,97 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </form>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
-        
+        <?php include 'includes/modals.php'; ?>
     </body>
 </html>
+
+<script>
+    document.getElementById('add-main-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        if(!name){
+            showAlertModal("Please enter a category name.");
+            return;
+        }
+        fetch('/barbershopSupplies/admin/includes/check-duplicate-main.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `name=${encodeURIComponent(name)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                showAlertModal("This category already exists.", () => {});
+            } else {
+                showConfirmModal(
+                    `Do you want to add "${name}" as a new main category?`,
+                    () => {
+                                fetch('/barbershopSupplies/admin/includes/add-main-category-handler.php', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                    body: `name=${encodeURIComponent(name)}`
+                                })
+                                .then(res => res.text())
+                                .then(data => {
+                                    if(data === 'Success'){
+                                        showAlertModal("Added successfully!", () => {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        showAlertModal("Failed to add main category: " + data, () => {});
+                                    }
+                                })
+                                .catch(err => showAlertModal("Error: " + err, () => {}));
+                    },
+                    () => {
+                    }
+                );
+            }
+        })
+        .catch(err => showAlertModal("Error checking duplicate: " + err, () => {}));
+    });
+
+    function showConfirmModal(message, onYes, onNo) {
+        const template = document.getElementById('confirmModal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+        modal.querySelector('p').textContent = message;
+        modal.classList.add('show');
+        const yesBtn = modal.querySelector('#confirmYes');
+        const noBtn = modal.querySelector('#confirmNo');
+        function cleanup() {
+            yesBtn.removeEventListener('click', yesHandler);
+            noBtn.removeEventListener('click', noHandler);
+            modal.remove();
+        }
+        function yesHandler() {
+            cleanup();
+            if (typeof onYes === 'function') onYes();
+        }
+        function noHandler() {
+            cleanup();
+            if (typeof onNo === 'function') onNo();
+        }
+        yesBtn.addEventListener('click', yesHandler);
+        noBtn.addEventListener('click', noHandler);
+    }
+
+    function showAlertModal(message, onOk){
+        const template = document.getElementById('alertModal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+        modal.querySelector('p').textContent = message;
+        modal.classList.add('show');
+        const okBtn = modal.querySelector('#confirmOk');
+        function cleanup() {
+            okBtn.removeEventListener('click', okHandler);
+            modal.remove();
+        }
+        function okHandler(){
+            cleanup();
+            if (typeof onOk === 'function'){ onOk()}
+            else{};
+        }
+        okBtn.addEventListener('click', okHandler);
+    }
+</script>
