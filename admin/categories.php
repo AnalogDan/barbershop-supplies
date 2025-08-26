@@ -47,8 +47,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             ?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
-        <?php include 'includes/sub-category-grid-script.php'; ?>
         <?php include 'includes/main-category-grid-script.php'; ?>
+        <?php include 'includes/sub-category-grid-script.php'; ?>
+        
         <?php include 'includes/modals.php'; ?>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
@@ -57,13 +58,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     const newUrl = window.location.pathname + '?grid=' + grid;
                     window.history.replaceState(null, '', newUrl);
                 }
-
+                const addButton = document.getElementById('add-button');
                 const currentGrid = getCurrentGrid(); 
                 if (currentGrid === 'sub') {
-                    addEventSubName();    
+                    addEventSubName();
+                    addButton.href = 'categories-add-sub.php';    
                 } else {
                     addEventMainName();
-                    addEventMainDelete();  
+                    addEventMainDelete();
+                    addButton.href = 'categories-add-main.php';  
                 }
             });
             function getCurrentGrid() {

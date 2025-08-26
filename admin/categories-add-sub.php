@@ -17,7 +17,7 @@
     .product-form{
         max-width: 500px;
         width: 100%;
-        margin: 140px auto;
+        margin: 10px auto 140px auto;
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -58,7 +58,11 @@
         <?php $currentPage = 'categories'; ?>
         <?php include 'includes/admin_navbar.php'; ?>
         <main>
+            
             <form class="product-form">
+                <div class="section-title">
+                    <h2>Add sub category</h2>
+                </div>
                 <label for="name">Sub category name</label>
                 <input type="text" id="name" name="name">
                 <label for="category">Main category</label>

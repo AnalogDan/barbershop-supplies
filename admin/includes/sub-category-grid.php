@@ -3,7 +3,7 @@
 
     $perPage = 15;
     $searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
-    $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $currentPage2 = isset($_GET['sub_page']) ? max(1, intval($_GET['sub_page'])) : 1;
     $countSql = "SELECT COUNT(*) 
                 FROM categories c 
                 JOIN main_categories mc ON c.main_category_id = mc.id
@@ -16,9 +16,9 @@
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($countParams);
     $totalItems = $countStmt->fetchColumn();
-    $totalPages = ceil($totalItems / $perPage);
+    $totalPages2 = ceil($totalItems / $perPage);
 
-    $offset = ($currentPage - 1) * $perPage;
+    $offset = ($currentPage2 - 1) * $perPage;
     $sql = "SELECT c.id, c.name, c.main_category_id, mc.name AS parent_name
         FROM categories c
         LEFT JOIN main_categories mc ON c.main_category_id = mc.id
@@ -62,20 +62,30 @@
         color: black;
         text-align: center;
     }
+    .name.1 {
+    }
     .name {
+        outline: 0.5px solid black;
+        background: #eeeeeeff;
         transition: outline 0.3s ease;
     }
     .name:focus {
         outline: 0.5px solid black;
-        background: #e2e2e2;
+        background: #dfdfdfff;
     }
     .parent-category{
         font-size: 13px;
         padding: 7px 12px;
         border: 0.5px solid #000;
         border-radius: 0px;
-        background-color: #e2e2e2;
-        /* appearance: none;  */
+        background: #eeeeeeff;
+    }
+    .parent-category:focus{
+        /* font-size: 13px;
+        padding: 7px 12px;
+        border: 0.5px solid #000;
+        border-radius: 0px; */
+        background: #dfdfdfff;
     }
     .subcategory-row {
         display: contents; 
@@ -83,7 +93,7 @@
 </style>
 
 <div class="product-grid">
-    <div class="header name">Name</div>
+    <div class="header name.1">Name</div>
     <div class="header parent-categ">Parent category</div>
     <div class="header action">Action</div>
 
@@ -117,4 +127,6 @@
     ?>
 </div>
 
-<?php include 'paginator.php'; ?>
+<?php
+    include 'paginator2.php'; 
+ ?>

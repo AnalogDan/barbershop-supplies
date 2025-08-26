@@ -1,12 +1,55 @@
 <?php
-session_start();
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: login.php");
-    exit;
-}
-?>
-<?php
+    session_start();
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        header("Location: login.php");
+        exit;
+    }
 	require_once __DIR__ . '/../includes/db.php';
+
+    $orderId = $_GET['order'];
+
+    $sql = "SELECT
+            o.number AS order_number,
+            a.full_name AS shipping_name,
+            a.street,
+            a.city,
+            a.state, 
+            a.zip,
+            u.phone,
+            o.placed_at,
+            o.delivery_eta_end,
+            o.delivery_eta_start,
+            o.payment_method,
+            o.subtotal,
+            o.sales_tax,
+            o.shipping_cost,
+            o.total,
+            o.status
+            FROM orders o
+            LEFT JOIN addresses a ON o.address_id = a.id
+            LEFT JOIN users u ON o.user_id = u.id
+            WHERE o.id = :orderId";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['orderId' => $orderId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $sqlProducts = "SELECT
+            oi.quantity, 
+            p.cutout_image,
+            oi.product_name,
+            oi.price
+            FROM order_items oi
+            LEFT JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = :orderId";
+    $stmt2 = $pdo->prepare($sqlProducts);
+    $stmt2->execute(['orderId' => $orderId]);
+    $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($order) {
+        echo "#".htmlspecialchars($order['total']);
+    } else {
+        echo "Order not found";
+    }
 ?>
 <!DOCTYPE html>
 
@@ -93,7 +136,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <div class="info-column">
                 <div class="info-row">
                     <span class="label">Order number: </span>
-                    <span class="value">#12345</span>
+                    <span class="value">#</span>
                 </div>
                 <div class="info-row">
                     <span class="label">Shipping name: </span>

@@ -44,19 +44,19 @@
 </style>
 
 <div class="pagination">
-    <?php if ($currentPage > 1): ?>
-        <a class="next" href="?main_page=<?= $currentPage - 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">&lt; Prev</a>
+    <?php if ($currentPage2 > 1): ?>
+        <a class="next" href="?sub_page=<?= $currentPage2 - 1 ?>&grid=sub<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">&lt; Prev</a>
     <?php endif; ?>
 
-    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <?php if ($i == $currentPage): ?>
+    <?php for ($i = 1; $i <= $totalPages2; $i++): ?>
+        <?php if ($i == $currentPage2): ?>
             <span class="page current"><?= $i ?></span>
         <?php else: ?>
-            <a class="page" href="?main_page=<?= $i ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>"><?= $i ?></a>
+            <a class="page" href="?sub_page=<?= $i ?>&grid=sub<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>"><?= $i ?></a>
         <?php endif; ?>
     <?php endfor; ?>
 
-    <?php if ($currentPage < $totalPages): ?>
-        <a class="next" href="?main_page=<?= $currentPage + 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">Next &gt;</a>
+    <?php if ($currentPage2 < $totalPages2): ?>
+        <a class="next" href="?sub_page=<?= $currentPage2 + 1 ?>&grid=sub<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">Next &gt;</a>
     <?php endif; ?>
 </div>

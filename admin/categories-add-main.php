@@ -15,7 +15,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     .product-form{
         max-width: 500px;
         width: 100%;
-        margin: 190px auto;
+        margin: 50px auto 140px auto;
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -57,6 +57,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <?php include 'includes/admin_navbar.php'; ?>
         <main>
             <form class="product-form" id="add-main-form" method="POST">
+                <div class="section-title">
+                    <h2>Add main category</h2>
+                </div>
                 <label for="name">Main category name</label>
                 <input type="text" id="name" name="name">
                 <div class="button-row">

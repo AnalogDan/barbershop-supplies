@@ -43,20 +43,31 @@
     }
 </style>
 
+<?php
+    $queryParams = [];
+    if (!empty($searchQuery)) $queryParams['query'] = $searchQuery;
+    if (!empty($filter)) $queryParams['filter'] = $filter;
+?>
+
 <div class="pagination">
-    <?php if ($currentPage > 1): ?>
-        <a class="next" href="?main_page=<?= $currentPage - 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">&lt; Prev</a>
+    <?php if ($currentPagee > 1): ?>
+        <?php 
+            $queryParams['page'] = $currentPagee - 1;
+        ?>
+        <a class="next" href="?<?= http_build_query($queryParams) ?>">&lt; Prev</a>
     <?php endif; ?>
 
     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <?php if ($i == $currentPage): ?>
+        <?php $queryParams['page'] = $i; ?>
+        <?php if ($i == $currentPagee): ?>
             <span class="page current"><?= $i ?></span>
         <?php else: ?>
-            <a class="page" href="?main_page=<?= $i ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>"><?= $i ?></a>
+            <a class="page" href="?<?= http_build_query($queryParams) ?>"><?= $i ?></a>
         <?php endif; ?>
     <?php endfor; ?>
 
-    <?php if ($currentPage < $totalPages): ?>
-        <a class="next" href="?main_page=<?= $currentPage + 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">Next &gt;</a>
+    <?php if ($currentPagee < $totalPages): ?>
+        <?php $queryParams['page'] = $currentPagee + 1; ?>
+        <a class="next" href="?<?= http_build_query($queryParams) ?>">Next &gt;</a>
     <?php endif; ?>
 </div>

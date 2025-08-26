@@ -40,26 +40,7 @@
             .catch(err => console.error('Fetch error:', err));
         }
     }
-    // function handleDeleteSub(event) {
-    //     const deleteBtn = event.currentTarget;
-    //     const subCategoryId = deleteBtn.dataset.id;
 
-    //     fetch('/barbershopSupplies/admin/includes/delete-subcategory.php', {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    //         body: `sub_category_id=${encodeURIComponent(subCategoryId)}`
-    //     })
-    //     .then(res => res.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             console.log('Subcategory deleted successfully.');
-    //             deleteBtn.closest('.subcategory-row').remove();
-    //         } else {
-    //             console.error('Error deleting subcategory:', data.error);
-    //         }
-    //     })
-    //     .catch(err => console.error('Fetch error:', err));
-    // }
     function handleDeleteSub(event) {
         const deleteBtn = event.currentTarget;
         const subCategoryId = deleteBtn.dataset.id;

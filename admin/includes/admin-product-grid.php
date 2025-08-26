@@ -99,12 +99,19 @@ if (isset($_GET['subcategory'])) {
         color: black;
         text-align: center;
     }
+    .stock.1{
+        outline: 0.5px solid black;
+        background: #eeeeeeff;
+        transition: outline 0.3s ease;
+    }
     .stock {
+        outline: 0.5px solid black;
+        background: #eeeeeeff;
         transition: outline 0.3s ease;
     }
     .stock:focus {
         outline: 0.5px solid black;
-        background: #e2e2e2;
+        background: #dfdfdfff;
     }
 
     .product-row {
@@ -118,7 +125,7 @@ if (isset($_GET['subcategory'])) {
 <div class="product-grid">
     <div class="header thumbnail">Thumbnail</div>
     <div class="header name">Name</div>
-    <div class="header stock">Stock</div>
+    <div class="header stock.1">Stock</div>
     <div class="header actions">Actions</div>
 
     <?php foreach ($products as $product): ?>

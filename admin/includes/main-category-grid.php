@@ -3,7 +3,7 @@
 
     $perPage = 15;
     $searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
-    $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $currentPage = isset($_GET['main_page']) ? max(1, intval($_GET['main_page'])) : 1;
     $countSql = "SELECT COUNT(*) FROM main_categories WHERE 1=1";
     $countParams = [];
     if ($searchQuery !== '') {
@@ -54,12 +54,16 @@
         color: black;
         text-align: center;
     }
+    .name.1 {
+    }
     .name {
+        outline: 0.5px solid black;
+        background: #eeeeeeff;
         transition: outline 0.3s ease;
     }
     .name:focus {
         outline: 0.5px solid black;
-        background: #e2e2e2;
+        background: #dfdfdfff;
     }
     .category-row {
         display: contents; 
@@ -67,7 +71,7 @@
 </style>
 
 <div class="product-grid">
-    <div class="header name">Name</div>
+    <div class="header name.1">Name</div>
     <div class="header number-sub">Sub categories</div>
     <div class="header action">Action</div>
 
