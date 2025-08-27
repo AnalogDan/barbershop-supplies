@@ -28,17 +28,19 @@
     <div class="header email">Email</div>
     <div class="header created-at">Created at</div>
 
-    <div class="name">Bruce Wayne</div>
-    <div class="email">batboy5@gmail.com</div>
-    <div class="created-at">02-02-2025</div>
-    
-
-    <?php
-    for ($i = 0; $i < 10; $i++) {
+    <?php if (!empty($users)): ?>
+        <?php
+        foreach ($users as $user) {
+            ?>
+            <div class="name"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></div>
+            <div class="email"><?= htmlspecialchars($user['email']) ?></div>
+            <div class="created-at"><?= date('m/d/Y', strtotime($user['created_at'])) ?></div>
+        <?php
+        }
         ?>
-        <div class="name">Bruce Wayne</div>
-        <div class="email">batboy5@gmail.com</div>
-        <div class="created-at">02-02-2025</div>
-    <?php }
-        ?>
+    <?php else: ?>
+        <div class="no-orders" style="grid-column: 1 / -1; text-align: center; padding: 1rem;">
+            No users found.
+        </div>
+    <?php endif; ?>
 </div>

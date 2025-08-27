@@ -23,9 +23,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <div class="toggle-option <?= ($grid === 'sub') ? 'active' : '' ?>" data-target="sub">Sub categories</div> 
                 </div>
                 <form id="product-search-form" class="search-bar" action="#" method="GET">
-                    <input type="hidden" name="grid" id="grid-type" value="<?= htmlspecialchars($_GET['grid'] ?? 'main') ?>">
+                    <input type="hidden" name="grid" id="grid-type" placeholder="Search name..." value="<?= htmlspecialchars($_GET['grid'] ?? 'main') ?>">
                     <div class="search-wrapper">
-                        <input type="text" name="query" id="search-query" value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
+                        <input type="text" name="query" id="search-query" placeholder="Search name..." value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
                         <button type="submit" class="search-button" aria-label="Search">
                             <i class="fa fa-search"></i>
                         </button>

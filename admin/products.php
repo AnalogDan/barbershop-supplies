@@ -30,7 +30,7 @@ function buildLinkWithParams(array $overrides = []){
                 <?php include 'includes/categ-toggle-button.php'; ?>
                 <form id="product-search-form" class="search-bar" action="#" method="GET">
                     <div class="search-wrapper">
-                        <input type="text" name="query" id="search-query" value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
+                        <input type="text" name="query" id="search-query" placeholder="Search name..." value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
                         <button type="submit" class="search-button" aria-label="Search">
                             <i class="fa fa-search"></i>
                         </button>
