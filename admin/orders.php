@@ -76,6 +76,7 @@
                     <div class="toggle-option" data-target="all">All</div>  
                 </div>
                 <form id="product-search-form" class="search-bar" action="#" method="GET">
+                    <input type="hidden" name="filter" id="filter-input" value="<?= htmlspecialchars($filter) ?>">
                     <div class="search-wrapper">
                         <input type="text" name="query" id="search-query" placeholder="Search order number..." value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
                         <button type="submit" class="search-button" aria-label="Search">
@@ -109,6 +110,22 @@
                 if (opt.dataset.target === currentFilter) {
                     opt.classList.add('active');
                 }
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('product-search-form');
+                const filterInput = document.getElementById('filter-input');
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); 
+                    const query = document.getElementById('search-query').value;
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('query', query);
+                    url.searchParams.set('filter', filterInput.value);
+                    url.searchParams.set('page', 1);
+
+                    console.log('Redirecting to:', url.toString());
+                    window.location.href = url.toString();
+                });
             });
         </script>
     </body>

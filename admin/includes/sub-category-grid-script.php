@@ -56,6 +56,10 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        showAlertModal(
+                            "Deletion successful!.",
+                            () => {}
+                        );
                         deleteBtn.closest('.subcategory-row').remove();
                     } else if (data.error === 'HasProducts') {
                         showAlertModal("Cannot delete this subcategory because it has products assigned.", () => {});

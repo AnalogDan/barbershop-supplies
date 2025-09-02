@@ -31,6 +31,10 @@
                 .then(res => res.text())
                 .then(data => {
                     if (data === 'Success') {
+                        showAlertModal(
+                            "Deletion successful!.",
+                            () => {}
+                        );
                         el.closest('.category-row').remove();
                     } else if (data === 'HasSubcategories') {
                         showAlertModal(

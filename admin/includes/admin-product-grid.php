@@ -128,24 +128,30 @@ if (isset($_GET['subcategory'])) {
     <div class="header stock.1">Stock</div>
     <div class="header actions">Actions</div>
 
-    <?php foreach ($products as $product): ?>
-        <div class="product-row" data-product-id="<?= $product['id'] ?>">
-            <div class="thumbnail">
-                <img src="/barbershopSupplies/public/<?= htmlspecialchars($product['cutout_image']) ?>" 
-                    alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
-            </div>
-            <div class="name"><?= htmlspecialchars($product['name']) ?></div>
-            <div class="stock" contenteditable="true" data-product-id="<?= $product['id'] ?>">
-                <?= intval($product['stock']) ?>
-            </div>
-            <div class="actions">
-                <a href="products-edit.php?id=<?= $product['id'] ?>" class="edit-link" style="text-decoration: underline; cursor: pointer;">Edit details</a>
-                <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
-                    <i class="fas fa-trash" style="color: black;"></i>
-                </span>
-            </div>
-        </div>  
-    <?php endforeach; ?>
+    <?php if (!empty($products)): ?>
+        <?php foreach ($products as $product): ?>
+            <div class="product-row" data-product-id="<?= $product['id'] ?>">
+                <div class="thumbnail">
+                    <img src="/barbershopSupplies/public/<?= htmlspecialchars($product['cutout_image']) ?>" 
+                        alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
+                </div>
+                <div class="name"><?= htmlspecialchars($product['name']) ?></div>
+                <div class="stock" contenteditable="true" data-product-id="<?= $product['id'] ?>">
+                    <?= intval($product['stock']) ?>
+                </div>
+                <div class="actions">
+                    <a href="products-edit.php?id=<?= $product['id'] ?>" class="edit-link" style="text-decoration: underline; cursor: pointer;">Edit details</a>
+                    <span class="delete-icon" style="cursor: pointer; margin-left: 10px;">
+                        <i class="fas fa-trash" style="color: black;"></i>
+                    </span>
+                </div>
+            </div>  
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="no-orders" style="grid-column: 1 / -1; text-align: center; padding: 1rem;">
+            No products found.
+        </div>
+    <?php endif; ?>
 </div>
 <?php include 'includes/modals.php'; ?>
 
