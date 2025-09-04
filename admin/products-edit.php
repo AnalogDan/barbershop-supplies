@@ -5,6 +5,7 @@
         exit;
     }
 ?>
+
 <?php require_once __DIR__ . '/../includes/db.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +18,7 @@
 				<h2>Edit product</h2>
 		    </div>
             <?php include 'includes/product-form-edit.php'?>
+            <?php include 'includes/product-form-sales.php'?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
     </body>

@@ -38,6 +38,9 @@
         $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . $newName;
         if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $dest)) {
+            if (!empty($thumbnailPath) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $thumbnailPath)) {
+                unlink($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $thumbnailPath);
+            }
             $thumbnailPath = 'images/products/' . $newName;
         } else {
             http_response_code(500);
@@ -50,6 +53,9 @@
         $newName = 'main_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . $newName;
         if (move_uploaded_file($_FILES['mainImg']['tmp_name'], $dest)) {
+            if (!empty($mainImagePath) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $mainImagePath)) {
+                unlink($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $mainImagePath);
+            }
             $mainImagePath = 'images/products/' . $newName;
         } else {
             http_response_code(500);

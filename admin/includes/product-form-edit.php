@@ -379,6 +379,10 @@
     }
 
     function reload(){
-        window.location.reload();
+        // window.location.reload();
+        // window.location.href = `products-edit.php?id=${productId}`;
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        window.location.href = `products-edit.php?id=${productId}`;
     }
 </script>
