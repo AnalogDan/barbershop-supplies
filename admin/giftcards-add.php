@@ -62,7 +62,7 @@
         
         <main>
             <div class="section-title">
-                <h2>Add sub category</h2>
+                <h2>Add gift card</h2>
             </div>
             <form class="product-form" id="giftcard-form">
                 <label for="letters">Code</label>
@@ -77,7 +77,8 @@
                     <option value="50">$50</option>
                     <option value="100">$100</option>
                     <option value="150">$150</option>
-                    <option value="200">$250</option>
+                    <option value="200">$200</option>
+                    <option value="250">$250</option>
                     <option value="300">$300</option>
                 </select>
                 <div class="button-row">
