@@ -366,14 +366,19 @@ a {
       .hero .intro-excerpt {
         max-width: 450px; } }
   .hero h1 {
-    font-weight: 700;
+    font-family: 'OldLondon', serif;
+    font-weight: normal;
     color: #ffffff;
-    margin-bottom: 30px; }
+    font-size: 60px;
+    margin-bottom: 10px; }
     @media (min-width: 1400px) {
       .hero h1 {
         font-size: 54px; } }
   .hero p {
     color: rgba(255, 255, 255, 0.5);
+    font-size: 20px; 
+    font-weight: 500;
+    max-width: 350px; 
     margin-botom: 30px; }
   .hero .hero-img-wrap {
     position: relative; }

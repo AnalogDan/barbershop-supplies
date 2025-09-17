@@ -8,6 +8,18 @@
 	// username: barberAdmin
 ?> 
 <!DOCTYPE html>
+<style>
+	.login-links {
+		text-align: right; 
+	}
+	.login-links a { 
+		font-weight: 600;  
+		color: #666;          
+	}
+	.login-links a:hover {
+		color: #333;           
+	}
+</style>
 <html lang="en">
 	<?php include '../includes/head.php'; ?>
     <?php include '../includes/navbar.php'; ?>
@@ -37,6 +49,10 @@
 						<i class="fa-solid fa-eye"></i>
 					</span>
 				</div>
+			</div>
+			<div class="login-links">
+				<a href="/barbershopSupplies/public/forgot-password.php">Forgot password?</a><br>
+				<a href="/barbershopSupplies/public/register.php">Create account</a>
 			</div>
 			<button type="submit" class="btn" name="login">Sign in</button>
 		</form>
