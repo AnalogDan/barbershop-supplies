@@ -6,10 +6,184 @@
     //     exit;
     // }
     require_once __DIR__ . '/../includes/db.php';
+	$currentPage = 'home';
 ?>
 
-<!DOCTYPE html>
+<style>
+	.sales-header {
+	padding: 2rem 0 0 0;
+	margin-bottom: 10px;
+	text-align: center;       
+	}
+	.sales-header h2 {
+	font-family: 'OldLondon', serif;  
+	font-size: 3rem;                  
+	font-weight: normal;             
+	color: #000; 
+	position: relative;   
+	top: 10px;           
+	margin: 0;                                   
+	}
+	.sales-header img {
+	width: 350px;     
+	height: auto;     
+	display: block;    
+	margin: 0 auto;   
+	}
 
+
+	.sales-products {
+	display: flex;
+	gap: 2rem;          
+	overflow-x: auto; 
+	overflow-y: visible;
+	padding-top: 2rem;   
+	padding-bottom: 1rem; 
+	width: 80%;
+	margin: 0 auto;
+	}
+	.sales-products .product-item {
+	text-align: center;
+	text-decoration: none;
+	display: block;
+	position: relative;
+	cursor: pointer;
+	padding-bottom: 50px; 
+	z-index: 1;
+	}
+	.sales-products .product-item .product-thumbnail {
+	width: 100%;
+	height: 200px;         
+	object-fit: contain;   
+	margin-bottom: 1rem;
+	position: relative;
+	top: 0;
+	transition: .3s all ease;
+	}
+	.sales-products .product-item h3 {
+	font-weight: 600;
+	font-size: 16px;
+	margin: 0.25rem 0;
+	}
+	.sales-products .product-item strong {
+	font-weight: 800;
+	font-size: 18px;
+	display: block;
+	color: #2f2f2f;
+	}
+	.sales-products .product-item:before {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: #cacaca; 
+	height: 0%;
+	z-index: -1;
+	border-radius: 10px;
+	transition: .3s all ease;
+	}
+	.sales-products .product-item:hover .product-thumbnail {
+	top: -25px;
+	}
+	.sales-products .product-item:hover:before {
+	height: 70%;
+	}
+	.sales-products .product-item .icon-cross {
+	position: absolute;
+	width: 35px;
+	height: 35px;
+	display: inline-block;
+	background: #2f2f2f;
+	bottom: 15px;          
+	left: 50%;
+	transform: translateX(-50%);
+	margin-bottom: -30px; 
+	border-radius: 50%;
+	opacity: 0;
+	visibility: hidden;
+	transition: .3s all ease;
+	}
+	.sales-products .product-item:hover .icon-cross {
+	opacity: 1;
+	visibility: visible;
+	}
+	.sales-products .product-item .icon-cross img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	}
+
+	.sales-arrow {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: #afafafff;       
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 10;
+	border: none;            
+    box-shadow: none;   
+	outline: none; 
+	transition: background 0.3s ease;
+	}
+	.sales-arrow:hover {
+	background: #c7c7c7ff; 
+	}
+	.sales-arrow.left {
+	top: 55%;
+	left: 100px;   
+	}
+	.sales-arrow.right {
+	top: 55%;
+	right: 100px;
+	}
+	.sales-arrow i {
+	color: #333;   
+	font-size: 18px;
+	}
+
+	.sales-section {
+	position: relative; 
+	background: #e4e4e4ff; 
+	}
+	.sales-section.categories{
+	position: relative; 
+	background: #ffffffff; 
+	}
+
+	.sales-pagination {
+		display: flex;
+		justify-content: center;  
+		gap: 0.5rem;          
+		/* margin-top: 1rem;         */
+		margin-bottom: 2rem;
+	}
+	.sales-pagination .dot {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background-color: #afafafff;
+		display: inline-block;
+		transition: background 0.3s ease; 
+	}
+	.sales-pagination .dot.active {
+		background-color: #000;
+	}
+
+	/* .col-12.col-md-4.col-lg-3 {
+	flex: 0 0 250px;  
+	} */
+
+</style>
+
+<!DOCTYPE html>
 <html lang="en">
 	<?php include '../includes/head.php'; ?>
     <?php include '../includes/navbar.php'; ?>
@@ -34,20 +208,17 @@
 				</div>
 			</div>
 
-            <!-- Start Product Section -->
+            <!-- Best Sellers Section -->
 			<div class="product-section">
 				<div class="container">
 					<div class="row">
 
-						<!-- Start Column 1 -->
 						<div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
 							<h2 class="popular-title">Popular products</h2>
 							<p class="popular-subtitle">The bestsellers</p>
 							<p><a href="#" class="btn">Explore</a></p>
 						</div> 
-						<!-- End Column 1 -->
 
-						<!-- Start Column 2 -->
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
 							<a class="product-item" href="cart.html">
 								<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
@@ -59,9 +230,7 @@
 								</span>
 							</a>
 						</div> 
-						<!-- End Column 2 -->
 
-						<!-- Start Column 3 -->
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
 							<a class="product-item" href="cart.html">
 								<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
@@ -73,9 +242,7 @@
 								</span>
 							</a>
 						</div>
-						<!-- End Column 3 -->
 
-						<!-- Start Column 4 -->
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
 							<a class="product-item" href="cart.html">
 								<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
@@ -87,12 +254,173 @@
 								</span>
 							</a>
 						</div>
-						<!-- End Column 4 -->
 
 					</div>
 				</div>
 			</div>
-			<!-- End Product Section -->
+
+			<!-- Sales Section -->
+			 <div class="sales-section">
+				<div class="sales-container">
+					<div class="sales-header">
+					<h2>Sales</h2>
+					<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
+					</div>
+					<button class="sales-arrow left">
+						<i class="fas fa-chevron-left"></i>
+					</button>
+					<button class="sales-arrow right">
+						<i class="fas fa-chevron-right"></i>
+					</button>
+
+					<div class="sales-products">
+						<div class="container">
+							<div class="row">
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
+									<strong class="product-price">$84.99</strong>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Babyliss Black Fx One Battery System Clipper</h3>
+									<strong class="product-price">$219.99</strong>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
+									<strong class="product-price">$144.99</strong>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
+									<strong class="product-price">$144.99</strong>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sales-pagination">
+						<span class="dot active"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+					</div>
+				</div>
+			</div>
+			<!--  -->
+
+			<!-- Categories Section -->
+			 <div class="sales-section categories">
+				<div class="sales-container">
+					<div class="sales-header">
+					<h2>Categories</h2>
+					<img src="/barbershopSupplies/public/images/Ornament2.png" alt="Ornament">
+					</div>
+					<button class="sales-arrow left">
+						<i class="fas fa-chevron-left"></i>
+					</button>
+					<button class="sales-arrow right">
+						<i class="fas fa-chevron-right"></i>
+					</button>
+
+					<div class="sales-products">
+						<div class="container">
+							<div class="row">
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Clippers</h3>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Shavers</h3>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Shaving Gel</h3>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+
+								<div class="col-12 col-md-4 col-lg-3">
+									<a class="product-item" href="cart.html">
+									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<h3 class="product-title">Trimmers</h3>
+									<span class="icon-cross">
+										<img src="images/cross.svg" class="img-fluid">
+									</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sales-pagination">
+						<span class="dot active"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+						<span class="dot"></span>
+					</div>
+				</div>
+			</div>
+			<!--  -->
+
+			<!-- Brands Section -->
+			 <div class="sales-section">
+				<div class="sales-container">
+					<div class="sales-header">
+					<h2>Our Brands</h2>
+					<img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+					</div>
+					<button class="sales-arrow left">
+						<i class="fas fa-chevron-left"></i>
+					</button>
+					<button class="sales-arrow right">
+						<i class="fas fa-chevron-right"></i>
+					</button>
+
+					
+				</div>
+			</div>
+			<!--  -->
 		</main>
 		<?php 
         include '../includes/footer2.php'

@@ -24,7 +24,7 @@
                     </a>
                 </li>
                 <li class="nav-item <?= ($currentPage === 'account') ? 'active' : '' ?>">
-                    <a class="nav-link" href="account.php">
+                    <a class="nav-link" href="login.php">
                         <img src="../public/images/account.png" alt="account" style="height:24px; width:auto;">
                     </a>
                 </li>

@@ -515,12 +515,15 @@ a {
 }
 
 .product-section {
-  padding: 7rem 0; }
+  padding: 7rem 0 4rem 0; 
+  background-color: rgb(255, 255, 255);
+  }
   .product-section .product-item {
     text-align: center;
     text-decoration: none;
     display: block;
     position: relative;
+    z-index: 1;
     padding-bottom: 50px;
     cursor: pointer; }
     .product-section .product-item .product-thumbnail {
@@ -607,6 +610,7 @@ a {
       z-index: -1; }
     .why-choose-section .img-wrap img {
       border-radius: 20px; }
+
 
 .feature {
   margin-bottom: 30px; }
