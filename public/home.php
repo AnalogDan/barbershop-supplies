@@ -10,10 +10,11 @@
 ?>
 
 <style>
+	
 	.sales-header {
 	padding: 2rem 0 0 0;
 	margin-bottom: 10px;
-	text-align: center;       
+	text-align: center;    
 	}
 	.sales-header h2 {
 	font-family: 'OldLondon', serif;  
@@ -28,7 +29,7 @@
 	width: 350px;     
 	height: auto;     
 	display: block;    
-	margin: 0 auto;   
+	margin: 0 auto !important;   
 	}
 
 
@@ -177,9 +178,39 @@
 		background-color: #000;
 	}
 
-	/* .col-12.col-md-4.col-lg-3 {
-	flex: 0 0 250px;  
-	} */
+	.brands-img {
+	max-width: 60%;
+	height: auto;
+	display: block;
+	margin: 50px auto 100px auto;
+	}
+
+	.choose-section {
+		padding: 0; 
+		background-color: white;
+	}
+	.choose-section .section-title {
+		margin-left: 0px;
+		font-family: 'OldLondon', serif; 
+		font-size: 60px;                  
+		font-weight: normal;               
+		text-align: left;                 
+		margin-bottom: 1.5rem;             
+	}
+	.choose-section p {
+		font-weight: 600;                 
+		font-size: 20px;                             
+		text-align: left;             
+		color: #777;                   
+	}
+
+	footer{
+	margin-top: 0 !important;
+	}
+	body {
+	background-color: white !important;
+	padding-bottom: 0;
+	}
 
 </style>
 
@@ -401,26 +432,65 @@
 					</div>
 				</div>
 			</div>
-			<!--  -->
 
 			<!-- Brands Section -->
 			 <div class="sales-section">
 				<div class="sales-container">
 					<div class="sales-header">
-					<h2>Our Brands</h2>
-					<img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+						<h2>Our brands</h2>
+						<img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
 					</div>
-					<button class="sales-arrow left">
-						<i class="fas fa-chevron-left"></i>
-					</button>
-					<button class="sales-arrow right">
-						<i class="fas fa-chevron-right"></i>
-					</button>
+					<img class="brands-img" src="/barbershopSupplies/public/images/brands2.png" alt="brands">
 
 					
 				</div>
 			</div>
-			<!--  -->
+
+			<!-- Start Why Choose Us Section -->
+			<div class="choose-section">
+				<div class="container">
+					<div class="row justify-content-between">
+						<div class="col-lg-6">
+							<h2 class="section-title">Why choose us</h2>
+							<p>We are the leaders in providing barbershop supplies to barbers, for barbers.</p>
+
+							<div class="row my-5">
+								<div class="col-6 col-md-6">
+									<div class="feature">
+										<div class="icon">
+											<img src="images/bag.svg" alt="Image" class="imf-fluid">
+										</div>
+										<h3>Easy to shop</h3>
+										<p>Established in 2011, our team has been working hard to provide barbers the best service.</p>
+									</div>
+								</div>
+
+								<div class="col-6 col-md-6">
+									<div class="feature">
+										<div class="icon">
+											<img src="images/medal-icon.png" alt="Image" class="imf-fluid" width="36" height="36">
+										</div>
+										<h3>Customer service</h3>
+										<p>A good customer service and experience is our top priority.</p>
+									</div>
+								</div>
+
+								<div class="col-6 col-md-6">
+									<div class="feature">
+										<div class="icon">
+											<img src="images/truck.svg" alt="Image" class="imf-fluid">
+										</div>
+										<h3>On-demand shipping</h3>
+										<p>We offer on-demand delivery of your favorite and hottest products on the market. If you cannot come to us, we will come to you.</p>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 		</main>
 		<?php 
         include '../includes/footer2.php'

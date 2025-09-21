@@ -628,12 +628,14 @@ a {
       right: -8px;
       bottom: 0; }
   .feature h3 {
-    font-size: 14px;
-    color: #2f2f2f; }
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000; }
   .feature p {
     font-size: 14px;
+    font-weight: 700;
     line-height: 22px;
-    color: #6a6a6a; }
+    color: #777; }
 
 .we-help-section {
   padding: 7rem 0; }

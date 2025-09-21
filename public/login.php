@@ -3,6 +3,7 @@
 	session_start();
 	$error = $_SESSION['login_error'] ?? null;
 	unset($_SESSION['login_error']);
+	$currentPage = 'account';
 
 	//echo password_hash("barberThings", PASSWORD_DEFAULT);
 	// username: barberAdmin

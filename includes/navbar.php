@@ -1,3 +1,50 @@
+<style>
+    .shop-dropdown {
+        position: relative; 
+    }
+    .dropdown-menu-custom {
+        display: none;             
+        position: absolute;
+        top: 100%;                   
+        left: 50%;                 /* start from center of parent */
+        transform: translateX(-50%);
+        background-color: #e4e4e4ff;  
+        border-radius: 8px;          
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 0.5rem 0;
+        min-width: 120px;        
+        z-index: 1000;
+    }
+    .shop-dropdown:hover .dropdown-menu-custom {
+        display: block;
+    }
+    .shop-dropdown .dropdown-menu-custom li a {
+        color: #000 !important;  
+        text-align: center;         
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .shop-dropdown .dropdown-menu-custom li a:hover {
+        background-color: #d4d4d4;
+        color: #000 !important;          
+        border-radius: 6px;
+    }
+    .dropdown-menu-custom li {
+        list-style: none;
+    }
+    .dropdown-menu-custom li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        color: #000 !important;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .dropdown-menu-custom li a:hover {
+        background-color: #d4d4d4;
+        border-radius: 6px;
+    }
+</style>
+
 <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
 
     <div class="container">
@@ -12,8 +59,15 @@
                 <li class="nav-item <?= ($currentPage === 'home') ? 'active' : '' ?>">
                     <a class="nav-link" href="home.php">Home</a>
                 </li>
-                <li class="nav-item <?= ($currentPage === 'shop') ? 'active' : '' ?>">
+                <li class="nav-item shop-dropdown <?= ($currentPage === 'shop') ? 'active' : '' ?>">
                     <a class="nav-link" href="shop.php">Shop</a>
+                    <ul class="dropdown-menu-custom">
+                        <li><a href="#">Shavers</a></li>
+                        <li><a href="#">Clippers</a></li>
+                        <li><a href="#">Trimmers</a></li>
+                        <li><a href="#">Shaving Gel</a></li>
+                        <li><a href="#">See All Categories</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item <?= ($currentPage === 'contactUs') ? 'active' : '' ?>">
                     <a class="nav-link" href="contactUs.php">Contact Us</a>
