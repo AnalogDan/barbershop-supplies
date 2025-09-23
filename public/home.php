@@ -104,6 +104,7 @@
 	opacity: 0;
 	visibility: hidden;
 	transition: .3s all ease;
+	pointer-events: auto;
 	}
 	.sales-products .product-item:hover .icon-cross {
 	opacity: 1;
@@ -212,6 +213,52 @@
 	padding-bottom: 0;
 	}
 
+	.product-image-wrapper {
+	position: relative;
+	display: inline-block;
+	}
+	.discount-badge {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	background-color: #dfd898;
+	color: #000;
+	font-size: 0.8rem;
+	font-weight: bold;
+	padding: 2px 6px;
+	border-radius: 3px;
+	}
+
+	.price-wrapper {
+	text-align: center;
+	}
+	.product-price,
+	.product-old-price {
+	display: inline-block !important; 
+	vertical-align: middle;
+	}
+	.product-old-price {
+	color: #888;           
+	font-size: 0.85rem;   
+	text-decoration: line-through; 
+	margin-left: 6px;   
+	font-weight: 600;   
+	}
+
+	.icon-cross {
+	cursor: pointer !important;
+	pointer-events: auto !important;   
+	position: absolute !important;     
+	}
+	.product-item {
+	position: relative;    
+	}
+	.product-item img,
+	.product-item h3,
+	.product-price {
+	pointer-events: none;   
+	}
+
 </style>
 
 <!DOCTYPE html>
@@ -309,20 +356,32 @@
 							<div class="row">
 								<div class="col-12 col-md-4 col-lg-3">
 									<a class="product-item" href="cart.html">
-									<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-									<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-									<strong class="product-price">$84.99</strong>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
+										<div class="product-image-wrapper">
+											<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
+											 <div class="discount-badge">$10.99 Off</div>
+										</div>
+										<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
+										<div class="price-wrapper">
+											<strong class="product-price">$84.99</strong>
+											<span class="product-old-price">$199.99</span>
+										</div>
+										<span class="icon-cross">
+											<img src="images/cross.svg" class="img-fluid">
+										</span>
 									</a>
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
 									<a class="product-item" href="cart.html">
-									<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
+									<div class="product-image-wrapper">
+										<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
+										<div class="discount-badge">$10.99 Off</div>
+									</div>
 									<h3 class="product-title">Babyliss Black Fx One Battery System Clipper</h3>
-									<strong class="product-price">$219.99</strong>
+									<div class="price-wrapper">
+										<strong class="product-price">$219.99</strong>
+										<span class="product-old-price">$199.99</span>
+									</div>
 									<span class="icon-cross">
 										<img src="images/cross.svg" class="img-fluid">
 									</span>
@@ -331,9 +390,15 @@
 
 								<div class="col-12 col-md-4 col-lg-3">
 									<a class="product-item" href="cart.html">
-									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<div class="product-image-wrapper">
+										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+										<div class="discount-badge">$10.99 Off</div>
+									</div>
 									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
-									<strong class="product-price">$144.99</strong>
+									<div class="price-wrapper">
+										<strong class="product-price">$144.99</strong>
+										<span class="product-old-price">$199.99</span>
+									</div>
 									<span class="icon-cross">
 										<img src="images/cross.svg" class="img-fluid">
 									</span>
@@ -342,9 +407,15 @@
 
 								<div class="col-12 col-md-4 col-lg-3">
 									<a class="product-item" href="cart.html">
-									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+									<div class="product-image-wrapper">
+										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
+										<div class="discount-badge">$10.99 Off</div>
+									</div>
 									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
-									<strong class="product-price">$144.99</strong>
+									<div class="price-wrapper">
+										<strong class="product-price">$144.99</strong>
+										<span class="product-old-price">$199.99</span>
+									</div>
 									<span class="icon-cross">
 										<img src="images/cross.svg" class="img-fluid">
 									</span>
@@ -495,5 +566,15 @@
 		<?php 
         include '../includes/footer2.php'
         ?>
+		<script>
+			document.querySelectorAll(
+			'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
+			).forEach(icon => {
+			icon.addEventListener('click', function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			});
+			});
+		</script>
 	</body>
 </html>

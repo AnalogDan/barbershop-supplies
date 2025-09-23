@@ -562,14 +562,23 @@ a {
       visibility: hidden;
       -webkit-transition: .3s all ease;
       -o-transition: .3s all ease;
-      transition: .3s all ease; }
+      transition: .3s all ease; 
+      pointer-events: auto;
+      }
       .product-section .product-item .icon-cross img {
         position: absolute;
         left: 50%;
         top: 50%;
         -webkit-transform: translate(-50%, -50%);
         -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%); }
+        transform: translate(-50%, -50%); 
+        pointer-events: none;
+      }
+      .product-section .product-item .icon-cross:hover {
+        background: #7f7f7f; /* changes circle color on hover */
+        transform: translateX(-50%) scale(1.1); /* slight zoom effect */
+      }
+
     .product-section .product-item:before {
       bottom: 0;
       left: 0;
