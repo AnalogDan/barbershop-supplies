@@ -37,7 +37,7 @@
 	display: flex;
 	gap: 2rem;          
 	overflow-x: auto; 
-	overflow-y: visible;
+	overflow-y: auto;
 	padding-top: 2rem;   
 	padding-bottom: 1rem; 
 	width: 80%;
@@ -126,6 +126,13 @@
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
+	}
+	.sales-products .product-item .added-message {
+	position: absolute;
+	bottom: 50px;          /* adjust so it sits right under the product */
+	left: 50%;
+	transform: translateX(-50%);
+	white-space: nowrap;    /* keep text in one line */
 	}
 
 	.sales-arrow {
