@@ -116,6 +116,17 @@
 	left: 50%;
 	transform: translate(-50%, -50%);
 	}
+	.sales-products .product-item .icon-cross:not(.checkmark):hover {
+	background: #7f7f7f;
+	transform: translateX(-50%) scale(1.07);
+	}
+	.sales-products .product-item .icon-cross i {
+	pointer-events: none; 
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	}
 
 	.sales-arrow {
 	width: 40px;
@@ -257,6 +268,31 @@
 	.product-item h3,
 	.product-price {
 	pointer-events: none;   
+	}
+
+	.added-message {
+	position: absolute;
+	bottom: -60px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-weight: 600;
+	background: #dfd898;
+	color: #000000ff;
+
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 0.85rem;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.5s ease, transform 0.5s ease;
+	z-index: 10;
+
+	white-space: nowrap; /* allow wrapping */
+	text-align: center;  /* center wrapped text */
+	}
+	.added-message.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(-10px);
 	}
 
 </style>
@@ -573,6 +609,28 @@
 			icon.addEventListener('click', function(event) {
 				event.preventDefault();
 				event.stopPropagation();
+
+				const img = icon.querySelector('img');
+				if (img) {
+				img.remove();
+				const check = document.createElement('i');
+				check.classList.add('fas', 'fa-check');
+				check.style.color = 'white';  
+				check.style.fontSize = '18px';
+				icon.appendChild(check);
+				icon.classList.add('checkmark');
+
+				const message = document.createElement('span');
+				message.className = 'added-message';
+				message.textContent = 'Added to cart!';
+				icon.appendChild(message);
+				void message.offsetWidth;
+				message.classList.add('show');
+				setTimeout(() => {
+					message.classList.remove('show');
+					setTimeout(() => message.remove(), 500);
+				}, 2000);
+				}
 			});
 			});
 		</script>

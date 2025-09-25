@@ -574,9 +574,20 @@ a {
         transform: translate(-50%, -50%); 
         pointer-events: none;
       }
-      .product-section .product-item .icon-cross:hover {
-        background: #7f7f7f; /* changes circle color on hover */
-        transform: translateX(-50%) scale(1.1); /* slight zoom effect */
+      .product-section .product-item .icon-cross:not(.checkmark):hover {
+        background: #7f7f7f;
+        transform: translateX(-50%) scale(1.1);
+      }
+      .product-section .product-item .icon-cross.checkmark:hover {
+        background: #2f2f2f !important; 
+        transform: translateX(-50%) scale(1) !important;
+      }
+      .product-section .product-item .icon-cross i {
+        pointer-events: none; 
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
       }
 
     .product-section .product-item:before {
