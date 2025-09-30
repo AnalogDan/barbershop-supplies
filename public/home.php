@@ -279,7 +279,7 @@
 
 	.added-message {
 	position: absolute;
-	bottom: -60px;
+	bottom: 50px;
 	left: 50%;
 	transform: translateX(-50%);
 	font-weight: 600;
@@ -341,7 +341,7 @@
 						</div> 
 
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="cart.html">
+							<a class="product-item" href="product.php">
 								<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
 								<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
 								<strong class="product-price">$84.99</strong>
@@ -353,7 +353,7 @@
 						</div> 
 
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="cart.html">
+							<a class="product-item" href="product.php">
 								<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
 								<h3 class="product-title">Babyliss Black Fx One Battery System Clipper</h3>
 								<strong class="product-price">$219.99</strong>
@@ -365,7 +365,7 @@
 						</div>
 
 						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="cart.html">
+							<a class="product-item" href="product.php">
 								<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
 								<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
 								<strong class="product-price">$144.99</strong>
@@ -398,7 +398,7 @@
 						<div class="container">
 							<div class="row">
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 										<div class="product-image-wrapper">
 											<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
 											 <div class="discount-badge">$10.99 Off</div>
@@ -415,7 +415,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<div class="product-image-wrapper">
 										<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
 										<div class="discount-badge">$10.99 Off</div>
@@ -432,7 +432,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<div class="product-image-wrapper">
 										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
 										<div class="discount-badge">$10.99 Off</div>
@@ -449,7 +449,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<div class="product-image-wrapper">
 										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
 										<div class="discount-badge">$10.99 Off</div>
@@ -494,7 +494,7 @@
 						<div class="container">
 							<div class="row">
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
 									<h3 class="product-title">Clippers</h3>
 									<span class="icon-cross">
@@ -504,7 +504,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
 									<h3 class="product-title">Shavers</h3>
 									<span class="icon-cross">
@@ -514,7 +514,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
 									<h3 class="product-title">Shaving Gel</h3>
 									<span class="icon-cross">
@@ -524,7 +524,7 @@
 								</div>
 
 								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="cart.html">
+									<a class="product-item" href="product.php">
 									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
 									<h3 class="product-title">Trimmers</h3>
 									<span class="icon-cross">

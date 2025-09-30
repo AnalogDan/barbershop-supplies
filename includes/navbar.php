@@ -43,6 +43,20 @@
         background-color: #d4d4d4;
         border-radius: 6px;
     }
+
+    .custom-navbar .custom-navbar-nav li.active .dropdown-menu-custom a {
+    opacity: 0.5;             
+    }
+    .custom-navbar .custom-navbar-nav li.active .dropdown-menu-custom a:before {
+    width: 0; 
+    }
+    .custom-navbar .custom-navbar-nav li.active .dropdown-menu-custom a:hover {
+    opacity: 1;              
+    }
+    .custom-navbar .custom-navbar-nav li.active .dropdown-menu-custom a:hover:before {
+    width: calc(100% - 16px);
+    }
+
 </style>
 
 <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">

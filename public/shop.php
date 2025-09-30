@@ -22,10 +22,15 @@
 ?>
 
 <style>
+    .sales-top-bar {
+    display: flex;
+    width: 70%;
+    }
     .sales-header {
 	padding: 2rem 0 0 0;
 	margin-bottom: 10px;
-	text-align: center;    
+	text-align: center;
+    flex: 1;      
 	}
 	.sales-header h2 {
 	font-family: 'OldLondon', serif;  
@@ -42,6 +47,16 @@
 	display: block;    
 	margin: 0 auto !important;   
 	}
+
+    .sort-dropdown {
+    margin-left: auto;        
+    margin-right: 200px;
+    }
+    .sort-label {
+    color: gray;
+    font-size: 1rem;
+    font-weight: 600;
+    }
 
 
 </style>
@@ -80,14 +95,19 @@
             <?php 
             include __DIR__ . '/../includes/categories-dropdown.php'; 
             ?>
-
+>
             <div class="sales-header">
-                <h2>All</h2>
-                <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+                    <h2>All</h2>
+                    <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+            </div>
+            <div class="sort-dropdown">
+                <span class="sort-label">Sort by</span>
+                <i class="fas fa-chevron-down"></i>
             </div>
 
             <?php 
             include __DIR__ . '/../includes/product-grid.php'; 
+            include __DIR__ . '/../includes/paginator.php'; 
             ?>
   
         </main>

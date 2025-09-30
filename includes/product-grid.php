@@ -3,13 +3,12 @@
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(6, auto);  
-        gap: 2rem;                            
+        gap: 1rem;                            
         width: 100%;
         margin: 0 auto;
+		padding: 0 80px;
     }
-    .product-cell {
-        
-    }
+
 
 	.sales-products {
 	display: flex;
@@ -107,10 +106,10 @@
 	}
 	.sales-products .product-item .added-message {
 	position: absolute;
-	bottom: 50px;          /* adjust so it sits right under the product */
+	bottom: 50px;        
 	left: 50%;
 	transform: translateX(-50%);
-	white-space: nowrap;    /* keep text in one line */
+	white-space: nowrap;    
 	}
 
 	.product-image-wrapper {
@@ -186,45 +185,72 @@
 </style>
 
 <div class="products-grid">
-    <?php
-    $rows = 6;
-    $cols = 4;
+	<?php
+	$total = 12;
+	for ($i = 0; $i < $total; $i++): ?>
+	<div class="sales-products">
+		<a class="product-item" href="../public/product.php">
+		<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
+		<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
+		<strong class="product-price">$84.99</strong>
+		<span class="icon-cross">
+			<img src="images/cross.svg" class="img-fluid">
+		</span>
+		</a>
+	</div>
+	<?php endfor; ?>
 
-    for ($i = 0; $i < $rows * $cols; $i++): ?>
-        <div class="product-cell">
-            <div class="sales-products"></div>
-                <a class="product-item" href="cart.html">
-                    <div class="product-image-wrapper">
-                        <img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-                            <div class="discount-badge">$10.99 Off</div>
-                    </div>
-                    <h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-                    <div class="price-wrapper">
-                        <strong class="product-price">$84.99</strong>
-                        <span class="product-old-price">$199.99</span>
-                    </div>
-                    <span class="icon-cross">
-                        <img src="images/cross.svg" class="img-fluid">
-                    </span>
-                </a>
-            </div>
-        </div>
-    <?php endfor; ?>
+	<?php
+	$total = 12;
+	for ($i = 0; $i < $total; $i++): ?>
+	<div class="sales-products">
+		<a class="product-item" href="../public/product.php">
+		<div class="product-image-wrapper">
+			<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
+			<div class="discount-badge">$10.99 Off</div>
+		</div>
+		<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
+		<div class="price-wrapper">
+			<strong class="product-price">$84.99</strong>
+			<span class="product-old-price">$199.99</span>
+		</div>
+		<span class="icon-cross">
+			<img src="images/cross.svg" class="img-fluid">
+		</span>
+		</a>
+	</div>
+	<?php endfor; ?>
 </div>
 
-<div class="sales-products">
-    <a class="product-item" href="cart.html">
-        <div class="product-image-wrapper">
-            <img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-                <div class="discount-badge">$10.99 Off</div>
-        </div>
-        <h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-        <div class="price-wrapper">
-            <strong class="product-price">$84.99</strong>
-            <span class="product-old-price">$199.99</span>
-        </div>
-        <span class="icon-cross">
-            <img src="images/cross.svg" class="img-fluid">
-        </span>
-    </a>
-</div>
+<script>
+	document.querySelectorAll(
+	'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
+	).forEach(icon => {
+		icon.addEventListener('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			const img = icon.querySelector('img');
+			if (img) {
+			img.remove();
+			const check = document.createElement('i');
+			check.classList.add('fas', 'fa-check');
+			check.style.color = 'white';  
+			check.style.fontSize = '18px';
+			icon.appendChild(check);
+			icon.classList.add('checkmark');
+
+			const message = document.createElement('span');
+			message.className = 'added-message';
+			message.textContent = 'Added to cart!';
+			icon.appendChild(message);
+			void message.offsetWidth;
+			message.classList.add('show');
+			setTimeout(() => {
+				message.classList.remove('show');
+				setTimeout(() => message.remove(), 500);
+			}, 2000);
+			}
+		});
+	});
+</script>
