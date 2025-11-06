@@ -32,7 +32,7 @@
     /* background: lightblue; */
     }
     .top-right {
-    background: lightgreen;
+    
     }
     .bottom-full {
     clear: both;             
@@ -95,8 +95,12 @@
     cursor: pointer;
     transition: border-color 0.2s;
     }
+    .gallery img.selected {
+    border: 5px solid #2b2b2bff;
+    border-radius: 5%; 
+    }
     .product-images .gallery img:hover {
-    border-color: #555;       
+          
     }
 
     .main-image {
@@ -106,13 +110,117 @@
     .zoom-lens {
     position: absolute;
     border: 1px solid #000;   
-    width: 100px;              
-    height: 100px;            /
+    width: 250px;              
+    height: 250px;            /
     background: rgba(255, 255, 255, 0.2); 
     display: none;             
     cursor: pointer;
     pointer-events: none;     
-    border-radius: 50%;        
+    border-radius: 20%;        
+    transition: opacity 1.15s ease;
+    opacity: 0;
+    }
+    .main-image:hover .zoom-lens {
+    opacity: 1;
+    }
+
+    /* lighbox styles */
+    .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    }
+    .lightbox.show {
+    display: flex;
+    }
+    .lightbox-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    }
+    #lightbox-image {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    }
+    .close {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    color: #fff;
+    cursor: pointer;
+    }
+    .chevron {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 60px;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    }
+    .chevron:hover {
+    opacity: 1;
+    }
+    .chevron-left {
+    left: -80px;
+    }
+    .chevron-right {
+    right: -80px;
+    }
+    #lightbox-image {
+    max-width: 90vw;          
+    max-height: 90vh;         
+    width: auto;              
+    height: auto;             
+    object-fit: contain;      
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    display: block;
+    margin: 0 auto;
+    }
+
+    /*Top-right quadrant */
+    .top-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 30px;
+    color: #222;
+    }
+    .product-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    }
+    .stock-status {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    }
+    .product-price {
+    font-size: 2rem;
+    font-weight: 480;
+    margin-bottom: 10px;
+    }
+    .shipping-note {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    }
+    .extra-note {
+    font-size: 0.9rem;
+    color: #888;
     }
 </style>
 
@@ -135,21 +243,27 @@
         <div class="white-container">
             <div class="top-left">
                 <div class="product-images">
-                <div class="main-image">
-                    <img src="images/products/main_1756950792_0cdafe55.webp" alt="Main Product">
-                    <div class="zoom-lens"></div>
-                </div>
-                <div class="gallery">
-                    <img src="images/products/main_1756950792_0cdafe55.webp" alt="Gallery 1">
-                    <img src="images/products/gallery_1757007537_44f0142a.png" alt="Gallery 2">
-                    <img src="images/products/gallery_1757007537_55cd8492.png" alt="Gallery 3">
-                    <img src="images/products/gallery_1756953863_8d5e1d93.jpg" alt="Gallery 4">
-                </div>
+                    <div class="main-image">
+                        <a href="#" id="main-image-link">
+                            <img id="main-image" src="images/products/main_1756950792_0cdafe55.webp" alt="Main Product">
+                        </a>
+                        <div class="zoom-lens"></div>
+                    </div>
+                    <div class="gallery">
+                        <img class="selected" src="images/products/main_1756950792_0cdafe55.webp" alt="Gallery 1">
+                        <img src="images/products/gallery_1757007537_44f0142a.png" alt="Gallery 2">
+                        <img src="images/products/gallery_1757007537_55cd8492.png" alt="Gallery 3">
+                        <img src="images/products/gallery_1756953863_8d5e1d93.jpg" alt="Gallery 4">
+                    </div>
                 </div>
             </div>
 
             <div class="top-right">
-            Right half content
+                <h1 class="product-title">Andis T-Outliner</h1>
+                <p class="stock-status">7 in stock</p>
+                <p class="product-price">$74.99</p>
+                <p class="shipping-note">Shipping calculated at checkout</p>
+                <p class="extra-note">More things I'll add later</p>
             </div>
 
             <div class="bottom-full">
@@ -160,33 +274,110 @@
         <?php 
         include '../includes/footer2.php'
         ?>
-        <script>
-            const mainImg = document.getElementById('product-main');
-            const lens = document.querySelector('.zoom-lens');
 
+        <div id="lightbox" class="lightbox">
+            <span class="close">&times;</span>
+            <div class="lightbox-content">
+                <button class="chevron chevron-left">&#10094;</button>
+                <img id="lightbox-image" src="" alt="Expanded product">
+                <button class="chevron chevron-right">&#10095;</button>
+            </div>
+        </div>
+        <script>
+            //Magnifying glass effect
+            const mainImg = document.getElementById('main-image');
+            const lens = document.querySelector('.zoom-lens');
             mainImg.addEventListener('mousemove', moveLens);
             mainImg.addEventListener('mouseenter', () => lens.style.display = 'block');
             mainImg.addEventListener('mouseleave', () => lens.style.display = 'none');
-
             function moveLens(e) {
-            const rect = mainImg.getBoundingClientRect();
-            let x = e.clientX - rect.left - lens.offsetWidth / 2;
-            let y = e.clientY - rect.top - lens.offsetHeight / 2;
+                const rect = mainImg.getBoundingClientRect();
+                const lensSize = lens.offsetWidth;
+                const zoom = 2; 
 
-            // keep lens inside image
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            if (x > rect.width - lens.offsetWidth) x = rect.width - lens.offsetWidth;
-            if (y > rect.height - lens.offsetHeight) y = rect.height - lens.offsetHeight;
+                let x = e.clientX - rect.left - lensSize / 2;
+                let y = e.clientY - rect.top - lensSize / 2;
 
-            lens.style.left = x + 'px';
-            lens.style.top = y + 'px';
+                if (x < 0) x = 0;
+                if (y < 0) y = 0;
+                if (x > rect.width - lensSize) x = rect.width - lensSize;
+                if (y > rect.height - lensSize) y = rect.height - lensSize;
 
-            // update background of lens to show zoomed image
-            lens.style.backgroundImage = `url(${mainImg.src})`;
-            lens.style.backgroundSize = `${mainImg.width * 2}px ${mainImg.height * 2}px`; // 2x zoom
-            lens.style.backgroundPosition = `-${x * 2}px -${y * 2}px`;
+                lens.style.left = x + 'px';
+                lens.style.top = y + 'px';
+
+                lens.style.backgroundImage = `url(${mainImg.src})`;
+                lens.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+
+                const xPercent = x / (rect.width - lensSize);
+                const yPercent = y / (rect.height - lensSize);
+
+                const bgX = (rect.width * zoom - lensSize) * xPercent;
+                const bgY = (rect.height * zoom - lensSize) * yPercent;
+
+                lens.style.backgroundPosition = `-${bgX}px -${bgY}px`;
             }
+
+            // Switch big image 
+            const galleryImages = document.querySelectorAll('.gallery img');
+            const mainImage = document.getElementById('main-image');
+            galleryImages.forEach(img => {
+                img.addEventListener('click', () => {
+                    mainImage.src = img.src;
+                    galleryImages.forEach(i => i.classList.remove('selected'));
+                    img.classList.add('selected');
+                });
+            });
+
+
+            const lightbox = document.getElementById('lightbox');
+const lightboxImage = document.getElementById('lightbox-image');
+const closeBtn = document.querySelector('.lightbox .close');
+const prevBtn = document.querySelector('.chevron-left');
+const nextBtn = document.querySelector('.chevron-right');
+
+const galleryList = Array.from(document.querySelectorAll('.gallery img'));
+let currentIndex = 0;
+
+// Open lightbox when main image clicked
+document.getElementById('main-image-link').addEventListener('click', e => {
+  e.preventDefault();
+  const currentSrc = document.getElementById('main-image').src;
+  currentIndex = galleryList.findIndex(img => img.src === currentSrc);
+  if (currentIndex === -1) currentIndex = 0;
+  showLightbox(currentIndex);
+});
+
+// Navigation
+prevBtn.addEventListener('click', () => changeImage(-1));
+nextBtn.addEventListener('click', () => changeImage(1));
+closeBtn.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => {
+  if (e.target === lightbox) closeLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (!lightbox.classList.contains('show')) return;
+  if (e.key === 'ArrowLeft') changeImage(-1);
+  if (e.key === 'ArrowRight') changeImage(1);
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// Helper functions
+function showLightbox(index) {
+  lightboxImage.src = galleryList[index].src;
+  lightbox.classList.add('show');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('show');
+}
+
+function changeImage(direction) {
+  currentIndex += direction;
+  if (currentIndex < 0) currentIndex = galleryList.length - 1;
+  if (currentIndex >= galleryList.length) currentIndex = 0;
+  lightboxImage.src = galleryList[currentIndex].src;
+}
 		</script>
     </main>
 	</body>
