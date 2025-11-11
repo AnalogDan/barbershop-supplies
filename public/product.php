@@ -34,13 +34,6 @@
     .top-right {
     
     }
-    .bottom-full {
-    clear: both;             
-    width: 100%;
-    background: lightcoral; 
-    padding: 1rem;
-    box-sizing: border-box;
-    }
 
     .breadcrumb {
     font-weight: 600;
@@ -222,6 +215,107 @@
     font-size: 0.9rem;
     color: #888;
     }
+
+    /*Quantity selector*/
+    .quantity-selector {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+    }
+    .qty-btn {
+    background: #f0f0f0;
+    border: none;
+    padding: 8px 12px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+    }
+    .qty-btn:hover {
+    background: #e0e0e0;
+    }
+    #qty-input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    font-size: 16px;
+    outline: none;
+    background: white;
+    }
+
+    /*Add to cart tweaks*/
+    .my-btn-custom {
+    border-radius: 10px !important;
+    margin-top: 20px;
+    margin-left: -5px;
+    }
+
+    /*Description box*/
+    .bottom-full {
+        clear: both;
+        width: 100%;
+        padding: 1rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;     
+        align-items: center;
+    }
+    .bottom-full > * {
+        margin: 0; 
+    }
+    .desc-toggle {
+        margin-top: 40px;
+        background: none;
+        border: none;
+        color: black;
+        font-weight: 450;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: inline-flex;
+        gap: 0.4rem; 
+        transition: color 0.3s ease;
+    }
+    .desc-toggle:hover {
+        color: #7f7f7fff;
+    }
+    .chevron2{
+        font-size: 2rem;
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+    .chevron2.down {
+        transform: rotate(90deg); 
+    }
+    .description-box {
+        font-size: 1.2rem;
+        white-space: pre-wrap;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        padding: 0 1rem;
+        opacity: 0;
+        max-height: 200px;
+        opacity: 1;
+        position: relative;
+    }
+    .description-box::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 60px; 
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, white 100%);
+        pointer-events: none;
+    }
+    .description-box.open {
+        
+    }
+    .description-box.open::after {
+        display: none;
+    }
+
 </style>
 
 <!DOCTYPE html>
@@ -263,11 +357,38 @@
                 <p class="stock-status">7 in stock</p>
                 <p class="product-price">$74.99</p>
                 <p class="shipping-note">Shipping calculated at checkout</p>
-                <p class="extra-note">More things I'll add later</p>
+                <div class="quantity-selector">
+                    <button class="qty-btn" id="qty-minus">−</button>
+                    <input type="text" id="qty-input" value="1" readonly>
+                    <button class="qty-btn" id="qty-plus">+</button>
+                </div>
+                <p><a href="#" class="btn btn-secondary me-2 my-btn-custom">Add to cart</a>
             </div>
 
             <div class="bottom-full">
-            Bottom full-width content
+                <button class="desc-toggle">
+                    Description <span class="chevron2">&rsaquo;</span>
+                </button>
+                <div class="description-box">
+                    <p>SLEEK: Lightweight, cord/cordless design for greater flexibility
+
+BEST FOR:
+Trimming necklines and light-duty touch-ups
+
+Rotary Motor
+120V | 50/60Hz | MAX 6000SPM
+
+•Lithium ion battery delivers up to 2 hours of run time with a 2 hour, 15 minute charge time
+• Improved motor for increased speed, power and life
+• Balanced, ergonomic trimmer for light-duty touch-ups and trimming around necklines
+
+In The Package
+• Charger Stand
+• Tube of Blade Oil
+• 1/16", 1/8", 1/4", 3/8"
+• Brush
+                    </p>
+                </div>
             </div>
         </div>
         
@@ -331,53 +452,79 @@
 
 
             const lightbox = document.getElementById('lightbox');
-const lightboxImage = document.getElementById('lightbox-image');
-const closeBtn = document.querySelector('.lightbox .close');
-const prevBtn = document.querySelector('.chevron-left');
-const nextBtn = document.querySelector('.chevron-right');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const closeBtn = document.querySelector('.lightbox .close');
+            const prevBtn = document.querySelector('.chevron-left');
+            const nextBtn = document.querySelector('.chevron-right');
 
-const galleryList = Array.from(document.querySelectorAll('.gallery img'));
-let currentIndex = 0;
+            const galleryList = Array.from(document.querySelectorAll('.gallery img'));
+            let currentIndex = 0;
 
-// Open lightbox when main image clicked
-document.getElementById('main-image-link').addEventListener('click', e => {
-  e.preventDefault();
-  const currentSrc = document.getElementById('main-image').src;
-  currentIndex = galleryList.findIndex(img => img.src === currentSrc);
-  if (currentIndex === -1) currentIndex = 0;
-  showLightbox(currentIndex);
-});
+            document.getElementById('main-image-link').addEventListener('click', e => {
+            e.preventDefault();
+            const currentSrc = document.getElementById('main-image').src;
+            currentIndex = galleryList.findIndex(img => img.src === currentSrc);
+            if (currentIndex === -1) currentIndex = 0;
+            showLightbox(currentIndex);
+            });
 
-// Navigation
-prevBtn.addEventListener('click', () => changeImage(-1));
-nextBtn.addEventListener('click', () => changeImage(1));
-closeBtn.addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', e => {
-  if (e.target === lightbox) closeLightbox();
-});
-document.addEventListener('keydown', e => {
-  if (!lightbox.classList.contains('show')) return;
-  if (e.key === 'ArrowLeft') changeImage(-1);
-  if (e.key === 'ArrowRight') changeImage(1);
-  if (e.key === 'Escape') closeLightbox();
-});
+            prevBtn.addEventListener('click', () => changeImage(-1));
+            nextBtn.addEventListener('click', () => changeImage(1));
+            closeBtn.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', e => {
+            if (e.target === lightbox) closeLightbox();
+            });
+            document.addEventListener('keydown', e => {
+            if (!lightbox.classList.contains('show')) return;
+            if (e.key === 'ArrowLeft') changeImage(-1);
+            if (e.key === 'ArrowRight') changeImage(1);
+            if (e.key === 'Escape') closeLightbox();
+            });
 
-// Helper functions
-function showLightbox(index) {
-  lightboxImage.src = galleryList[index].src;
-  lightbox.classList.add('show');
-}
+            function showLightbox(index) {
+            lightboxImage.src = galleryList[index].src;
+            lightbox.classList.add('show');
+            }
 
-function closeLightbox() {
-  lightbox.classList.remove('show');
-}
+            function closeLightbox() {
+            lightbox.classList.remove('show');
+            }
 
-function changeImage(direction) {
-  currentIndex += direction;
-  if (currentIndex < 0) currentIndex = galleryList.length - 1;
-  if (currentIndex >= galleryList.length) currentIndex = 0;
-  lightboxImage.src = galleryList[currentIndex].src;
-}
+            function changeImage(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = galleryList.length - 1;
+            if (currentIndex >= galleryList.length) currentIndex = 0;
+            lightboxImage.src = galleryList[currentIndex].src;
+            }
+
+            //Quantity selector
+            const minus = document.getElementById('qty-minus');
+            const plus = document.getElementById('qty-plus');
+            const input = document.getElementById('qty-input');
+            plus.addEventListener('click', () => {
+            input.value = parseInt(input.value) + 1;
+            });
+            minus.addEventListener('click', () => {
+            const current = parseInt(input.value);
+            if (current > 1) input.value = current - 1;
+            });
+
+
+            //Show description
+            const toggleBtn = document.querySelector('.desc-toggle');
+            const chevron = toggleBtn.querySelector('.chevron2');
+            const descBox = document.querySelector('.description-box');
+            toggleBtn.addEventListener('click', () => {
+                const isOpen = descBox.classList.toggle('open');
+                chevron.classList.toggle('down');
+
+                if (isOpen) {
+                    const fullHeight = descBox.scrollHeight + "px";
+                    descBox.style.maxHeight = fullHeight;
+                } else {
+                    descBox.style.maxHeight = "200px";
+                }
+            });
 		</script>
     </main>
 	</body>

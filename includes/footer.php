@@ -84,8 +84,8 @@
 
     .custom-footer-shaver {
         position: absolute;
-        top: -200px;
-        right: -150px;  
+        top: -150px;
+        right: 10%;  
         z-index: 1;
     }
 
@@ -164,9 +164,9 @@
             &copy; New Vision Barber Supplies
         </div>
 
-        <div class="custom-footer-shaver">
-            <img src="../public/images/footer-shaver.png" alt="Shaver">
-        </div>
+    </div>
+    <div class="custom-footer-shaver">
+        <img src="../public/images/footer-shaver.png" alt="Shaver">
     </div>
 
     <div class="custom-footer-ornament"></div>

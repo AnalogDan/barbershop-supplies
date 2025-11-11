@@ -4,7 +4,7 @@
         display: flex;
         gap 10px;
         margin-top: 20px;
-        margin-bottom: 60px;
+        margin-bottom: 100px;
         justify-content: center;
         align-items: center;
     }
