@@ -402,8 +402,8 @@ a {
   border-color: #2b2b2b; }
   .btn:hover {
     color: #ffffff;
-    background: #222222;
-    border-color: #222222; }
+    background: #727272;
+    border-color: #727272; }
   .btn:active, .btn:focus {
     outline: none !important;
     -webkit-box-shadow: none;
@@ -420,8 +420,8 @@ a {
     background: #dfd898;
     border-color: #dfd898; }
     .btn.btn-secondary:hover {
-      background: #dacf70;
-      border-color: #dacf70; }
+      background: #fffbd3;
+      border-color: #424028; }
   .btn.btn-third {
     margin: 40px 0px 0px 50px;
     width: fit-content;
@@ -463,9 +463,11 @@ a {
   .btn.btn-white-outline {
     background: transparent;
     border-width: 2px;
+    background: #1f1f1f;
     border-color: rgba(255, 255, 255, 0.3); }
     .btn.btn-white-outline:hover {
-      border-color: white;
+      background: #727272;
+      border-color: 727272;
       color: #ffffff; }
 
 .container-home{

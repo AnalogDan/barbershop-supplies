@@ -12,10 +12,11 @@
 <style>
 	/*Grid styling*/
 	.grid{
+		color: #696969ff;
 		display: grid;
 		grid-template-columns: repeat(6, 1fr);
 		width: 80%;
-		margin: 120px auto 300px auto;
+		margin: 120px auto 0 auto;
 	}
 	 .item {
 		padding: 20px;
@@ -36,7 +37,7 @@
 	transform: scale(1.15);
 	}
 
-	/*Title row*/
+	/*Grid title row*/
 	.grid .item:nth-child(-n+6) {
 		font-size: 17px;
 		border-bottom: 3px solid black;
@@ -60,7 +61,6 @@
 	height: 100%;
 	object-fit: contain; 
 	}
-	/*Quantity selector*/
     .quantity-selector {
     display: inline-flex;
     align-items: center;
@@ -80,7 +80,7 @@
 	.item > .quantity-selector {
     margin: 0 auto;
     width: fit-content;
-}
+	}
     .qty-btn:hover {
     background: #e0e0e0;
     }
@@ -92,6 +92,78 @@
     outline: none;
     background: white;
     }
+
+	/*Bottom section*/
+	.bottom-section {
+	width: 80%; 
+	margin: 50px auto 170px auto; 
+	}
+	.left {
+	width: 65%;              
+    float: left;           
+    padding: 1rem;          
+    box-sizing: border-box; 
+	font-size: 1.7rem;
+	color: black;
+	font-weight: 600;
+	}
+	.left .subtitle {
+	color: #696969ff;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	font-size: 1rem;
+	font-weight: 550;	
+	}
+	#product-search-form {
+		width: 320px;    
+		margin-left: 0 !important;     
+		margin-right: auto;
+		padding: 0;
+	}
+	.btn {
+		margin-top: -25px;
+		border-radius: 10px !important;  
+	}
+	.inline-wrapper {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px; 
+		justify-content: flex-start;
+	}
+
+	.right {
+    width: 35%;              
+    float: right;           
+    padding: 1rem;          
+    box-sizing: border-box;  
+    }
+	.grid-total{
+		color: #696969ff;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		width: 100%;
+	}
+	 .item-total{
+		padding: 10px;
+		text-align: left;
+		border-bottom: 2px solid #b9b9b9ff;
+		font-weight: 600;
+		display: flex;
+		align-items: left;     
+		justify-content: left;
+	}
+	.grid-total .item-total:nth-child(-n+2) {
+		font-size: 17px;
+		border-bottom: 3px solid black;
+		font-weight: 550;
+		color: black;
+	}
+	.check-btn{
+		margin-top: 30px;
+		float: right;
+	}
+
+	
 </style>
 
 <!DOCTYPE html>
@@ -164,10 +236,39 @@
 				<?php endfor; ?>
 			</div>
 
+			<div class="bottom-section">
+				<div class="left">
+					<div>Gift Card</div>
+					<div class="subtitle">Enter gift card code if you have one.</div>
+					<div class="inline-wrapper">
+						<form id="product-search-form" class="search-bar" action="#" method="GET">
+							<div class="search-wrapper">
+								<input type="text" name="" id="" placeholder="XXXXXX-0000" value=""/>
+							</div>
+						</form>
+						<a href="#" class="btn">Apply</a>
+					</div>
+				</div>
+				<div class="right">
+					<div class="grid-total">
+						<div class="item-total">CART TOTALS</div>
+						<div class="item-total"></div>
+						<div class="item-total">Subtotal</div>
+						<div class="item-total">$139.99</div>
+						<div class="item-total">Sales tax</div>
+						<div class="item-total">$10.00</div>
+						<div class="item-total">Shipping</div>
+						<div class="item-total">Free</div>
+						<div class="item-total">TOTAL</div>
+						<div class="item-total">$149.99</div>
+					</div>
+					<a href="checkout.php" class="btn check-btn">Proceed to checkout</a>
+			</div>
+
 
         </main>
         <?php 
-        include '../includes/footer2.php'
+        include '../includes/footer.php'
         ?>
         <script>
 			//Quantity selector
@@ -185,3 +286,4 @@
 			});
 		</script>
     </body>
+</html>

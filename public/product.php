@@ -32,7 +32,6 @@
     /* background: lightblue; */
     }
     .top-right {
-    
     }
 
     .breadcrumb {
