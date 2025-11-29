@@ -83,8 +83,8 @@
                         <li><a href="#">See All Categories</a></li>
                     </ul>
                 </li>
-                <li class="nav-item <?= ($currentPage === 'contactUs') ? 'active' : '' ?>">
-                    <a class="nav-link" href="contactUs.php">Contact Us</a>
+                <li class="nav-item <?= ($currentPage === 'contact-us') ? 'active' : '' ?>">
+                    <a class="nav-link" href="contact-us.php">Contact Us</a>
                 </li>
                 <li class="nav-item <?= ($currentPage === 'cart') ? 'active' : '' ?>">
                     <a class="nav-link" href="cart.php">

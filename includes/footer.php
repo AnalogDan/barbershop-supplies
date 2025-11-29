@@ -153,7 +153,7 @@
                     <p>
                         <a href="aboutUs.php" class="footer-link-left">About us</a>
                         <a href="returns.php" class="footer-link-right">Returns and exchanges</a><br>
-                        <a href="contactUs.php">Contact us</a>
+                        <a href="contact-us.php">Contact us</a>
                     </p>
                 </span>
             </p>
