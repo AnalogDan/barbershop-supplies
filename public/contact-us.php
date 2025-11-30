@@ -16,11 +16,12 @@
     .gray-container {
         background-color: #e2e2e2ff;     
         width: 90%;                 
-        margin: 20px auto 0 auto;
+        margin: 20px auto 5rem auto;
         padding: 4rem 3rem 3rem 3rem;              
-        min-height: 100vh;           
+        min-height: auto;           
         box-shadow: 10px 10px 12px rgba(0,0,0,0.4); 
-        border-radius: 10px;       
+        border-radius: 10px;   
+        display: flex;    
     }
 
     /*Containers*/
@@ -61,7 +62,7 @@
         align-items: center;
     }
 
-    /*Square*/
+    /*Black squares*/
     .square{
         height: 5rem;
         width: 5rem;
@@ -90,6 +91,41 @@
         height: 3rem;
         width: auto;         
     }
+
+    /*Maps*/
+    .map{
+        height: 100%;
+        width: 70%;
+        display: flex;        
+        justify-content: center;
+        align-items: center;
+    }
+    .hours{
+        height: 100%;
+        width: 30%;
+        display: flex;        
+        flex-direction: column; 
+        justify-content: center;
+        align-items: center;
+    }
+    .title{
+        font-size: 1.8rem;
+        color: black;
+        font-weight: 600;
+        margin-bottom: 2rem;
+    }
+    .days{
+        font-size: 1.3rem;
+        color: #656565ff;
+        font-weight: 600;
+    }
+    .times{
+        font-size: 1.3rem;
+        color: #656565ff;
+        font-weight: 600;
+        margin-bottom: 1.8rem;
+    }
+
 
 </style>
 
@@ -142,7 +178,27 @@
         </div>
 
         <div class="gray-container">
-            
+            <div class="map">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3318.4354425677557!2d-117.8678846275759!3d33.72355458875732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dcd924a24e38cf%3A0xdd5a236bcd65764c!2s1911%20S%20Main%20St%2C%20Santa%20Ana%2C%20CA%2092707%2C%20EE.%20UU.!5e0!3m2!1ses-419!2smx!4v1764460043563!5m2!1ses-419!2smx" 
+                    width="800" 
+                    height="450" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+            <div class="hours">
+                <div class="title">Hours</div>
+                <div class="days">Monday - Friday</div>
+                <div class="times">10 AM - 7 PM</div>
+
+                <div class="days">Saturday</div>
+                <div class="times">9 AM - 5 PM</div>
+
+                <div class="times">Sunday closed</div>
+            </div>
         </div>
         <?php 
         include '../includes/footer2.php'
