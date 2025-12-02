@@ -151,7 +151,7 @@
                 </span>
                 <span class="footer-col-right">
                     <p>
-                        <a href="aboutUs.php" class="footer-link-left">About us</a>
+                        <a href="home.php#choose" class="footer-link-left">About us</a>
                         <a href="returns.php" class="footer-link-right">Returns and exchanges</a><br>
                         <a href="contact-us.php">Contact us</a>
                     </p>

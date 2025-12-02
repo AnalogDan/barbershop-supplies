@@ -561,7 +561,7 @@
 			</div>
 
 			<!-- Start Why Choose Us Section -->
-			<div class="choose-section">
+			<div class="choose-section" id="choose">
 				<div class="container">
 					<div class="row justify-content-between">
 						<div class="col-lg-6">
