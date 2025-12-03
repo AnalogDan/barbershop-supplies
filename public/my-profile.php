@@ -12,7 +12,7 @@
 <style>
     /*Main structure*/
     .giant-container{
-        padding: 50px 10% 200px 10%;
+        padding: 50px 10% 2rem 10%;
     }
 	.section {
         border: 1px solid #5b5b5bff;
@@ -33,12 +33,10 @@
         overflow: hidden;
         transition: max-height 0.9s ease;
         background: #ccccccff;
-        
-        white-space: pre-line;
     }
-    .section.open .section-content {
-        max-height: 300px;   
-    }
+    /* .section.open .section-content {
+        max-height: 600px;   
+    } */
     
     .section:nth-child(odd) .section-header {
         background: #dedede;   
@@ -71,8 +69,103 @@
         transform: translateY(-50%) rotate(90deg);
     }
 
-    
+    /*User info*/
+    .user-info{
+        color: #3b3b3bff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-left: 2.5rem;
+        margin-top: 1rem
+    }
+    .user-change{
+        display: block;
+        color: #3b3b3bff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-left: 2.5rem;
+        margin-top: 1.3rem;
+        margin-bottom: 1.3rem;
+        text-decoration: underline;
+    }
 
+
+    /*My favorites*/
+    .favs{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+     .item-row{
+        color: #3b3b3bff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0.7rem auto;
+        height: 5rem;
+        gap: 1rem; 
+        display: flex;
+        align-items: center;  
+    }
+    .item-row img{
+        height: 6.5rem;
+        width: auto;
+    }
+    .item-name{
+        width: 15rem;
+    }
+
+	.item-row i {
+	cursor: pointer;
+	font-size: 20px;
+	transition: color 0.2s ease, transform 0.2s ease;
+	}
+	.item-row i:hover {
+	color: black;
+	transform: scale(1.15);
+	}
+    .btn{
+        border-radius: 13px !important;
+        display: block;
+        margin: 0 auto 1rem auto;
+        width: auto;
+    }
+    .spacer{
+        height: 0.1rem;
+        width: 100px;
+        flex-shrink: 0;
+    }
+    
+    /*Order history*/
+    .order{
+        width: auto;
+        display: inline-block;
+        color: #3b3b3bff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-left: 2.5rem;
+        margin-top: 1.3rem;
+        /* margin-bottom: 1.3rem; */
+        text-decoration: underline;
+    }
+    .order-end{
+        width: auto;
+        display: inline-block;
+        color: #3b3b3bff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-left: 2.5rem;
+        margin-top: 1.3rem;
+        margin-bottom: 1.3rem;
+        text-decoration: underline;
+    }
+
+    .log-out{
+        display: inline-block;
+        margin: 0 auto 5rem auto;
+    }
 
 </style>
 
@@ -102,7 +195,13 @@
                         <span class="chevron">&rsaquo;</span>
                     </div>
                     <div class="section-content">
-                       
+                       <div class="user-info">
+                            Name: John Doe
+                        </div>
+                        <div class="user-info">
+                            Email: johndoe@gmail.com
+                        </div>
+                        <a href="#" class="user-change">Change password</a> 
                     </div>
                 </div>
                 <div class="section">
@@ -111,6 +210,25 @@
                         <span class="chevron">&rsaquo;</span>
                     </div>
                     <div class="section-content">
+                        <div class="favs">
+                            <div class="item-row">
+                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
+                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
+                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
+                            </div>
+                            <div class="item-row">
+                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
+                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
+                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
+                            </div>
+                            <div class="item-row">
+                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
+                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
+                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
+                            </div>
+                            <a href="#" class="btn check-btn">See all</a>
+                            <div class="spacer"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="section">
@@ -119,10 +237,17 @@
                         <span class="chevron">&rsaquo;</span>
                     </div>
                     <div class="section-content">
+                        <a href="#" class="order">Order #1090 - Delivered</a><br>
+                        <a href="#" class="order">Order #1091 - Delivered</a><br>
+                        <a href="#" class="order">Order #1098 - In transit</a><br> 
+                        <a href="my-orders.php" class="order-end">See all</a> 
                     </div>
                 </div>
             </div>
 
+            <div class="log-out">
+                <a href="#" class="btn btn-secondary me-2 my-btn-custom">Log out</a>
+            </div>
         </main>
         <?php 
         include '../includes/footer2.php'
