@@ -41,7 +41,7 @@
 				<h2>Create account</h2>
 				<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
 		</div>
-		<form class="admin-login-form" action="/barbershopSupplies/includes/process-login.php" method="POST">
+		<form class="admin-login-form" id="register-form">
 			<div>
 				<label for="first-name"><strong>First name</strong></label>
 				<input id="first-name" type="text" name="first-name" required>
@@ -66,7 +66,7 @@
 			<div class="password-wrapper" style="position: relative; max-width: 400px;">
 				<label for="password"><strong>Confirm password</strong></label>
 				<div class="input-with-icon">
-					<input type="password"  name="password" class="password-field" required>
+					<input type="password"  name="password_confirm" class="password-field" required>
 					<span class="password-toggle">
 						<i class="fa-solid fa-eye"></i>
 					</span>
@@ -93,20 +93,37 @@
 
 			//password eye toggle
 			document.addEventListener('DOMContentLoaded', () => {
-			const toggles = document.querySelectorAll('.password-toggle');
-			toggles.forEach(toggle => {
-				const input = toggle.previousElementSibling;   
-				const icon = toggle.querySelector('i');
+				const toggles = document.querySelectorAll('.password-toggle');
+				toggles.forEach(toggle => {
+					const input = toggle.previousElementSibling;   
+					const icon = toggle.querySelector('i');
 
-				toggle.addEventListener('click', () => {
-					const type = input.type === 'password' ? 'text' : 'password';
-					input.type = type;
+					toggle.addEventListener('click', () => {
+						const type = input.type === 'password' ? 'text' : 'password';
+						input.type = type;
 
-					icon.classList.toggle('fa-eye');
-					icon.classList.toggle('fa-eye-slash');
+						icon.classList.toggle('fa-eye');
+						icon.classList.toggle('fa-eye-slash');
+					});
 				});
 			});
-		});
+
+			//Submit form
+			document.getElementByID('register-form').addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const form = document.getElementById('register-form');
+				const formData = new FormData(form);
+				const response = await fetch('/barbershopSupplies/actions/register.php', {
+					method: 'POST',
+					body: formData
+				});
+				const result = await response.json();
+				if (result.success) {
+					// window.location.href = '/barbershopSupplies/public/login.php';
+				} else {
+					alert(result.message);
+				}
+			})
 		</script>
 	</body>
 </html>
