@@ -41,7 +41,7 @@
 				<h2>Create account</h2>
 				<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
 		</div>
-		<form class="admin-login-form" id="register-form">
+		<form class="admin-login-form" id="register-form" novalidate>
 			<div>
 				<label for="first-name"><strong>First name</strong></label>
 				<input id="first-name" type="text" name="first-name" required>
@@ -79,9 +79,19 @@
 		</form>
 		</main>
 		<?php 
-        include '../includes/footer.php'
+        include '../includes/footer.php';
+		include '../includes/modals.php'; 
         ?>
 		<script>
+			// showAlertModal("Test alert.", () => {});
+			// showConfirmModal(
+			// 	`Test confirm`,
+			// 	() => {
+			// 	},
+			// 	() => {
+			// 	}
+			// );
+
 			setTimeout(function () {
 				const alert = document.querySelector('.alert');
 				if (alert) {
@@ -109,21 +119,99 @@
 			});
 
 			//Submit form
-			document.getElementByID('register-form').addEventListener('submit', async (e) => {
+			document.getElementById('register-form').addEventListener('submit', async (e) => {
 				e.preventDefault();
+				if (!validateForm()) return;
 				const form = document.getElementById('register-form');
 				const formData = new FormData(form);
-				const response = await fetch('/barbershopSupplies/actions/register.php', {
+				const response = await fetch('../actions/register.php', {
 					method: 'POST',
 					body: formData
 				});
 				const result = await response.json();
 				if (result.success) {
-					// window.location.href = '/barbershopSupplies/public/login.php';
+					showAlertModal(result.message);
 				} else {
-					alert(result.message);
+					showAlertModal(result.message);
 				}
 			})
+
+			//Validate form (front end)
+			function validateForm(){
+				const firstName = document.getElementById('first-name').value.trim();
+				const lastName  = document.getElementById('last-name').value.trim();
+				const email     = document.getElementById('email').value.trim();
+				const passwordFields = document.querySelectorAll('.password-field');
+				const pass1 = passwordFields[0].value;
+    			const pass2 = passwordFields[1].value;
+				if (firstName === '') {
+					showAlertModal("First name is required.");
+					return false;
+				}
+				if (lastName === '') {
+					showAlertModal("Last name is required.");
+					return false;
+				}
+				if (!email.includes('@')) {
+					showAlertModal("Please enter a valid email address.");
+					return false;
+				}
+				if (pass1.length < 8) {
+					showAlertModal("Password must be at least 8 characters long.");
+					return false;
+				}
+				if (pass1 !== pass2) {
+					showAlertModal("Passwords do not match.");
+					return false;
+				}
+				console.log("All good. Ready to send fetch()");
+				return true;
+			}
+
+			//Modal functions
+			function showConfirmModal(message, onYes, onNo) {
+				const template = document.getElementById('confirmModal');
+				const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+				document.body.appendChild(modal);
+				modal.querySelector('p').textContent = message;
+				modal.classList.add('show');
+				const yesBtn = modal.querySelector('#confirmYes');
+				const noBtn = modal.querySelector('#confirmNo');
+				function cleanup() {
+					yesBtn.removeEventListener('click', yesHandler);
+					noBtn.removeEventListener('click', noHandler);
+					modal.remove();
+				}
+				function yesHandler() {
+					cleanup();
+					if (typeof onYes === 'function') onYes();
+				}
+				function noHandler() {
+					cleanup();
+					if (typeof onNo === 'function') onNo();
+				}
+				yesBtn.addEventListener('click', yesHandler);
+				noBtn.addEventListener('click', noHandler);
+			}
+
+			function showAlertModal(message, onOk){
+				const template = document.getElementById('alertModal');
+				const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+				document.body.appendChild(modal);
+				modal.querySelector('p').textContent = message;
+				modal.classList.add('show');
+				const okBtn = modal.querySelector('#confirmOk');
+				function cleanup() {
+					okBtn.removeEventListener('click', okHandler);
+					modal.remove();
+				}
+				function okHandler(){
+					cleanup();
+					if (typeof onOk === 'function'){ onOk()}
+					else{};
+				}
+				okBtn.addEventListener('click', okHandler);
+			}
 		</script>
 	</body>
 </html>
