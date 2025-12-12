@@ -177,7 +177,7 @@
                 Need to start a return?
             </div>
             <div class="single-text">
-                Email us at returns@newvisionbarbersupplies.com with your order number and the reason for your return.
+                Email us at newvisionbarbersupplies@gmail.com with your order number and the reason for your return.
             </div>
         </div>
 

@@ -70,6 +70,13 @@
 
         <div class="collapse navbar-collapse" id="navbarsFurni">
             <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <li class="nav-item">
+                        <span class="nav-link" style="cursor: default;">
+                            Hi, <?= htmlspecialchars($_SESSION['user_first_name'] ?? 'User') ?>!
+                        </span>
+                    </li>
+                <?php endif; ?>
                 <li class="nav-item <?= ($currentPage === 'home') ? 'active' : '' ?>">
                     <a class="nav-link" href="home.php">Home</a>
                 </li>

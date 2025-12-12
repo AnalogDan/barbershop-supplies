@@ -1,12 +1,10 @@
 <?php
 	require_once __DIR__ . '/../includes/db.php';
-	session_start();
-	$error = $_SESSION['login_error'] ?? null;
-	unset($_SESSION['login_error']);
-	$currentPage = 'account';
-
-	//echo password_hash("barberThings", PASSWORD_DEFAULT);
-	// username: barberAdmin
+	require_once __DIR__ . '/../includes/header.php';
+	if (isset($_SESSION['user_id'])) {
+    	header("Location: /barbershopSupplies/public/my-profile.php");
+    	exit;
+	}
 ?> 
 <!DOCTYPE html>
 <style>
@@ -23,6 +21,19 @@
 
 	.btn{
 		width: fit-content !important;
+	}
+
+	.loading {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(2px);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 9999;
+		color: white;
+		font-size: 1.5rem;
 	}
 </style>
 <html lang="en">
@@ -73,6 +84,9 @@
 				</div>
 			</div>
 			<button type="submit" class="btn" name="login">Create account</button>
+			<div class="loading" id="loading-overlay">
+				Loading...
+			</div>
 			<div class="login-links">
 				<a href="/barbershopSupplies/public/login.php">Already have an account? Log in</a><br>
 			</div>
@@ -83,14 +97,14 @@
 		include '../includes/modals.php'; 
         ?>
 		<script>
-			// showAlertModal("Test alert.", () => {});
-			// showConfirmModal(
-			// 	`Test confirm`,
-			// 	() => {
-			// 	},
-			// 	() => {
-			// 	}
-			// );
+			showAlertModal("Test alert.", () => {});
+			showConfirmModal(
+				`Test confirm`,
+				() => {
+				},
+				() => {
+				}
+			);
 
 			setTimeout(function () {
 				const alert = document.querySelector('.alert');
@@ -118,21 +132,38 @@
 				});
 			});
 
+			//Loading functions
+			function showLoading() {
+				document.getElementById("loading-overlay").style.display = "flex";
+			}
+			function hideLoading() {
+				document.getElementById("loading-overlay").style.display = "none";
+			}
+
 			//Submit form
 			document.getElementById('register-form').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				if (!validateForm()) return;
-				const form = document.getElementById('register-form');
-				const formData = new FormData(form);
-				const response = await fetch('../actions/register.php', {
-					method: 'POST',
-					body: formData
-				});
-				const result = await response.json();
-				if (result.success) {
-					showAlertModal(result.message);
-				} else {
-					showAlertModal(result.message);
+				showLoading();
+				try{
+					const form = document.getElementById('register-form');
+					const formData = new FormData(form);
+					const response = await fetch('../actions/register.php', {
+						method: 'POST',
+						body: formData
+					});
+					const result = await response.json();
+					hideLoading();
+					if (result.success) {
+						showAlertModal(result.message, () => {
+							window.location.href = "login.php";
+						});
+					} else {
+						showAlertModal(result.message);
+					}
+				}catch(error){
+					hideLoading();
+					showAlertModal("Something went wrong. Please try again.");
 				}
 			})
 
