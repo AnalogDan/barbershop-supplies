@@ -1,12 +1,181 @@
 <?php
-    session_start();
-
-    // if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    //     header("Location: login.php");
-    //     exit;
-    // }
     require_once __DIR__ . '/../includes/db.php';
+    require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'shop';
+
+    //Variables for pagination
+    $productsPerPage = 4;
+    $currentPageNum = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1; 
+    $offset = ($currentPageNum - 1) * $productsPerPage;
+
+    //Select the correct id from url
+    $mainCategoryId = isset($_GET['main']) ? (int) $_GET['main'] : null;
+    $subCategoryId  = isset($_GET['subcategory']) ? (int) $_GET['subcategory'] : null;
+    $filterType = null;
+    $filterValue = null;
+    if ($subCategoryId) {
+        $filterType = 'subcategory';
+        $filterValue = $subCategoryId;
+    } else if ($mainCategoryId) {
+        $filterType = 'main';
+        $filterValue = $mainCategoryId;
+    }
+
+    //Grab $categoryName
+    $categoryName = 'All'; 
+    if ($subCategoryId) {
+        $stmt = $pdo->prepare("SELECT name FROM categories WHERE id = ?");
+        $stmt->execute([$subCategoryId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) $categoryName = $row['name'];
+
+    } else if ($mainCategoryId) {
+        $stmt = $pdo->prepare("SELECT name FROM main_categories WHERE id = ?");
+        $stmt->execute([$mainCategoryId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) $categoryName = $row['name'];
+    }
+
+    //Query variable
+    $searchQuery = isset($_GET['query']) && trim($_GET['query']) !== '' ? trim($_GET['query']) : null;
+
+    //Gather selected products info
+    if ($subCategoryId) {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                FROM products
+                WHERE category_id = ?
+                AND name LIKE ?
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+            $stmt->bindValue(3, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(4, $offset, PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                FROM products
+                WHERE category_id = ?
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    } else if ($mainCategoryId) {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image
+                FROM products p
+                INNER JOIN categories c ON p.category_id = c.id
+                WHERE c.main_category_id = ?
+                AND p.name LIKE ?
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+            $stmt->bindValue(3, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(4, $offset, PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image
+                FROM products p
+                INNER JOIN categories c ON p.category_id = c.id
+                WHERE c.main_category_id = ?
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    } else {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                FROM products
+                WHERE name LIKE ?
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, "%{$searchQuery}%", PDO::PARAM_STR);
+            $stmt->bindValue(2, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                FROM products
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(2, $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    }
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //Count total products and pages
+    if ($subCategoryId) {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM products
+                WHERE category_id = ?
+                AND name LIKE ?
+            ");
+            $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM products
+                WHERE category_id = ?
+            ");
+            $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    } else if ($mainCategoryId) {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM products p
+                INNER JOIN categories c ON p.category_id = c.id
+                WHERE c.main_category_id = ?
+                AND p.name LIKE ?
+            ");
+            $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM products p
+                INNER JOIN categories c ON p.category_id = c.id
+                WHERE c.main_category_id = ?
+            ");
+            $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    } else {
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM products
+                WHERE name LIKE ?
+            ");
+            $stmt->bindValue(1, "%{$searchQuery}%", PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM products
+            ");
+        }
+        $stmt->execute();
+    }
+    $totalProducts = (int) $stmt->fetchColumn();
+    $totalPages = (int) ceil($totalProducts / $productsPerPage);
+
 
     function buildLinkWithParams(array $overrides = []){
         $params = $_GET;
@@ -83,7 +252,14 @@
                 <?php 
                 include __DIR__ . '/../includes/categ-toggle-button.php'; 
                 ?>
-                <form id="product-search-form" class="search-bar" action="#" method="GET">
+                <form id="product-search-form" class="search-bar" action="" method="GET">
+                    <?php 
+                    foreach ($_GET as $key => $value) {
+                        if ($key === 'query' || $key === 'page') continue; 
+                        echo '<input type="hidden" name="'.htmlspecialchars($key).'" value="'.htmlspecialchars($value).'">';
+                    }
+                    ?>
+                    <input type="hidden" name="page" value="1">
                     <div class="search-wrapper">
                         <input type="text" name="query" id="search-query" placeholder="Search item..." value="<?= htmlspecialchars($_GET['query'] ?? '') ?>"/>
                         <button type="submit" class="search-button" aria-label="Search">
@@ -97,7 +273,7 @@
             ?>
 >
             <div class="sales-header">
-                    <h2>All</h2>
+                    <h2><?php echo htmlspecialchars($categoryName); ?></h2>
                     <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
             </div>
             <div class="sort-dropdown">

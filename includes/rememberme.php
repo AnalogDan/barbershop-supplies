@@ -3,9 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once __DIR__ . '/db.php'; // Make sure $pdo is available
+require_once __DIR__ . '/db.php';
 
-// If user is not logged in but cookie exists → try auto-login
 if (
     !isset($_SESSION['user_id']) &&
     isset($_COOKIE['rememberme']) &&
@@ -14,7 +13,7 @@ if (
     $cookieToken = $_COOKIE['rememberme'];
     $hashedToken = hash('sha256', $cookieToken);
 
-    $stmt = $pdo->prepare("SELECT id, email FROM users WHERE remember_token = ?");
+    $stmt = $pdo->prepare("SELECT id, email, first_name FROM users WHERE remember_token = ?");
     $stmt->execute([$hashedToken]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -22,7 +21,7 @@ if (
         // Restore login
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_first_name'] = $row['first_name']; 
+        $_SESSION['user_first_name'] = $user['first_name']; 
     }
 }
 ?>

@@ -43,14 +43,22 @@
     }
 </style>
 
+
+
 <div class="pagination">
-  <a class="next" href="#">&lt; Prev</a>
-  
-  <a class="page" href="#">1</a>
-  <a class="page" href="#">2</a>
-  <span class="page current">3</span>
-  <a class="page" href="#">4</a>
-  <a class="page" href="#">5</a>
-  
-  <a class="next" href="#">Next &gt;</a>
+    <?php if ($currentPageNum > 1): ?>
+        <a class="next" href="<?php echo buildLinkWithParams(['page' => $currentPageNum - 1]); ?>">&lt; Prev</a>
+    <?php endif; ?>
+
+    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <?php if ($i == $currentPageNum): ?>
+            <span class="page current"><?php echo $i; ?></span>
+        <?php else: ?>
+            <a class="page" href="<?php echo buildLinkWithParams(['page' => $i]); ?>"><?php echo $i; ?></a>
+        <?php endif; ?>
+    <?php endfor; ?>
+
+    <?php if ($currentPageNum < $totalPages): ?>
+        <a class="next" href="<?php echo buildLinkWithParams(['page' => $currentPageNum + 1]); ?>">Next &gt;</a>
+    <?php endif; ?>
 </div>

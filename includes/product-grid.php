@@ -185,41 +185,59 @@
 </style>
 
 <div class="products-grid">
-	<?php
-	$total = 12;
-	for ($i = 0; $i < $total; $i++): ?>
-	<div class="sales-products">
-		<a class="product-item" href="../public/product.php">
-		<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-		<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-		<strong class="product-price">$84.99</strong>
-		<span class="icon-cross">
-			<img src="images/cross.svg" class="img-fluid">
-		</span>
-		</a>
-	</div>
-	<?php endfor; ?>
 
-	<?php
-	$total = 12;
-	for ($i = 0; $i < $total; $i++): ?>
-	<div class="sales-products">
-		<a class="product-item" href="../public/product.php">
-		<div class="product-image-wrapper">
-			<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-			<div class="discount-badge">$10.99 Off</div>
+	<?php foreach ($products as $p): ?>
+		<?php
+		$tz = new DateTimeZone('America/Los_Angeles');
+		$currentTime = new DateTime('now', $tz);
+
+		$isOnSale = false;
+
+		if (!empty($p['sale_price'])) {
+			$tz = new DateTimeZone('America/Los_Angeles');
+			$currentTime = new DateTime('now', $tz);
+			$saleStart = !empty($p['sale_start']) ? new DateTime($p['sale_start'], $tz) : null;
+			$saleEnd   = !empty($p['sale_end'])   ? new DateTime($p['sale_end'], $tz)   : null;
+			if (
+				($saleStart === null && $saleEnd === null) ||
+				($saleStart !== null && $saleEnd === null && $currentTime >= $saleStart) ||
+				($saleStart === null && $saleEnd !== null && $currentTime <= $saleEnd) ||
+				($saleStart !== null && $saleEnd !== null && $currentTime >= $saleStart && $currentTime <= $saleEnd)
+			) {
+				$isOnSale = true;
+			}
+		}
+		?>
+
+		<div class="sales-products">
+			<a class="product-item" href="../public/product.php?id=<?php echo $p['id']; ?>">
+				<div class="product-image-wrapper">
+					<img src="<?php echo htmlspecialchars($p['cutout_image']); ?>" class="img-fluid product-thumbnail">
+
+					<?php if ($isOnSale): ?>
+						<div class="discount-badge">
+							$<?php echo number_format($p['price'] - $p['sale_price'], 2); ?> Off
+						</div>
+					<?php endif; ?>
+				</div>
+
+				<h3 class="product-title"><?php echo htmlspecialchars($p['name']); ?></h3>
+
+				<div class="price-wrapper">
+					<?php if ($isOnSale): ?>
+						<strong class="product-price">$<?php echo number_format($p['sale_price'], 2); ?></strong>
+						<span class="product-old-price">$<?php echo number_format($p['price'], 2); ?></span>
+					<?php else: ?>
+						<strong class="product-price">$<?php echo number_format($p['price'], 2); ?></strong>
+					<?php endif; ?>
+				</div>
+
+				<span class="icon-cross">
+					<img src="images/cross.svg" class="img-fluid">
+				</span>
+			</a>
 		</div>
-		<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-		<div class="price-wrapper">
-			<strong class="product-price">$84.99</strong>
-			<span class="product-old-price">$199.99</span>
-		</div>
-		<span class="icon-cross">
-			<img src="images/cross.svg" class="img-fluid">
-		</span>
-		</a>
-	</div>
-	<?php endfor; ?>
+	<?php endforeach; ?>
 </div>
 
 <script>
