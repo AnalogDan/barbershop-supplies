@@ -28,6 +28,7 @@
 	cursor: pointer;
 	padding-bottom: 50px; 
 	z-index: 1;
+	width: 100%;
 	}
 	.sales-products .product-item .product-thumbnail {
 	width: 100%;
@@ -127,6 +128,17 @@
 	padding: 2px 6px;
 	border-radius: 3px;
 	}
+	.sold-badge{
+	position: absolute;
+	bottom: 45px;
+	right: 5px;
+	background-color: #ffb5aaff;
+	color: #000;
+	font-size: 0.8rem;
+	font-weight: bold;
+	padding: 2px 6px;
+	border-radius: 3px;
+	}
 
 	.price-wrapper {
 	text-align: center;
@@ -207,6 +219,11 @@
 				$isOnSale = true;
 			}
 		}
+
+		$isSoldOut = false;
+		if ((int)$p['stock'] === 0) {
+			$isSoldOut = true;
+		}
 		?>
 
 		<div class="sales-products">
@@ -215,14 +232,28 @@
 					<img src="<?php echo htmlspecialchars($p['cutout_image']); ?>" class="img-fluid product-thumbnail">
 
 					<?php if ($isOnSale): ?>
+						<?php
+						$discountPercent = 0;
+
+						if ($p['price'] > 0 && $p['sale_price'] < $p['price']) {
+							$discountPercent = round(
+								(($p['price'] - $p['sale_price']) / $p['price']) * 100
+							);
+						}
+						?>
 						<div class="discount-badge">
-							$<?php echo number_format($p['price'] - $p['sale_price'], 2); ?> Off
+							<?= $discountPercent ?>% Off
+						</div>
+					<?php endif; ?>
+
+					<?php if ($isSoldOut): ?>
+						<div class="sold-badge">
+							Sold out
 						</div>
 					<?php endif; ?>
 				</div>
 
 				<h3 class="product-title"><?php echo htmlspecialchars($p['name']); ?></h3>
-
 				<div class="price-wrapper">
 					<?php if ($isOnSale): ?>
 						<strong class="product-price">$<?php echo number_format($p['sale_price'], 2); ?></strong>

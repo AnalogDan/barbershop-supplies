@@ -1,6 +1,55 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
+
+    //Fetch all the thingies you need
+    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+    if ($id <= 0) {
+        http_response_code(404);
+        die('Invalid product');
+    }
+    $sql = "
+        SELECT 
+            p.id,
+            p.category_id,
+            p.slug,
+            p.description,
+            p.name,
+            p.price,
+            p.sale_price,
+            p.sale_start,
+            p.sale_end,
+            p.cutout_image,
+            p.stock,
+            p.main_image,
+            c.main_category_id
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.id = ?
+        LIMIT 1
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id]);
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$product) {
+        http_response_code(404);
+        die('Product not found');
+    }
+
+    //Fetch gallery
+    $galleryStmt = $pdo->prepare("
+        SELECT image_path
+        FROM product_gallery_images
+        WHERE product_id = ?
+        ORDER BY id ASC
+    ");
+    $galleryStmt->execute([$product['id']]);
+    $galleryImages = $galleryStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    //Sales logic
+    require_once __DIR__ . '/../includes/pricing.php';
+    $tz = new DateTimeZone('America/Los_Angeles');
+    $pricing = getProductPricing($product, $tz);
 ?>
 
 <style>
@@ -54,19 +103,17 @@
     gap: 1rem;                
     }
     .product-images .main-image {
+    position: relative;
     margin: 0 auto;
-    border: 1px solid black;   
-    aspect-ratio: 1 / 1;       
-    width: 80%;               
-    display: flex;            
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;          
+    border: 1px solid black;
+    width: 80%;
+    /* width: 50rem; */
+    aspect-ratio: 1/1;
     }
     .product-images .main-image img {
     width: 100%;
     height: 100%;
-    object-fit: contain; 
+    object-fit: contain;
     }
     .product-images .gallery {
     margin: 0 auto;
@@ -90,11 +137,7 @@
           
     }
 
-    .main-image {
-    position: relative;  
-    overflow: hidden;     
-    }
-    .zoom-lens {
+    /* .zoom-lens {
     position: absolute;
     border: 1px solid #000;   
     width: 250px;              
@@ -106,6 +149,22 @@
     border-radius: 20%;        
     transition: opacity 1.15s ease;
     opacity: 0;
+    } */
+    .zoom-lens {
+        position: absolute;
+        border: 2px solid #000;         /* visible border for the lens */
+        /* width: 150px;                   
+        height: 150px; */
+        border-radius: 20%;             /* circular lens */
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+        display: none;
+        cursor: none;                   /* hide cursor inside lens */
+        pointer-events: none;           /* allows mouse events to pass through */
+        box-shadow: 0 0 10px rgba(0,0,0,0.5); /* optional: 3D effect */
+        transition: opacity 0.2s ease;
+        z-index: 10;                     /* make sure it sits above the image */
     }
     .main-image:hover .zoom-lens {
     opacity: 1;
@@ -201,6 +260,14 @@
     font-weight: 480;
     margin-bottom: 10px;
     }
+    .product-old-price {
+    font-size: 1rem;
+    font-weight: 480;
+    margin-bottom: 10px;
+    text-decoration: line-through;
+    color: rgba(0, 0, 0, 0.5);
+    align-items: flex-end;
+    }
     .shipping-note {
     font-size: 0.9rem;
     margin-bottom: 10px;
@@ -292,6 +359,7 @@
         max-height: 200px;
         opacity: 1;
         position: relative;
+        max-width: 80%;
     }
     .description-box::after {
         content: "";
@@ -308,6 +376,25 @@
     }
     .description-box.open::after {
         display: none;
+    }
+
+    /*Discount badge */
+    .discount-badge {
+        background-color: #dfd898;
+        color: #000;
+        font-size: 1rem;
+        font-weight: 480;
+        padding: 0.2rem 0.45rem;
+        border-radius: 0.35rem;
+        line-height: 1;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+    }
+    .price-wrapper{
+        display: flex;
+        gap: 1rem;
+        align-items: baseline;
     }
 
 </style>
@@ -333,23 +420,56 @@
                 <div class="product-images">
                     <div class="main-image">
                         <a href="#" id="main-image-link">
-                            <img id="main-image" src="images/products/main_1756950792_0cdafe55.webp" alt="Main Product">
+                            <img
+                                id="main-image"
+                                src="<?= htmlspecialchars($product['main_image']) ?>"
+                                alt="<?= htmlspecialchars($product['name']) ?>"
+                            >
                         </a>
                         <div class="zoom-lens"></div>
                     </div>
                     <div class="gallery">
-                        <img class="selected" src="images/products/main_1756950792_0cdafe55.webp" alt="Gallery 1">
+                        <!-- <img class="selected" src="images/products/main_1756950792_0cdafe55.webp" alt="Gallery 1">
                         <img src="images/products/gallery_1757007537_44f0142a.png" alt="Gallery 2">
                         <img src="images/products/gallery_1757007537_55cd8492.png" alt="Gallery 3">
-                        <img src="images/products/gallery_1756953863_8d5e1d93.jpg" alt="Gallery 4">
+                        <img src="images/products/gallery_1756953863_8d5e1d93.jpg" alt="Gallery 4"> -->
+                        <img
+                            class="selected"
+                            src="<?= htmlspecialchars($product['main_image']) ?>"
+                            alt="<?= htmlspecialchars($product['name']) ?>"
+                        >
+
+                        <!-- Gallery images -->
+                        <?php foreach ($galleryImages as $img): ?>
+                            <img
+                                src="<?= htmlspecialchars($img) ?>"
+                                alt="<?= htmlspecialchars($product['name']) ?>"
+                            >
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
 
             <div class="top-right">
-                <h1 class="product-title">Andis T-Outliner</h1>
-                <p class="stock-status">7 in stock</p>
-                <p class="product-price">$74.99</p>
+                <h1 class="product-title"><?= htmlspecialchars($product['name']) ?></h1>
+                <p class="stock-status"><?= (int)$product['stock'] ?> in stock</p>
+                <div class="price-wrapper">
+                    <?php if ($pricing['is_on_sale']): ?>
+                        <strong class="product-price">
+                            $<?= number_format($pricing['final_price'], 2) ?>
+                        </strong>
+                        <span class="product-old-price">
+                            $<?= number_format($pricing['original_price'], 2) ?>
+                        </span>
+                        <span class="discount-badge">
+                            <?= $pricing['discount_percent'] ?>% OFF
+                        </span>
+                    <?php else: ?>
+                        <strong class="product-price">
+                            $<?= number_format($pricing['final_price'], 2) ?>
+                        </strong>
+                    <?php endif; ?>
+                </div>
                 <p class="shipping-note">Shipping calculated at checkout</p>
                 <div class="quantity-selector">
                     <button class="qty-btn" id="qty-minus">−</button>
@@ -364,24 +484,7 @@
                     Description <span class="chevron2">&rsaquo;</span>
                 </button>
                 <div class="description-box">
-                    <p>SLEEK: Lightweight, cord/cordless design for greater flexibility
-
-BEST FOR:
-Trimming necklines and light-duty touch-ups
-
-Rotary Motor
-120V | 50/60Hz | MAX 6000SPM
-
-•Lithium ion battery delivers up to 2 hours of run time with a 2 hour, 15 minute charge time
-• Improved motor for increased speed, power and life
-• Balanced, ergonomic trimmer for light-duty touch-ups and trimming around necklines
-
-In The Package
-• Charger Stand
-• Tube of Blade Oil
-• 1/16", 1/8", 1/4", 3/8"
-• Brush
-                    </p>
+                    <p><?= nl2br(htmlspecialchars($product['description'])) ?></p>
                 </div>
             </div>
         </div>
@@ -402,14 +505,22 @@ In The Package
             //Magnifying glass effect
             const mainImg = document.getElementById('main-image');
             const lens = document.querySelector('.zoom-lens');
+            const zoom = 2;
             mainImg.addEventListener('mousemove', moveLens);
             mainImg.addEventListener('mouseenter', () => lens.style.display = 'block');
             mainImg.addEventListener('mouseleave', () => lens.style.display = 'none');
             function moveLens(e) {
                 const rect = mainImg.getBoundingClientRect();
                 const lensSize = lens.offsetWidth;
-                const zoom = 2; 
 
+                // Adjust zoom factor based on displayed image size
+                let minZoom = 2.5;  // base zoom is bigger
+                let maxZoom = 4;    // max zoom allowed
+                const imageArea = rect.width * rect.height;
+                const referenceArea = 200 * 200; // reference size
+                let zoom = Math.min(maxZoom, Math.max(minZoom, minZoom + (referenceArea - imageArea) / (referenceArea * 0.5)));
+
+                // Position lens
                 let x = e.clientX - rect.left - lensSize / 2;
                 let y = e.clientY - rect.top - lensSize / 2;
 
@@ -421,17 +532,57 @@ In The Package
                 lens.style.left = x + 'px';
                 lens.style.top = y + 'px';
 
+                // Set zoomed background
                 lens.style.backgroundImage = `url(${mainImg.src})`;
-                lens.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+                lens.style.backgroundSize = `${mainImg.naturalWidth * zoom}px ${mainImg.naturalHeight * zoom}px`;
 
                 const xPercent = x / (rect.width - lensSize);
                 const yPercent = y / (rect.height - lensSize);
 
-                const bgX = (rect.width * zoom - lensSize) * xPercent;
-                const bgY = (rect.height * zoom - lensSize) * yPercent;
+                const bgX = (mainImg.naturalWidth * zoom - lensSize) * xPercent;
+                const bgY = (mainImg.naturalHeight * zoom - lensSize) * yPercent;
 
                 lens.style.backgroundPosition = `-${bgX}px -${bgY}px`;
             }
+            function updateLensSize() {
+                const rect = mainImg.getBoundingClientRect();
+
+                const lensWidth = Math.min(Math.max(rect.width * 0.45, 100), 700); 
+                const lensHeight = Math.min(Math.max(rect.height * 0.45, 100), 700);
+
+                lens.style.width = lensWidth + 'px';
+                lens.style.height = lensHeight + 'px';
+            }
+            updateLensSize();
+            window.addEventListener('resize', updateLensSize);
+            
+            // function moveLens(e) {
+            //     const rect = mainImg.getBoundingClientRect();
+            //     const lensSize = lens.offsetWidth;
+            //     const zoom = 2; 
+
+            //     let x = e.clientX - rect.left - lensSize / 2;
+            //     let y = e.clientY - rect.top - lensSize / 2;
+
+            //     if (x < 0) x = 0;
+            //     if (y < 0) y = 0;
+            //     if (x > rect.width - lensSize) x = rect.width - lensSize;
+            //     if (y > rect.height - lensSize) y = rect.height - lensSize;
+
+            //     lens.style.left = x + 'px';
+            //     lens.style.top = y + 'px';
+
+            //     lens.style.backgroundImage = `url(${mainImg.src})`;
+            //     lens.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+
+            //     const xPercent = x / (rect.width - lensSize);
+            //     const yPercent = y / (rect.height - lensSize);
+
+            //     const bgX = (rect.width * zoom - lensSize) * xPercent;
+            //     const bgY = (rect.height * zoom - lensSize) * yPercent;
+
+            //     lens.style.backgroundPosition = `-${bgX}px -${bgY}px`;
+            // }
 
             // Switch big image 
             const galleryImages = document.querySelectorAll('.gallery img');

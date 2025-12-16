@@ -3,6 +3,14 @@
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'shop';
 
+    //Variables for sort type
+    $sort = $_GET['sort'] ?? 'default';
+    $orderBy = match ($sort) {
+        'price_low'  => 'price ASC',
+        'price_high' => 'price DESC',
+        default      => 'id ASC'
+    };
+
     //Variables for pagination
     $productsPerPage = 4;
     $currentPageNum = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1; 
@@ -43,10 +51,11 @@
     if ($subCategoryId) {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
-                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
                 FROM products
                 WHERE category_id = ?
                 AND name LIKE ?
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
@@ -55,9 +64,10 @@
             $stmt->bindValue(4, $offset, PDO::PARAM_INT);
         } else {
             $stmt = $pdo->prepare("
-                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
                 FROM products
                 WHERE category_id = ?
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $subCategoryId, PDO::PARAM_INT);
@@ -68,11 +78,12 @@
     } else if ($mainCategoryId) {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
-                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image, p.stock
                 FROM products p
                 INNER JOIN categories c ON p.category_id = c.id
                 WHERE c.main_category_id = ?
                 AND p.name LIKE ?
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
@@ -81,10 +92,11 @@
             $stmt->bindValue(4, $offset, PDO::PARAM_INT);
         } else {
             $stmt = $pdo->prepare("
-                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image, p.stock
                 FROM products p
                 INNER JOIN categories c ON p.category_id = c.id
                 WHERE c.main_category_id = ?
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
@@ -95,9 +107,10 @@
     } else {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
-                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
                 FROM products
                 WHERE name LIKE ?
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, "%{$searchQuery}%", PDO::PARAM_STR);
@@ -105,8 +118,9 @@
             $stmt->bindValue(3, $offset, PDO::PARAM_INT);
         } else {
             $stmt = $pdo->prepare("
-                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
                 FROM products
+                ORDER BY $orderBy
                 LIMIT ? OFFSET ?
             ");
             $stmt->bindValue(1, $productsPerPage, PDO::PARAM_INT);
@@ -218,13 +232,56 @@
 	}
 
     .sort-dropdown {
-    margin-left: auto;        
-    margin-right: 200px;
+        position: relative;
+        margin-left: auto;
+        margin-right: 200px;
+        cursor: pointer;
+    }
+
+    /*Sort by */
+    .sort-trigger {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     .sort-label {
-    color: gray;
-    font-size: 1rem;
-    font-weight: 600;
+        color: gray;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .sort-menu {
+        font-weight: 600;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 120%; 
+        background: #d6d6d6ff;
+        border: 1px solid #9e9e9eff;
+        border-radius: 6px;
+        margin-top: 0.5rem;
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+    }
+    .sort-menu a {
+        padding: 0.6rem 0.8rem;
+        text-decoration: none;
+        color: #575757ff;
+        font-size: 0.95rem;
+    }
+    .sort-menu a.active {
+        background-color: #bfbfbf;
+        color: #000;
+        text-decoration: underline;
+    }
+    .sort-menu a:hover {
+        background-color: #f2f2f2;
+    }
+    .sort-chevron {
+        transition: transform 0.2s ease;
+    }
+    .sort-dropdown.open .sort-chevron {
+        transform: rotate(90deg);
     }
 
 
@@ -255,7 +312,7 @@
                 <form id="product-search-form" class="search-bar" action="" method="GET">
                     <?php 
                     foreach ($_GET as $key => $value) {
-                        if ($key === 'query' || $key === 'page') continue; 
+                        if ($key === 'query' || $key === 'page' || $key === 'sort') continue; 
                         echo '<input type="hidden" name="'.htmlspecialchars($key).'" value="'.htmlspecialchars($value).'">';
                     }
                     ?>
@@ -276,9 +333,28 @@
                     <h2><?php echo htmlspecialchars($categoryName); ?></h2>
                     <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
             </div>
-            <div class="sort-dropdown">
-                <span class="sort-label">Sort by</span>
-                <i class="fas fa-chevron-down"></i>
+
+            <div class="sort-dropdown" id="sortDropdown">
+                <div class="sort-trigger">
+                    <span class="sort-label">Sort by</span>
+                    <i class="fas fa-chevron-right sort-chevron"></i>
+                </div>
+
+                <?php $currentSort = $_GET['sort'] ?? 'default'; ?>
+                <div class="sort-menu">
+                    <a href="<?= buildLinkWithParams(['sort' => 'default', 'page' => 1]) ?>"
+                        class="<?= $currentSort === 'default' ? 'active' : '' ?>">
+                        Default
+                    </a>
+                    <a href="<?= buildLinkWithParams(['sort' => 'price_low', 'page' => 1]) ?>"
+                        class="<?= $currentSort === 'price_low' ? 'active' : '' ?>">
+                        Lowest price
+                    </a>
+                    <a href="<?= buildLinkWithParams(['sort' => 'price_high', 'page' => 1]) ?>"
+                        class="<?= $currentSort === 'price_high' ? 'active' : '' ?>">
+                        Highest price
+                    </a>
+                </div>
             </div>
 
             <?php 
@@ -292,6 +368,19 @@
         include '../includes/footer2.php'
         ?>
         <script>
+            //Sort by dropdown
+            const sortDropdown = document.getElementById('sortDropdown');
+            const sortMenu = sortDropdown.querySelector('.sort-menu');
+            const sortTrigger = sortDropdown.querySelector('.sort-trigger');
+            sortDropdown.querySelector('.sort-trigger').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = sortDropdown.classList.toggle('open');
+                sortMenu.style.display = isOpen ? 'flex' : 'none';
+            });
+            document.addEventListener('click', () => {
+                sortDropdown.classList.remove('open');
+                sortMenu.style.display = 'none';
+            });
 
 		</script>
 	</body>
