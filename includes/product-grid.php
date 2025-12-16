@@ -178,7 +178,6 @@
 	font-weight: 600;
 	background: #dfd898;
 	color: #000000ff;
-
 	padding: 5px 10px;
 	border-radius: 5px;
 	font-size: 0.85rem;
@@ -186,9 +185,8 @@
 	pointer-events: none;
 	transition: opacity 0.5s ease, transform 0.5s ease;
 	z-index: 10;
-
-	white-space: nowrap; /* allow wrapping */
-	text-align: center;  /* center wrapped text */
+	white-space: nowrap;
+	text-align: center;  
 	}
 	.added-message.show {
 	opacity: 1;

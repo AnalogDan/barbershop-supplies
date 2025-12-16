@@ -50,6 +50,19 @@
     require_once __DIR__ . '/../includes/pricing.php';
     $tz = new DateTimeZone('America/Los_Angeles');
     $pricing = getProductPricing($product, $tz);
+
+    //Check if already favorited 
+    $isFavorite = false;
+    if (isset($_SESSION['user_id'])) {
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM favorites
+            WHERE user_id = ? AND product_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$_SESSION['user_id'], $product['id']]);
+        $isFavorite = (bool) $stmt->fetchColumn();
+    }
 ?>
 
 <style>
@@ -107,7 +120,6 @@
     margin: 0 auto;
     border: 1px solid black;
     width: 80%;
-    /* width: 50rem; */
     aspect-ratio: 1/1;
     }
     .product-images .main-image img {
@@ -137,34 +149,19 @@
           
     }
 
-    /* .zoom-lens {
-    position: absolute;
-    border: 1px solid #000;   
-    width: 250px;              
-    height: 250px;            /
-    background: rgba(255, 255, 255, 0.2); 
-    display: none;             
-    cursor: pointer;
-    pointer-events: none;     
-    border-radius: 20%;        
-    transition: opacity 1.15s ease;
-    opacity: 0;
-    } */
     .zoom-lens {
         position: absolute;
-        border: 2px solid #000;         /* visible border for the lens */
-        /* width: 150px;                   
-        height: 150px; */
-        border-radius: 20%;             /* circular lens */
+        border: 2px solid #000;     
+        border-radius: 20%;             
         background-repeat: no-repeat;
         background-position: 0 0;
-        background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+        background-color: rgba(255, 255, 255, 0.1); 
         display: none;
-        cursor: none;                   /* hide cursor inside lens */
-        pointer-events: none;           /* allows mouse events to pass through */
-        box-shadow: 0 0 10px rgba(0,0,0,0.5); /* optional: 3D effect */
+        cursor: none;                  
+        pointer-events: none;          
+        box-shadow: 0 0 10px rgba(0,0,0,0.5); 
         transition: opacity 0.2s ease;
-        z-index: 10;                     /* make sure it sits above the image */
+        z-index: 10;                     
     }
     .main-image:hover .zoom-lens {
     opacity: 1;
@@ -311,6 +308,8 @@
     border-radius: 10px !important;
     margin-top: 20px;
     margin-left: -5px;
+    outline: none !important;
+    box-shadow: none !important;
     }
 
     /*Description box*/
@@ -397,6 +396,53 @@
         align-items: baseline;
     }
 
+    /*Heart overlay*/
+    .heart-wrapper {
+        position: absolute; /* relative to main-image */
+        top: 10px;
+        right: 10px;
+        width: 50px;
+        height: 50px;
+        z-index: 10;
+    }
+    .heart-wrapper .heart-icon {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #4e4e4eff;
+        cursor: pointer;
+        border-radius: 50%;
+        border: 1px solid black;
+        background-color: #ffffffff; 
+    }
+
+    /*Favorite message*/
+    .added-message {
+	position: absolute;
+	top: 130%;
+    left: 50%;
+	transform: translateX(-50%);
+	font-weight: 600;
+	background: #dfd898;
+	color: #000000ff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 0.85rem;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.5s ease, transform 0.5s ease;
+	z-index: 10;
+	white-space: nowrap;
+	text-align: center;  
+	}
+	.added-message.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(-10px);
+	}
+
 </style>
 
 <!DOCTYPE html>
@@ -426,13 +472,15 @@
                                 alt="<?= htmlspecialchars($product['name']) ?>"
                             >
                         </a>
+                        <div class="heart-wrapper">
+                            <i
+                                class="heart-icon fa-heart <?= $isFavorite ? 'fa-solid' : 'fa-regular' ?>"
+                                data-product-id="<?= $product['id'] ?>"
+                            ></i>
+                        </div>
                         <div class="zoom-lens"></div>
                     </div>
                     <div class="gallery">
-                        <!-- <img class="selected" src="images/products/main_1756950792_0cdafe55.webp" alt="Gallery 1">
-                        <img src="images/products/gallery_1757007537_44f0142a.png" alt="Gallery 2">
-                        <img src="images/products/gallery_1757007537_55cd8492.png" alt="Gallery 3">
-                        <img src="images/products/gallery_1756953863_8d5e1d93.jpg" alt="Gallery 4"> -->
                         <img
                             class="selected"
                             src="<?= htmlspecialchars($product['main_image']) ?>"
@@ -471,12 +519,13 @@
                     <?php endif; ?>
                 </div>
                 <p class="shipping-note">Shipping calculated at checkout</p>
-                <div class="quantity-selector">
+                <div class="quantity-selector" data-stock="<?= (int)$product['stock'] ?>">
                     <button class="qty-btn" id="qty-minus">−</button>
-                    <input type="text" id="qty-input" value="1" readonly>
+                    <input type="text" id="qty-input" value="1">
                     <button class="qty-btn" id="qty-plus">+</button>
                 </div>
-                <p><a href="#" class="btn btn-secondary me-2 my-btn-custom">Add to cart</a>
+                <p><button class="btn btn-secondary me-2 my-btn-custom" id="add-to-cart-btn" data-product-id="<?= (int)$product['id'] ?>">
+                    Add to cart</button>
             </div>
 
             <div class="bottom-full">
@@ -502,6 +551,34 @@
             </div>
         </div>
         <script>
+            //Add to cart
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            const qtyInput = document.getElementById('qty-input');
+            addToCartBtn.addEventListener('click', () => {
+                const productId = addToCartBtn.dataset.productId;
+                const quantity = parseInt(qtyInput.value, 10);
+
+                fetch('/barbershopSupplies/actions/cart-add.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        console.error(data.message);
+                        return;
+                    }
+
+                    console.log('Added to cart');
+                    // here you can show a toast / message
+                })
+                .catch(err => console.error('Fetch error:', err));
+            });
+
             //Magnifying glass effect
             const mainImg = document.getElementById('main-image');
             const lens = document.querySelector('.zoom-lens');
@@ -513,14 +590,12 @@
                 const rect = mainImg.getBoundingClientRect();
                 const lensSize = lens.offsetWidth;
 
-                // Adjust zoom factor based on displayed image size
-                let minZoom = 2.5;  // base zoom is bigger
-                let maxZoom = 4;    // max zoom allowed
+                let minZoom = 2.5;  
+                let maxZoom = 4;    
                 const imageArea = rect.width * rect.height;
-                const referenceArea = 200 * 200; // reference size
+                const referenceArea = 200 * 200; 
                 let zoom = Math.min(maxZoom, Math.max(minZoom, minZoom + (referenceArea - imageArea) / (referenceArea * 0.5)));
 
-                // Position lens
                 let x = e.clientX - rect.left - lensSize / 2;
                 let y = e.clientY - rect.top - lensSize / 2;
 
@@ -532,7 +607,6 @@
                 lens.style.left = x + 'px';
                 lens.style.top = y + 'px';
 
-                // Set zoomed background
                 lens.style.backgroundImage = `url(${mainImg.src})`;
                 lens.style.backgroundSize = `${mainImg.naturalWidth * zoom}px ${mainImg.naturalHeight * zoom}px`;
 
@@ -556,33 +630,6 @@
             updateLensSize();
             window.addEventListener('resize', updateLensSize);
             
-            // function moveLens(e) {
-            //     const rect = mainImg.getBoundingClientRect();
-            //     const lensSize = lens.offsetWidth;
-            //     const zoom = 2; 
-
-            //     let x = e.clientX - rect.left - lensSize / 2;
-            //     let y = e.clientY - rect.top - lensSize / 2;
-
-            //     if (x < 0) x = 0;
-            //     if (y < 0) y = 0;
-            //     if (x > rect.width - lensSize) x = rect.width - lensSize;
-            //     if (y > rect.height - lensSize) y = rect.height - lensSize;
-
-            //     lens.style.left = x + 'px';
-            //     lens.style.top = y + 'px';
-
-            //     lens.style.backgroundImage = `url(${mainImg.src})`;
-            //     lens.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
-
-            //     const xPercent = x / (rect.width - lensSize);
-            //     const yPercent = y / (rect.height - lensSize);
-
-            //     const bgX = (rect.width * zoom - lensSize) * xPercent;
-            //     const bgY = (rect.height * zoom - lensSize) * yPercent;
-
-            //     lens.style.backgroundPosition = `-${bgX}px -${bgY}px`;
-            // }
 
             // Switch big image 
             const galleryImages = document.querySelectorAll('.gallery img');
@@ -643,15 +690,38 @@
             }
 
             //Quantity selector
+            const container = document.querySelector('.quantity-selector');
+            const stock = parseInt(container.dataset.stock, 10);
             const minus = document.getElementById('qty-minus');
             const plus = document.getElementById('qty-plus');
             const input = document.getElementById('qty-input');
+
+            function normalizeQuantity(value) {
+                let qty = parseInt(value, 10);
+                if (isNaN(qty) || qty < 1) qty = 1;
+                if (qty > stock) qty = stock;
+                return qty;
+            }
             plus.addEventListener('click', () => {
-            input.value = parseInt(input.value) + 1;
+                input.value = normalizeQuantity(Number(input.value) + 1);
             });
             minus.addEventListener('click', () => {
-            const current = parseInt(input.value);
-            if (current > 1) input.value = current - 1;
+                input.value = normalizeQuantity(Number(input.value) - 1);
+            });
+
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/\D/g, '');
+            });
+
+            input.addEventListener('blur', () => {
+                let value = parseInt(input.value, 10);
+                if (isNaN(value) || value < 1) {
+                    input.value = 1;
+                    return;
+                }
+                if (value > stock) {
+                    input.value = stock;
+                }
             });
 
 
@@ -670,6 +740,56 @@
                     descBox.style.maxHeight = "200px";
                 }
             });
+
+            //Heart behavior
+            const heart = document.querySelector('.heart-icon');
+            heart.addEventListener('click', (event) => {
+                event.stopPropagation(); 
+                const isAdding = heart.classList.contains('fa-regular');
+                const productId = heart.dataset.productId;
+
+                fetch(`/barbershopSupplies/actions/favorite.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        action: isAdding ? 'add' : 'remove'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
+                    if (!data.success) {
+                        console.error(data.message);
+                        return;
+                    }
+                    heart.classList.toggle('fa-regular');
+                    heart.classList.toggle('fa-solid');
+                    console.log(data.message);
+                    showFavoriteMessage(heart, isAdding);
+                })
+                .catch(err => console.error('Fetch error:', err));
+            });
+
+            function showFavoriteMessage(heart, isAdding) {
+                const message = document.createElement('span');
+                message.className = 'added-message';
+                message.textContent = isAdding
+                    ? 'Added to favorites!'
+                    : 'Removed from favorites!';
+                heart.parentElement.appendChild(message);
+                void message.offsetWidth;
+                message.classList.add('show');
+                setTimeout(() => {
+                    message.classList.remove('show');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500);
+                }, 2000);
+            }
 		</script>
     </main>
 	</body>
