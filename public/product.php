@@ -311,6 +311,9 @@
     outline: none !important;
     box-shadow: none !important;
     }
+    #add-to-cart-btn {
+        position: relative;
+    }
 
     /*Description box*/
     .bottom-full {
@@ -417,6 +420,10 @@
         border-radius: 50%;
         border: 1px solid black;
         background-color: #ffffffff; 
+        transition: background-color 0.3s ease; 
+    }
+    .heart-wrapper .heart-icon:hover {
+        background-color: #d8d8d8ff; 
     }
 
     /*Favorite message*/
@@ -573,7 +580,10 @@
                         return;
                     }
 
-                    console.log('Added to cart');
+                    console.log(`Product ID: ${data.product_id}`);
+                    console.log(`Quantity in cart: ${data.quantity}`);
+                    console.log(`Action to the cart: ${data.message}`);
+                    showMessage2(addToCartBtn, 'Added to cart!');
                     // here you can show a toast / message
                 })
                 .catch(err => console.error('Fetch error:', err));
@@ -783,6 +793,23 @@
                 heart.parentElement.appendChild(message);
                 void message.offsetWidth;
                 message.classList.add('show');
+                setTimeout(() => {
+                    message.classList.remove('show');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500);
+                }, 2000);
+            }
+            function showMessage2(targetElement, messageText) {
+                const message = document.createElement('span');
+                message.className = 'added-message';
+                message.textContent = messageText;
+                targetElement.appendChild(message);
+
+                // Force reflow to allow transition
+                void message.offsetWidth;
+                message.classList.add('show');
+
                 setTimeout(() => {
                     message.classList.remove('show');
                     setTimeout(() => {
