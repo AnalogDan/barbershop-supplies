@@ -50,7 +50,7 @@ if ($outOfStock !== null) {
     $sql .= " AND p.stock = 0";
 }
 
-$currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$currentPage = isset($_GET['main_page']) ? max(1, intval($_GET['main_page'])) : 1;
 $offset = ($currentPage - 1) * $perPage;
 $sql .= " ORDER BY p.name ASC LIMIT :limit OFFSET :offset";
 $params[':limit'] = $perPage;

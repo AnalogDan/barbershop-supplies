@@ -37,16 +37,43 @@ if (!$product) {
 }
 $stock = (int) $product['stock'];
 
-//Guest cart exists? Create it 
-if (!isset($_SESSION['cart_id'])) {
+// Is the cart from guest or user? Always define $cartId
+if (isset($_SESSION['user_id'])) {
+    $userId = (int) $_SESSION['user_id'];
+
     $stmt = $pdo->prepare("
-        INSERT INTO carts (user_id, created_at)
-        VALUES (NULL, ?)
+        SELECT id
+        FROM carts
+        WHERE user_id = ?
+        LIMIT 1
     ");
-    $stmt->execute([$createdAt]);
-    $_SESSION['cart_id'] = $pdo->lastInsertId();
+    $stmt->execute([$userId]);
+    $cart = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($cart) {
+        $cartId = $cart['id'];
+    } else {
+        // Create cart for user
+        $stmt = $pdo->prepare("
+            INSERT INTO carts (user_id, created_at)
+            VALUES (?, ?)
+        ");
+        $stmt->execute([$userId, $createdAt]);
+        $cartId = $pdo->lastInsertId();
+    }
+
+} else {
+    if (!isset($_SESSION['cart_id'])) {
+        $stmt = $pdo->prepare("
+            INSERT INTO carts (user_id, created_at)
+            VALUES (NULL, ?)
+        ");
+        $stmt->execute([$createdAt]);
+        $_SESSION['cart_id'] = $pdo->lastInsertId();
+    }
+
+    $cartId = $_SESSION['cart_id'];
 }
-$cartId = $_SESSION['cart_id'];
 
 //Is the product already in the cart? Sum it or create it
 $stmt = $pdo->prepare("SELECT quantity FROM cart_items WHERE cart_id = ? AND product_id = ?");

@@ -12,7 +12,7 @@
     };
 
     //Variables for pagination
-    $productsPerPage = 4;
+    $productsPerPage = 16;
     $currentPageNum = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1; 
     $offset = ($currentPageNum - 1) * $productsPerPage;
 
@@ -305,7 +305,7 @@
 					</div>
 				</div>
 			</div>
-            <div class="top-bar">
+            <div class="top-bar" id="top-bar">
                 <?php 
                 include __DIR__ . '/../includes/categ-toggle-button.php'; 
                 ?>

@@ -1,6 +1,7 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
+    define('BASE_URL', '/barbershopSupplies/public');
 
     //Fetch all the thingies you need
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -8,10 +9,30 @@
         http_response_code(404);
         die('Invalid product');
     }
+    // $sql = "
+    //     SELECT 
+    //         p.id,
+    //         p.category_id,
+    //         p.slug,
+    //         p.description,
+    //         p.name,
+    //         p.price,
+    //         p.sale_price,
+    //         p.sale_start,
+    //         p.sale_end,
+    //         p.cutout_image,
+    //         p.stock,
+    //         p.main_image,
+    //         c.main_category_id
+    //     FROM products p
+    //     JOIN categories c ON p.category_id = c.id
+    //     WHERE p.id = ?
+    //     LIMIT 1
+    // ";
     $sql = "
         SELECT 
             p.id,
-            p.category_id,
+            p.category_id AS subcategory_id,
             p.slug,
             p.description,
             p.name,
@@ -22,9 +43,18 @@
             p.cutout_image,
             p.stock,
             p.main_image,
-            c.main_category_id
+
+            c.name AS subcategory_name,
+            c.main_category_id,
+
+            mc.name AS main_category_name,
+            mc.id   AS main_category_id
+
         FROM products p
-        JOIN categories c ON p.category_id = c.id
+        JOIN categories c 
+            ON p.category_id = c.id
+        JOIN main_categories mc 
+            ON c.main_category_id = mc.id
         WHERE p.id = ?
         LIMIT 1
     ";
@@ -458,7 +488,7 @@
     <?php include '../includes/navbar.php'; ?>
 	<body>
     <main>
-        <div class="breadcrumb">
+        <!-- <div class="breadcrumb">
             <a href="#">Shop</a>
             <span>&gt;</span>
             <a href="#">Tools &amp; Electricals</a>
@@ -466,6 +496,22 @@
             <a href="#">Trimmers</a>
             <span>&gt;</span>
             <span>Andis Slimline Pro Chrome Trimmer</span>
+        </div> -->
+        <div class="breadcrumb">
+            <a href="<?= BASE_URL ?>/shop.php">Shop</a>
+            <span>&gt;</span>
+
+            <a href="<?= BASE_URL ?>/shop.php?main=<?= (int)$product['main_category_id'] ?>&page=1">
+                <?= htmlspecialchars($product['main_category_name']) ?>
+            </a>
+            <span>&gt;</span>
+
+            <a href="<?= BASE_URL ?>/shop.php?subcategory=<?= (int)$product['subcategory_id'] ?>&page=1">
+                <?= htmlspecialchars($product['subcategory_name']) ?>
+            </a>
+            <span>&gt;</span>
+
+            <span><?= htmlspecialchars($product['name']) ?></span>
         </div>
         
         <div class="white-container">

@@ -131,4 +131,21 @@
         }
         chevron.classList.toggle('down', !isOpen);
     });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const shouldOpen = sessionStorage.getItem('openCategoriesDropdown');
+
+        if (!shouldOpen) return;
+
+        // Consume the flag (VERY important)
+        sessionStorage.removeItem('openCategoriesDropdown');
+
+        // Scroll to the toggle
+        toggle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Open only if closed
+        if (!dropdown.classList.contains('open')) {
+            toggle.click();
+        }
+    });
 </script>

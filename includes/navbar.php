@@ -1,3 +1,17 @@
+<?php
+define('BASE_URL', '/barbershopSupplies/public');
+$stmt = $pdo->query("
+    SELECT id, name
+    FROM categories
+    ORDER BY id ASC
+");
+
+$categoriesById = [];
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $categoriesById[$row['id']] = $row['name'];
+}
+?>
+
 <style>
     .shop-dropdown {
         position: relative; 
@@ -83,11 +97,29 @@
                 <li class="nav-item shop-dropdown <?= ($currentPage === 'shop') ? 'active' : '' ?>">
                     <a class="nav-link" href="shop.php">Shop</a>
                     <ul class="dropdown-menu-custom">
-                        <li><a href="#">Shavers</a></li>
-                        <li><a href="#">Clippers</a></li>
-                        <li><a href="#">Trimmers</a></li>
-                        <li><a href="#">Shaving Gel</a></li>
-                        <li><a href="#">See All Categories</a></li>
+                        <li>
+                            <a href="<?= BASE_URL ?>/shop.php?subcategory=50&page=1#top-bar">
+                                <?= htmlspecialchars($categoriesById[50] ?? 'Category') ?>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="<?= BASE_URL ?>/shop.php?subcategory=51&page=1#top-bar">
+                                <?= htmlspecialchars($categoriesById[51] ?? 'Category') ?>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="<?= BASE_URL ?>/shop.php?subcategory=52&page=1#top-bar">
+                                <?= htmlspecialchars($categoriesById[52] ?? 'Category') ?>
+                            </a>
+                        </li>
+
+                        <li class="dropdown-divider"></li>
+
+                        <li>
+                            <a href="<?= BASE_URL ?>/shop.php" id="navCategoriesLink">See All Categories</a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item <?= ($currentPage === 'contact-us') ? 'active' : '' ?>">
@@ -109,3 +141,8 @@
         
 </nav>
 <script src="/barbershopSupplies/public/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('navCategoriesLink')?.addEventListener('click', () => {
+        sessionStorage.setItem('openCategoriesDropdown', '1');
+    });
+</script>
