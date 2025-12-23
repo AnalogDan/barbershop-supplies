@@ -12,7 +12,7 @@
     };
 
     //Variables for pagination
-    $productsPerPage = 16;
+    $productsPerPage = 28;
     $currentPageNum = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1; 
     $offset = ($currentPageNum - 1) * $productsPerPage;
 
@@ -330,8 +330,8 @@
             ?>
 >
             <div class="sales-header">
-                    <h2><?php echo htmlspecialchars($categoryName); ?></h2>
-                    <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+                <h2><?php echo htmlspecialchars($categoryName); ?></h2>
+                <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
             </div>
 
             <div class="sort-dropdown" id="sortDropdown">

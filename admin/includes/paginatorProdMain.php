@@ -43,20 +43,28 @@
     }
 </style>
 
+<?php
+// Build a base query string to keep current filters
+$baseParams = [];
+if (!empty($searchQuery)) $baseParams['query'] = $searchQuery;
+if (!empty($mainCategoryId)) $baseParams['main'] = $mainCategoryId;
+if (!empty($subCategoryId)) $baseParams['subcategory'] = $subCategoryId;
+?>
+
 <div class="pagination">
     <?php if ($currentPage > 1): ?>
-        <a class="next" href="?main_page=<?= $currentPage - 1 ?><?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">&lt; Prev</a>
+        <a class="next" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage - 1])) ?>">&lt; Prev</a>
     <?php endif; ?>
 
     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
         <?php if ($i == $currentPage): ?>
             <span class="page current"><?= $i ?></span>
         <?php else: ?>
-            <a class="page" href="?main_page=<?= $i ?><?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>"><?= $i ?></a>
+            <a class="page" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $i])) ?>"><?= $i ?></a>
         <?php endif; ?>
     <?php endfor; ?>
 
     <?php if ($currentPage < $totalPages): ?>
-        <a class="next" href="?main_page=<?= $currentPage + 1 ?><?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">Next &gt;</a>
+        <a class="next" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage + 1])) ?>">Next &gt;</a>
     <?php endif; ?>
 </div>

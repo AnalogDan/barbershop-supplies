@@ -2,6 +2,34 @@
     require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'cart';
+
+	require_once __DIR__ . '/../includes/pricing.php';
+	$tz = new DateTimeZone('America/Los_Angeles'); 
+
+	//Fetch cart/product info
+	$cartItems = [];
+	if (!empty($_SESSION['cart_id'])) {
+		$cartId = (int) $_SESSION['cart_id'];
+
+		$stmt = $pdo->prepare("
+			SELECT
+				ci.product_id,
+				ci.quantity,
+				p.name,
+				p.price,
+				p.stock,
+				p.cutout_image,
+				p.sale_price,
+				p.sale_start,
+				p.sale_end
+			FROM cart_items ci
+			JOIN products p ON p.id = ci.product_id
+			WHERE ci.cart_id = ?
+		");
+		$stmt->execute([$cartId]);
+		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 ?>
 
 <style>
@@ -33,7 +61,7 @@
 	}
 
 	/*Grid title row*/
-	.grid .item:nth-child(-n+6) {
+	.item.header {
 		font-size: 17px;
 		border-bottom: 3px solid black;
 		font-weight: 550;
@@ -57,11 +85,12 @@
 	object-fit: contain; 
 	}
     .quantity-selector {
+	position: relative;
     display: inline-flex;
     align-items: center;
     border: 1px solid #ccc;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: visible;
     width: fit-content;
     }
     .qty-btn {
@@ -158,7 +187,34 @@
 		float: right;
 	}
 
-	
+	/*Stock message*/
+    .added-message {
+	position: absolute;
+	top: 130%;
+    left: 50%;
+	transform: translateX(-50%);
+	font-weight: 600;
+	background: #dfd898;
+	color: #000000ff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 0.85rem;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.5s ease, transform 0.5s ease;
+	z-index: 10;
+	white-space: nowrap;
+	text-align: center;  
+	}
+	.added-message.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(-10px);
+	}
+
+	.cart-row { 
+		display: contents; 
+	}
+
 </style>
 
 <!DOCTYPE html>
@@ -181,54 +237,69 @@
 			</div>
 
 			<div class="grid">
-				<div class="item">Image</div>
-				<div class="item">Product</div>
-				<div class="item">Price</div>
-				<div class="item">Quantity</div>
-				<div class="item">Total</div>
-				<div class="item">Remove</div>
+				<div class="item header">Image</div>
+				<div class="item header">Product</div>
+				<div class="item header">Price</div>
+				<div class="item header">Quantity</div>
+				<div class="item header">Total</div>
+				<div class="item header">Remove</div>
 
-				<!-- frontend row -->
-				<div class="item">
-					<div class="item img-cell">
-						<img src="images/products/thumb_1756950792_1b6a822b.png" alt="Image">
+				<!-- product row -->
+				<?php if (empty($cartItems)): ?>
+					<div class="item" style="grid-column: 1 / -1; text-align:center;">
+						Your cart is empty
 					</div>
-				</div>
-				<div class="item">Andis Slimline Pro Chrome Trimmer</div>
-				<div class="item">$84.99</div>
-				<div class="item">
-					<div class="quantity-selector">
-						<button class="qty-btn qty-minus">−</button>
-						<input type="text" class="qty-input" value="1" readonly>
-						<button class="qty-btn qty-plus">+</button>
-					</div>
-				</div>
-				<div class="item">$84.99</div>
-				<div class="item"><i class="fa-solid fa-trash"></i></div>
-				<!--loop frontend row -->
-				<?php for ($i = 0; $i < 3; $i++): ?>
-					<div class="item">
-						<div class="item img-cell">
-							<img src="images/products/thumb_1756950792_1b6a822b.png" alt="Image">
+				<?php else: ?>
+					<?php foreach ($cartItems as $item): ?>
+						<?php
+							$pricing   = getProductPricing($item, $tz);
+							$item['final_price']   = $pricing['final_price'];
+							$item['original_price'] = $pricing['original_price'];
+							$item['is_on_sale']     = $pricing['is_on_sale'];
+						?>
+						<div class="cart-row">
+							<!-- Image -->
+							<div class="item">
+								<div class="item img-cell">
+									<img src="<?= htmlspecialchars($item['cutout_image']) ?>" alt="">
+								</div>
+							</div>
+							<!-- Product -->
+							<div class="item">
+								<?= htmlspecialchars($item['name']) ?>
+							</div>
+							<!-- Unit price -->
+							<div class="item price"
+								data-price="<?= number_format($item['final_price'], 2, '.', '') ?>">
+								$<?= number_format($item['final_price'], 2) ?>
+							</div>
+							<!-- Quantity -->
+							<div class="item">
+								<div class="quantity-selector"
+									data-product-id="<?= (int)$item['product_id'] ?>"
+									data-max="<?= (int)$item['stock'] ?>">
+									<button class="qty-btn qty-minus">−</button>
+									<input type="text"
+										class="qty-input"
+										value="<?= (int)$item['quantity'] ?>"
+										data-max="<?= (int)$item['stock'] ?>"
+										readonly>
+									<button class="qty-btn qty-plus">+</button>
+								</div>
+							</div>
+							<!-- Line total -->
+							<div class="item row-total">
+								$<?= number_format($item['final_price'] * $item['quantity'], 2) ?>
+							</div>
+							<!-- Remove -->
+							<div class="item">
+								<i class="fa-solid fa-trash"
+								data-product-id="<?= (int)$item['product_id'] ?>"></i>
+							</div>
 						</div>
-					</div>
+					<?php endforeach; ?>
 
-					<div class="item">Andis Slimline Pro Chrome Trimmer</div>
-
-					<div class="item">$84.99</div>
-
-					<div class="item">
-						<div class="quantity-selector">
-							<button class="qty-btn qty-minus">−</button>
-							<input type="text" class="qty-input" value="1" readonly>
-							<button class="qty-btn qty-plus">+</button>
-						</div>
-					</div>
-
-					<div class="item">$84.99</div>
-
-					<div class="item"><i class="fa-solid fa-trash"></i></div>
-				<?php endfor; ?>
+				<?php endif; ?>
 			</div>
 
 			<div class="bottom-section">
@@ -249,13 +320,13 @@
 						<div class="item-total">CART TOTALS</div>
 						<div class="item-total"></div>
 						<div class="item-total">Subtotal</div>
-						<div class="item-total">$139.99</div>
+						<div class="item-total subtotal">$139.99</div>
 						<div class="item-total">Sales tax</div>
-						<div class="item-total">$10.00</div>
+						<div class="item-total tax">$10.00</div>
 						<div class="item-total">Shipping</div>
-						<div class="item-total">Free</div>
+						<div class="item-total shipping">Free</div>
 						<div class="item-total">TOTAL</div>
-						<div class="item-total">$149.99</div>
+						<div class="item-total total">$149.99</div>
 					</div>
 					<a href="checkout.php" class="btn check-btn">Proceed to checkout</a>
 			</div>
@@ -271,14 +342,100 @@
 				const minus = selector.querySelector('.qty-minus');
 				const plus = selector.querySelector('.qty-plus');
 				const input = selector.querySelector('.qty-input');
+				const productId = selector.dataset.productId;
+				const max = parseInt(selector.dataset.max, 10);
 				plus.addEventListener('click', () => {
-					input.value = parseInt(input.value) + 1;
+					let current = parseInt(input.value, 10);
+					if (current < max) {
+						const newQty = current + 1;
+						input.value = newQty;
+						updateRowTotal(selector);
+						updateQuantity(productId, newQty, input);
+					}else{
+						showMessage(selector, 'No more stock');
+					}
 				});
 				minus.addEventListener('click', () => {
 					const current = parseInt(input.value);
-					if (current > 1) input.value = current - 1;
+					if (current > 1){
+						const newQty = current - 1;
+						input.value = newQty;
+						updateRowTotal(selector);
+						updateQuantity(productId, newQty, input);
+					}
 				});
 			});
+
+			//Update quantity function
+			function updateQuantity(productId, newQty, input) {
+				fetch('<?= BASE_URL ?>/../actions/cart-update-quantity.php', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						product_id: productId,
+						quantity: newQty
+					})
+				})
+				.then(res => res.json())
+				.then(data => {
+					if (data.success && data.quantity !== undefined) {
+						input.value = data.quantity; 
+					}
+				});
+			}
+
+			//Update row total function
+			function updateRowTotal(selector) {
+				const row = selector.closest('.cart-row');
+				const priceEl = row.querySelector('.price');
+				const totalEl = row.querySelector('.row-total');
+				const qty = parseInt(selector.querySelector('.qty-input').value, 10);
+				const price = parseFloat(priceEl.dataset.price);
+
+				const newTotal = (price * qty).toFixed(2);
+				totalEl.textContent = `$${newTotal}`;
+			}
+
+			//Update totals function
+			function updateCartTotals() {
+				//Sum subtotal
+				const lineTotals = document.querySelectorAll('.row-total');
+				let subtotal = 0;
+				lineTotals.forEach(el => {
+					const val = parseFloat(el.textContent.replace('$', '')) || 0;
+					subtotal += val;
+				});
+
+				// 8.25% sales tax
+				const taxRate = 0.0825;
+				const tax = subtotal * taxRate;
+
+				// sChange shipping later 0.0
+				const shipping = 0; 
+				const total = subtotal + tax + shipping;
+
+				// update DOM
+				document.querySelector('.subtotal').textContent = `$${subtotal.toFixed(2)}`;
+				document.querySelector('.tax').textContent = `$${tax.toFixed(2)}`;
+				document.querySelector('.shipping').textContent = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`;
+				document.querySelector('.total').textContent = `$${total.toFixed(2)}`;
+			}
+
+			//Show message function
+			function showMessage(targetElement, messageText) {
+                const message = document.createElement('span');
+                message.className = 'added-message';
+                message.textContent = messageText;
+                targetElement.appendChild(message);
+                void message.offsetWidth;
+                message.classList.add('show');
+                setTimeout(() => {
+                    message.classList.remove('show');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500);
+                }, 2000);
+            }
 		</script>
     </body>
 </html>

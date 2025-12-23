@@ -1,7 +1,8 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
-    define('BASE_URL', '/barbershopSupplies/public');
+    // define('BASE_URL', '/barbershopSupplies/public');
+    require_once __DIR__ . '/../actions/config.php';
 
     //Fetch all the thingies you need
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -9,26 +10,6 @@
         http_response_code(404);
         die('Invalid product');
     }
-    // $sql = "
-    //     SELECT 
-    //         p.id,
-    //         p.category_id,
-    //         p.slug,
-    //         p.description,
-    //         p.name,
-    //         p.price,
-    //         p.sale_price,
-    //         p.sale_start,
-    //         p.sale_end,
-    //         p.cutout_image,
-    //         p.stock,
-    //         p.main_image,
-    //         c.main_category_id
-    //     FROM products p
-    //     JOIN categories c ON p.category_id = c.id
-    //     WHERE p.id = ?
-    //     LIMIT 1
-    // ";
     $sql = "
         SELECT 
             p.id,

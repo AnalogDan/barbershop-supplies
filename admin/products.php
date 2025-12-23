@@ -64,9 +64,17 @@ function buildLinkWithParams(array $overrides = []){
                 $mainCategoryId = $_GET['main'] ?? null;
                 $subCategoryId = $_GET['subcategory'] ?? null;
                 $outOfStock = $_GET['out_of_stock'] ?? null;
-                include 'includes/admin-product-grid.php'; 
+                include 'includes/admin-product-grid.php';
+                
+                //Select paginator 
+                if ($mainCategoryId === null && $subCategoryId === null) {
+                    include 'includes/paginator.php';
+                }elseif ($mainCategoryId !== null){
+                    include 'includes/paginatorProdMain.php';
+                }elseif($subCategoryId !== null){
+                    include 'includes/paginatorProdMain.php';
+                }
             ?>
-            <?php include 'includes/paginator.php'; ?>
         </main>
         <?php include 'includes/admin_footer.php'; ?>
         <script>

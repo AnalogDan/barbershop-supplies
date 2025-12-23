@@ -33,7 +33,8 @@
 	.sales-products .product-item .product-thumbnail {
 	width: 100%;
 	height: 200px;         
-	object-fit: contain;   
+	object-fit: contain;
+	   
 	margin-bottom: 1rem;
 	position: relative;
 	top: 0;
@@ -169,6 +170,7 @@
 	.product-price {
 	pointer-events: none;   
 	}
+
 
 	.added-message {
 	position: absolute;

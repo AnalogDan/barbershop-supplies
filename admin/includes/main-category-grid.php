@@ -98,4 +98,4 @@
     ?>
 </div>
 
-<?php include 'paginator.php'; ?>
+<?php include 'paginatorMainCateg.php'; ?>

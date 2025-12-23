@@ -95,7 +95,7 @@
             <?php foreach ($mainCategories as $main): ?>
                 <div class="main-category-block">
                     <h2 class="main-category-title">
-                        <a href="<?= buildLinkWithParams(['main' => $main['id'], 'subcategory' => null]) ?>" class="main-category-link"><?= htmlspecialchars($main['name']) ?></a>
+                        <a href="<?= buildLinkWithParams(['main' => $main['id'], 'subcategory' => null, 'main_page' => 1]) ?>" class="main-category-link"><?= htmlspecialchars($main['name']) ?></a>
                     </h2>
                     <div class="subcategories-list">
                         <?php
@@ -103,7 +103,7 @@
                         $stmt->execute([$main['id']]);
                         $subcategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         foreach ($subcategories as $sub): ?>
-                            <a href="<?= buildLinkWithParams(overrides: ['subcategory' => $sub['id'], 'main' => null]) ?>"><?= htmlspecialchars($sub['name']) ?></a>
+                            <a href="<?= buildLinkWithParams(overrides: ['subcategory' => $sub['id'], 'main' => null, 'main_page' => 1]) ?>"><?= htmlspecialchars($sub['name']) ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>

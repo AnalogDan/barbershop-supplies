@@ -1,5 +1,6 @@
 <?php
-define('BASE_URL', '/barbershopSupplies/public');
+// define('BASE_URL', '/barbershopSupplies/public');
+require_once __DIR__ . '/../actions/config.php';
 $stmt = $pdo->query("
     SELECT id, name
     FROM categories

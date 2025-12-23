@@ -117,7 +117,7 @@
     <label for="stock">Stock</label>
     <input type="number" id="stock" name="stock" min="0" step="1" placeholder="0" required>
     <label for="description">Description</label>
-    <textarea id="description" name="description" rows="5" placeholder="Enter product description here..."></textarea>
+    <textarea id="description" name="description" rows="5" placeholder="Enter product description here..." required></textarea>
     
     <label for="thumbnail">Thumbnail cutout</label>
     <div class="image-input" id="thumbnailPreview" style="display:none;">
