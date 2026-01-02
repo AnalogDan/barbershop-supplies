@@ -103,8 +103,8 @@
                 </div>
             </div>
         </div>
-
-        <div class="white-bar">
+        <!-- OLD POLICY -->
+        <!-- <div class="white-bar">
             <div class="title">
                 Product inspection
             </div>
@@ -174,7 +174,94 @@
             <div class="single-text">
                 Email us at newvisionbarbersupplies@gmail.com with your order number and the reason for your return.
             </div>
-        </div>
+        </div> -->
+
+        <div class="white-bar">
+    <div class="title">
+        Product inspection
+    </div>
+    <div class="single-text">
+        All items are carefully packaged, handled, and inspected before shipment to ensure they are new, undamaged, and working properly. Customers are responsible for inspecting all products immediately upon delivery. If a package appears damaged, please refuse the delivery and ask the carrier to return it to New Vision Barber Supply.
+    </div>
+</div>
+
+<div class="gray-bar"> 
+    <div class="title">    
+        Reporting issues
+    </div>
+    <div class="two-point-text">
+        -You have 7 days from the delivery date to report any defects, missing items, or issues.
+    </div> 
+    <div class="single-text">
+        -After this period, the manufacturer’s warranty will apply if available.
+    </div> 
+</div>
+
+<div class="white-bar">
+    <div class="title">
+        Returns and exchanges
+    </div>
+    <div class="single-text">
+        Unwanted items may be refunded, exchanged, or credited only if they are unused, unopened, and in original condition. Shipping charges are non-refundable. Customers are responsible for all return shipping costs.
+    </div>
+</div>
+
+<div class="gray-bar-tall"> 
+    <div class="title">    
+        Return conditions
+    </div>
+    <div class="two-point-text">
+        -A valid receipt or order number is required for all returns and exchanges.
+    </div> 
+    <div class="two-point-text">
+        -Returns and exchanges are accepted only for manufacturer defects.
+    </div>
+    <div class="two-point-text">
+        -In the case of an exchange, only the defective item will be replaced.
+    </div> 
+    <div class="two-point-text">
+        -Returned items must be properly packaged to prevent damage.
+    </div> 
+    <div class="deeper-text">
+        -Items returned damaged due to poor packaging will not be accepted.
+    </div> 
+</div>
+
+<div class="white-bar">
+    <div class="title">
+        Non-refundable items
+    </div>
+    <div class="single-text">
+        The following items are FINAL SALE and are not eligible for returns or exchanges: clipper, trimmer, and shaver blades; liquids; scissors and shears; straight razors; razor blades; chemicals; aerosols; gels; pomades; shaving gels and liquids.
+    </div>
+</div>
+
+<div class="gray-bar">
+    <div class="title">
+        Shipping responsibility
+    </div>
+    <div class="single-text">
+        New Vision Barber Supply is not responsible for stolen, lost, or misdelivered packages once they are in the possession of the shipping carrier. If an issue occurs, please contact the carrier immediately. You may also email us to request your tracking number.
+    </div>
+</div>
+
+<div class="white-bar">
+    <div class="title">
+        International orders
+    </div>
+    <div class="single-text">
+        All orders shipped outside of the United States are FINAL SALE. Delivery times may vary, and delays caused by the shipping carrier are outside our control. If a package arrives damaged, please refuse delivery and contact the carrier immediately.
+    </div>
+</div>
+
+<div class="last-gray-bar">
+    <div class="title">
+        Need to start a return?
+    </div>
+    <div class="single-text">
+        To report any issues or request a return, you must contact us by email. Email is the only accepted method for reporting problems. Please email newvisionbarbersupplies@gmail.com and include your order number and a description of the issue.
+    </div>
+</div>
 
         <?php 
         include '../includes/footer2.php'

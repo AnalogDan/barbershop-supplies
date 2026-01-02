@@ -21,7 +21,7 @@ if (!$productId || $quantityToAdd < 1) {
     exit;
 }
 
-//Product exists? Fetch stock
+//Product exists? Fetch stock. Stock isn't 0?
 $stmt = $pdo->prepare("
     SELECT stock
     FROM products
@@ -36,6 +36,11 @@ if (!$product) {
     exit;
 }
 $stock = (int) $product['stock'];
+if ($stock <= 0) {
+    $response['message'] = 'Product is out of stock';
+    echo json_encode($response);
+    exit;
+}
 
 // Is the cart from guest or user? Always define $cartId
 if (isset($_SESSION['user_id'])) {

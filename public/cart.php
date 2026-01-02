@@ -30,6 +30,46 @@
 		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	//Correct for stock changes
+	if (!empty($cartItems)) {
+		foreach ($cartItems as $item) {
+			$productId = (int) $item['product_id'];
+			$stock     = (int) $item['stock'];
+			$quantity  = (int) $item['quantity'];
+			if ($stock <= 0) {
+				$stmt = $pdo->prepare("
+					DELETE FROM cart_items
+					WHERE cart_id = ? AND product_id = ?
+				");
+				$stmt->execute([$cartId, $productId]);
+			} elseif ($quantity > $stock) {
+				$stmt = $pdo->prepare("
+					UPDATE cart_items
+					SET quantity = ?
+					WHERE cart_id = ? AND product_id = ?
+				");
+				$stmt->execute([$stock, $cartId, $productId]);
+			}
+		}
+		$stmt = $pdo->prepare("
+				SELECT
+					ci.product_id,
+					ci.quantity,
+					p.name,
+					p.price,
+					p.stock,
+					p.cutout_image,
+					p.sale_price,
+					p.sale_start,
+					p.sale_end
+				FROM cart_items ci
+				JOIN products p ON p.id = ci.product_id
+				WHERE ci.cart_id = ?
+			");
+			$stmt->execute([$cartId]);
+			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 ?>
 
 <style>
@@ -407,7 +447,7 @@
 				});
 
 				// 8.25% sales tax
-				const taxRate = 0.0825;
+				const taxRate = 0.0925;
 				const tax = subtotal * taxRate;
 
 				// sChange shipping later 0.0

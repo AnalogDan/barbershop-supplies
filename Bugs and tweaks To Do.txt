@@ -1,0 +1,13 @@
+Essential
+Add favorites and All functionality
+
+Make Home backend (maybe popular pr. later)
+Can't write in qty selector in cart 
+
+
+
+
+After release
+Sales aren't considered when sorting price by lowest 
+Putting only a space in admin add products descriptions causes the form to not be sent
+ 

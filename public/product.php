@@ -627,8 +627,8 @@
                 const rect = mainImg.getBoundingClientRect();
                 const lensSize = lens.offsetWidth;
 
-                let minZoom = 2.5;  
-                let maxZoom = 4;    
+                let minZoom = 1;  
+                let maxZoom = 1.5;    
                 const imageArea = rect.width * rect.height;
                 const referenceArea = 200 * 200; 
                 let zoom = Math.min(maxZoom, Math.max(minZoom, minZoom + (referenceArea - imageArea) / (referenceArea * 0.5)));

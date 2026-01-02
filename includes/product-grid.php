@@ -194,112 +194,185 @@
 	opacity: 1;
 	transform: translateX(-50%) translateY(-10px);
 	}
+
+	.no-products {
+		grid-column: 1 / -1;     
+		text-align: center;
+		font-size: 1.4rem;
+		font-weight: 600;
+		color: #626262ff;
+		padding: 40px 0;
+	}
 </style>
 
 <div class="products-grid">
 
-	<?php foreach ($products as $p): ?>
-		<?php
-		$tz = new DateTimeZone('America/Los_Angeles');
-		$currentTime = new DateTime('now', $tz);
-
-		$isOnSale = false;
-
-		if (!empty($p['sale_price'])) {
+	<?php if (empty($products)): ?>
+		<div class="no-products">
+			No products found.
+		</div>
+	<?php else: ?>
+		<?php foreach ($products as $p): ?>
+			<?php
 			$tz = new DateTimeZone('America/Los_Angeles');
 			$currentTime = new DateTime('now', $tz);
-			$saleStart = !empty($p['sale_start']) ? new DateTime($p['sale_start'], $tz) : null;
-			$saleEnd   = !empty($p['sale_end'])   ? new DateTime($p['sale_end'], $tz)   : null;
-			if (
-				($saleStart === null && $saleEnd === null) ||
-				($saleStart !== null && $saleEnd === null && $currentTime >= $saleStart) ||
-				($saleStart === null && $saleEnd !== null && $currentTime <= $saleEnd) ||
-				($saleStart !== null && $saleEnd !== null && $currentTime >= $saleStart && $currentTime <= $saleEnd)
-			) {
-				$isOnSale = true;
+
+			$isOnSale = false;
+
+			if (!empty($p['sale_price'])) {
+				$tz = new DateTimeZone('America/Los_Angeles');
+				$currentTime = new DateTime('now', $tz);
+				$saleStart = !empty($p['sale_start']) ? new DateTime($p['sale_start'], $tz) : null;
+				$saleEnd   = !empty($p['sale_end'])   ? new DateTime($p['sale_end'], $tz)   : null;
+				if (
+					($saleStart === null && $saleEnd === null) ||
+					($saleStart !== null && $saleEnd === null && $currentTime >= $saleStart) ||
+					($saleStart === null && $saleEnd !== null && $currentTime <= $saleEnd) ||
+					($saleStart !== null && $saleEnd !== null && $currentTime >= $saleStart && $currentTime <= $saleEnd)
+				) {
+					$isOnSale = true;
+				}
 			}
-		}
 
-		$isSoldOut = false;
-		if ((int)$p['stock'] === 0) {
-			$isSoldOut = true;
-		}
-		?>
+			$isSoldOut = false;
+			if ((int)$p['stock'] === 0) {
+				$isSoldOut = true;
+			}
+			?>
 
-		<div class="sales-products">
-			<a class="product-item" href="../public/product.php?id=<?php echo $p['id']; ?>">
-				<div class="product-image-wrapper">
-					<img src="<?php echo htmlspecialchars($p['cutout_image']); ?>" class="img-fluid product-thumbnail">
+			<div class="sales-products">
+				<a class="product-item" href="../public/product.php?id=<?php echo $p['id']; ?>" data-product-id="<?php echo $p['id']; ?>">
+					<div class="product-image-wrapper">
+						<img src="<?php echo htmlspecialchars($p['cutout_image']); ?>" class="img-fluid product-thumbnail">
 
-					<?php if ($isOnSale): ?>
-						<?php
-						$discountPercent = 0;
+						<?php if ($isOnSale): ?>
+							<?php
+							$discountPercent = 0;
 
-						if ($p['price'] > 0 && $p['sale_price'] < $p['price']) {
-							$discountPercent = round(
-								(($p['price'] - $p['sale_price']) / $p['price']) * 100
-							);
-						}
-						?>
-						<div class="discount-badge">
-							<?= $discountPercent ?>% Off
-						</div>
-					<?php endif; ?>
+							if ($p['price'] > 0 && $p['sale_price'] < $p['price']) {
+								$discountPercent = round(
+									(($p['price'] - $p['sale_price']) / $p['price']) * 100
+								);
+							}
+							?>
+							<div class="discount-badge">
+								<?= $discountPercent ?>% Off
+							</div>
+						<?php endif; ?>
 
-					<?php if ($isSoldOut): ?>
-						<div class="sold-badge">
-							Sold out
-						</div>
-					<?php endif; ?>
-				</div>
+						<?php if ($isSoldOut): ?>
+							<div class="sold-badge">
+								Sold out
+							</div>
+						<?php endif; ?>
+					</div>
 
-				<h3 class="product-title"><?php echo htmlspecialchars($p['name']); ?></h3>
-				<div class="price-wrapper">
-					<?php if ($isOnSale): ?>
-						<strong class="product-price">$<?php echo number_format($p['sale_price'], 2); ?></strong>
-						<span class="product-old-price">$<?php echo number_format($p['price'], 2); ?></span>
-					<?php else: ?>
-						<strong class="product-price">$<?php echo number_format($p['price'], 2); ?></strong>
-					<?php endif; ?>
-				</div>
+					<h3 class="product-title"><?php echo htmlspecialchars($p['name']); ?></h3>
+					<div class="price-wrapper">
+						<?php if ($isOnSale): ?>
+							<strong class="product-price">$<?php echo number_format($p['sale_price'], 2); ?></strong>
+							<span class="product-old-price">$<?php echo number_format($p['price'], 2); ?></span>
+						<?php else: ?>
+							<strong class="product-price">$<?php echo number_format($p['price'], 2); ?></strong>
+						<?php endif; ?>
+					</div>
 
-				<span class="icon-cross">
-					<img src="images/cross.svg" class="img-fluid">
-				</span>
-			</a>
-		</div>
-	<?php endforeach; ?>
+					<span class="icon-cross">
+						<img src="images/cross.svg" class="img-fluid">
+					</span>
+				</a>
+			</div>
+		<?php endforeach; ?>
+	<?php endif; ?>
 </div>
 
 <script>
 	document.querySelectorAll(
-	'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
+		'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
 	).forEach(icon => {
 		icon.addEventListener('click', function(event) {
+			// event.preventDefault();
+			// event.stopPropagation();
+
+			// const img = icon.querySelector('img');
+			// if (img) {
+			// img.remove();
+			// const check = document.createElement('i');
+			// check.classList.add('fas', 'fa-check');
+			// check.style.color = 'white';  
+			// check.style.fontSize = '18px';
+			// icon.appendChild(check);
+			// icon.classList.add('checkmark');
+
+			// const message = document.createElement('span');
+			// message.className = 'added-message';
+			// message.textContent = 'Added to cart!';
+			// icon.appendChild(message);
+			// void message.offsetWidth;
+			// message.classList.add('show');
+			// setTimeout(() => {
+			// 	message.classList.remove('show');
+			// 	setTimeout(() => message.remove(), 500);
+			// }, 2000);
+			// }
 			event.preventDefault();
 			event.stopPropagation();
 
-			const img = icon.querySelector('img');
-			if (img) {
-			img.remove();
-			const check = document.createElement('i');
-			check.classList.add('fas', 'fa-check');
-			check.style.color = 'white';  
-			check.style.fontSize = '18px';
-			icon.appendChild(check);
-			icon.classList.add('checkmark');
+			const productId = icon.closest('.product-item')?.dataset.productId;
+			if (!productId) return;
 
-			const message = document.createElement('span');
-			message.className = 'added-message';
-			message.textContent = 'Added to cart!';
-			icon.appendChild(message);
-			void message.offsetWidth;
-			message.classList.add('show');
-			setTimeout(() => {
-				message.classList.remove('show');
-				setTimeout(() => message.remove(), 500);
-			}, 2000);
-			}
+			addToCart(productId, 1, () => {
+				const img = icon.querySelector('img');
+				if (img) {
+					img.remove();
+
+					const check = document.createElement('i');
+					check.classList.add('fas', 'fa-check');
+					check.style.color = 'white';  
+					check.style.fontSize = '18px';
+					icon.appendChild(check);
+
+					icon.classList.add('checkmark');
+
+					const message = document.createElement('span');
+					message.className = 'added-message';
+					message.textContent = 'Added to cart!';
+					icon.appendChild(message);
+
+					void message.offsetWidth;
+					message.classList.add('show');
+
+					setTimeout(() => {
+						message.classList.remove('show');
+						setTimeout(() => message.remove(), 500);
+					}, 2000);
+				}
+			});
 		});
 	});
+
+	//Function to add to cart
+	function addToCart(productId, quantity, onSuccess) {
+		fetch('/barbershopSupplies/actions/cart-add.php', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				product_id: productId,
+				quantity: quantity
+			})
+		})
+		.then(res => res.json())
+		.then(data => {
+			console.log('Add to cart response:', data);
+			if (!data.success) {
+				console.error(data.message);
+				return;
+			}
+
+			if (typeof onSuccess === 'function') {
+				onSuccess(data);
+			}
+		})
+		.catch(err => console.error('Fetch error:', err));
+	}
 </script>

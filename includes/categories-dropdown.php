@@ -50,26 +50,32 @@
     }
 
     .main-category-link:hover {
-        color: #555;
+        color: #4a4a4aff;
+        text-decoration: underline; 
     }
 
     .subcategories-list {
+        max-width: 50rem;
+        margin: 0 auto;
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
         justify-content: center;
+
     }
     .subcategories-list a:hover {
-        color: #555;
+        color: #050505ff;
+        text-decoration: underline; 
     }
     .subcategories-list a {
         text-decoration: none;
     }
 
     .subcategory {
+        font-weight: 600; 
         padding: 6px 10px;
         background-color: transparent;
-        color: #6b6b6bff;
+        color: #9d9d9dff;
         text-decoration: none;
         border-radius: 4px;
         font-family: sans-serif;
