@@ -2,12 +2,32 @@
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'shop';
+    
+    //Favorites if not logged
+    $favoritesActive = isset($_GET['favorites']) && (int)$_GET['favorites'] === 1;
+    if ($favoritesActive && empty($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+    $userId = $_SESSION['user_id'] ?? null;
 
     //Variables for sort type
     $sort = $_GET['sort'] ?? 'default';
     $orderBy = match ($sort) {
-        'price_low'  => 'price ASC',
-        'price_high' => 'price DESC',
+        'price_low'  => "CASE
+                            WHEN sale_price IS NOT NULL
+                                AND (sale_start IS NULL OR sale_start <= NOW())
+                                AND (sale_end IS NULL OR sale_end >= NOW())
+                            THEN sale_price
+                            ELSE price
+                        END ASC",
+        'price_high' => "CASE
+                            WHEN sale_price IS NOT NULL
+                                AND (sale_start IS NULL OR sale_start <= NOW())
+                                AND (sale_end IS NULL OR sale_end >= NOW())
+                            THEN sale_price
+                            ELSE price
+                        END DESC",
         default      => 'id ASC'
     };
 
@@ -75,6 +95,7 @@
             $stmt->bindValue(3, $offset, PDO::PARAM_INT);
         }
         $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else if ($mainCategoryId) {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
@@ -104,6 +125,76 @@
             $stmt->bindValue(3, $offset, PDO::PARAM_INT);
         }
         $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else if (isset($_GET['favorites']) && (int)$_GET['favorites'] === 1) {
+        if (empty($_SESSION['user_id'])) {
+            header('Location: login.php');
+            exit;
+        }
+        $userId = $_SESSION['user_id'];
+
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image, p.stock
+                FROM products p
+                INNER JOIN favorites f ON f.product_id = p.id
+                WHERE f.user_id = ?
+                AND p.name LIKE ?
+                ORDER BY $orderBy
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+            $stmt->bindValue(3, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(4, $offset, PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT p.id, p.name, p.price, p.sale_price, p.sale_start, p.sale_end, p.cutout_image, p.stock
+                FROM products p
+                INNER JOIN favorites f ON f.product_id = p.id
+                WHERE f.user_id = ?
+                ORDER BY $orderBy
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+            $stmt->bindValue(2, $productsPerPage, PDO::PARAM_INT);
+            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else if (isset($_GET['sale']) && (int)$_GET['sale'] === 1){
+        require_once __DIR__ . '/../includes/pricing.php';
+        $tz = new DateTimeZone('America/Los_Angeles');
+
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
+                FROM products
+                WHERE sale_price IS NOT NULL
+                AND name LIKE ?
+                ORDER BY $orderBy
+            ");
+            $stmt->bindValue(1, "%{$searchQuery}%", PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT id, name, price, sale_price, sale_start, sale_end, cutout_image, stock
+                FROM products
+                WHERE sale_price IS NOT NULL
+                ORDER BY $orderBy
+            ");
+        }
+        $stmt->execute();
+        $allPotentialSaleProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $allActiveSaleProducts = array_values(array_filter(
+            $allPotentialSaleProducts,
+            fn($p) => isProductOnSale($p, $tz)
+        ));
+
+        $products = array_slice($allActiveSaleProducts, $offset, $productsPerPage);
+
+        $totalProducts = count($allActiveSaleProducts);
+        $totalPages = (int) ceil($totalProducts / $productsPerPage);
     } else {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
@@ -127,8 +218,9 @@
             $stmt->bindValue(2, $offset, PDO::PARAM_INT);
         }
         $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
 
     //Count total products and pages
     if ($subCategoryId) {
@@ -171,6 +263,34 @@
             $stmt->bindValue(1, $mainCategoryId, PDO::PARAM_INT);
         }
         $stmt->execute();
+   } else if (isset($_GET['favorites']) && (int)$_GET['favorites'] === 1) {
+        // --- Favorites count branch ---
+        if (empty($_SESSION['user_id'])) {
+            header('Location: login.php');
+            exit;
+        }
+        $userId = $_SESSION['user_id'];
+
+        if ($searchQuery) {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM favorites f
+                INNER JOIN products p ON f.product_id = p.id
+                WHERE f.user_id = ?
+                AND p.name LIKE ?
+            ");
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+            $stmt->bindValue(2, "%{$searchQuery}%", PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM favorites f
+                INNER JOIN products p ON f.product_id = p.id
+                WHERE f.user_id = ?
+            ");
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
     } else {
         if ($searchQuery) {
             $stmt = $pdo->prepare("
@@ -187,8 +307,10 @@
         }
         $stmt->execute();
     }
-    $totalProducts = (int) $stmt->fetchColumn();
-    $totalPages = (int) ceil($totalProducts / $productsPerPage);
+    if (!isset($_GET['sale']) || (int)$_GET['sale'] !== 1) {
+        $totalProducts = (int) $stmt->fetchColumn();
+        $totalPages = (int) ceil($totalProducts / $productsPerPage);
+    }
 
 
     function buildLinkWithParams(array $overrides = []){
@@ -330,7 +452,17 @@
             ?>
 >
             <div class="sales-header">
-                <h2><?php echo htmlspecialchars($categoryName); ?></h2>
+                <h2>
+                    <?php
+                        if (isset($_GET['favorites']) && (int)$_GET['favorites'] === 1) {
+                            echo 'My Favorites';
+                        } else if (isset($_GET['sale']) && (int)$_GET['sale'] === 1) {
+                            echo 'Sales';
+                        } else {
+                            echo htmlspecialchars($categoryName);
+                        }
+                    ?>
+                </h2>
                 <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
             </div>
 

@@ -18,6 +18,7 @@
         box-sizing: border-box;
         transition: height 0.3s ease, padding 0.3s ease;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        font-weight: 600;
     }
 
     .categories-inner {
@@ -50,7 +51,7 @@
     }
 
     .main-category-link:hover {
-        color: #4a4a4aff;
+        color: #000000ff;
         text-decoration: underline; 
     }
 
@@ -59,23 +60,24 @@
         margin: 0 auto;
         display: flex;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 30px;
         justify-content: center;
 
+    }
+    .subcategories-list a {
+        color: #5e5e5eff;
+        text-decoration: none;
     }
     .subcategories-list a:hover {
         color: #050505ff;
         text-decoration: underline; 
     }
-    .subcategories-list a {
-        text-decoration: none;
-    }
+  
 
     .subcategory {
         font-weight: 600; 
         padding: 6px 10px;
         background-color: transparent;
-        color: #9d9d9dff;
         text-decoration: none;
         border-radius: 4px;
         font-family: sans-serif;
@@ -86,13 +88,26 @@
         background-color: transparent;
     }
 
+    /* Yellow boxes for the hardcoded links */
+    .categories-dropdown .main-category-block:last-child .subcategories-list a {
+        display: block;
+        background: #dfd898; 
+        color: #444444ff;
+        padding: 6px 10px;
+        border-radius: 0px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .categories-dropdown .main-category-block:last-child .subcategories-list a:hover {
+        color: #000000ff;
+        background: #ece6afff;
+    }
+
 </style>
 
 
 
 <?php
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
     require_once __DIR__ . '/db.php';
     $mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
     $mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -103,7 +118,7 @@
            <?php foreach ($mainCategories as $main): ?>
                 <div class="main-category-block">
                     <h2 class="main-category-title">
-                        <a href="<?= buildLinkWithParams(['main' => $main['id'], 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null]) ?>" class="main-category-link"><?= htmlspecialchars($main['name']) ?></a>
+                        <a href="<?= buildLinkWithParams(['main' => $main['id'], 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null, 'sale' => null]) ?>" class="main-category-link"><?= htmlspecialchars($main['name']) ?></a>
                     </h2>
                     <div class="subcategories-list">
                         <?php
@@ -111,11 +126,19 @@
                         $stmt->execute([$main['id']]);
                         $subcategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         foreach ($subcategories as $sub): ?>
-                            <a href="<?= buildLinkWithParams(overrides: ['subcategory' => $sub['id'], 'main' => null, 'page' => 1, 'query' => null, 'sort' => null]) ?>"><?= htmlspecialchars($sub['name']) ?></a>
+                            <a href="<?= buildLinkWithParams(overrides: ['subcategory' => $sub['id'], 'main' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null, 'sale' => null]) ?>"><?= htmlspecialchars($sub['name']) ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
             <?php endforeach; ?> 
+            <!-- Qiuck links -->
+            <div class="main-category-block">
+                <div class="subcategories-list">
+                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null,    'favorites' => 1, 'sale' => null]) ?>">My Favorites</a>  
+                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null, 'sale' => null]) ?>">All</a>
+                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null,    'sale' => 1]) ?>">Sales</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -140,15 +163,10 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const shouldOpen = sessionStorage.getItem('openCategoriesDropdown');
-
         if (!shouldOpen) return;
-
-        // Consume the flag (VERY important)
         sessionStorage.removeItem('openCategoriesDropdown');
-
         // Scroll to the toggle
         toggle.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         // Open only if closed
         if (!dropdown.classList.contains('open')) {
             toggle.click();

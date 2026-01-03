@@ -2,6 +2,72 @@
     require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'home';
+
+	//fetch 3 bestsellers
+	$sql = "
+		SELECT 
+			p.id,
+			p.name,
+			p.price,
+			p.cutout_image,
+			SUM(oi.quantity) AS total_sold
+		FROM order_items oi
+		INNER JOIN orders o ON o.id = oi.order_id
+		INNER JOIN products p ON p.id = oi.product_id
+		WHERE 
+			o.status = 'delivered'
+		GROUP BY p.id
+		ORDER BY total_sold DESC
+		LIMIT 3
+	";
+	$stmt = $pdo->query($sql);
+	$bestsellers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	//Fetch sales
+	require_once __DIR__ . '/../includes/pricing.php';
+	$tz = new DateTimeZone('America/Los_Angeles');
+
+	$stmt = $pdo->prepare("
+		SELECT 
+			id,
+			name,
+			price,
+			sale_price,
+			sale_start,
+			sale_end,
+			cutout_image
+		FROM products
+		WHERE sale_price IS NOT NULL
+		ORDER BY sale_start DESC
+	");
+	$stmt->execute();
+	$potentialSaleProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$activeSaleProducts = array_values(array_filter(
+		$potentialSaleProducts,
+		fn($p) => isProductOnSale($p, $tz)
+	));
+	$activeSaleProducts = array_slice($activeSaleProducts, 0, 16);
+
+	//Fetch main categories 
+	$stmt = $pdo->prepare("
+		SELECT 
+			mc.id,
+			mc.name,
+			(
+				SELECT p.cutout_image
+				FROM categories c
+				INNER JOIN products p ON p.category_id = c.id
+				WHERE c.main_category_id = mc.id
+				ORDER BY p.id ASC
+				LIMIT 1
+			) AS cutout_image
+		FROM main_categories mc
+		ORDER BY mc.id ASC
+		LIMIT 15
+	");
+	$stmt->execute();
+	$mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <style>
@@ -288,15 +354,64 @@
 	pointer-events: none;
 	transition: opacity 0.5s ease, transform 0.5s ease;
 	z-index: 10;
-
-	white-space: nowrap; /* allow wrapping */
-	text-align: center;  /* center wrapped text */
+	white-space: nowrap; 
+	text-align: center;  
 	}
 	.added-message.show {
 	opacity: 1;
 	transform: translateX(-50%) translateY(-10px);
 	}
 
+	/*For the sliding */
+	.sales-products {
+		overflow: hidden;
+	}
+	.sales-products .row {
+		display: flex;
+		flex-wrap: nowrap;
+		transition: transform 0.4s ease;
+	}
+	.sale-slide {
+		flex: 0 0 25%; 
+	}
+	.see-all-slide {
+		display: flex;
+	}
+	.see-all-link {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+	}
+	.see-all-content {
+		width: 100%;
+		height: 100%;
+		min-height: 260px;
+		border: 2px dashed #ccc;
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #333;
+		transition: all 0.3s ease;
+	}
+	.see-all-content:hover {
+		border-color: #000;
+		background: #f8f8f8;
+	}
+	.slider-track {
+		display: flex;
+		transition: transform 0.45s ease;
+		will-change: transform;
+	}
+	.sale-slide,
+	.category-slide {
+		flex: 0 0 25%; 
+	}
 </style>
 
 <!DOCTYPE html>
@@ -312,7 +427,8 @@
 							<div class="intro-excerpt">
 								<h1>The only place</h1>
 								<p class="mb-4">to purchase the highest quality supplies for your barbershop.</p>
-								<p><a href="#" class="btn btn-secondary me-2">Shop Now</a><a href="#" class="btn btn-white-outline">Explore</a></p>
+								<p><a href="shop.php" class="btn btn-secondary me-2">Shop Now</a>
+								<a href="#categories" class="btn btn-white-outline">Explore</a></p>
 							</div>
 						</div>
 						<div class="col-lg-7">
@@ -332,44 +448,36 @@
 						<div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
 							<h2 class="popular-title">Popular products</h2>
 							<p class="popular-subtitle">The bestsellers</p>
-							<p><a href="#" class="btn">Explore</a></p>
+							<p><a href="shop.php" class="btn">Explore</a></p>
 						</div> 
 
-						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="product.php">
-								<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-								<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-								<strong class="product-price">$84.99</strong>
+						<?php if (!empty($bestsellers)): ?>
+							<?php foreach ($bestsellers as $product): ?>
+								<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
+									<a class="product-item" href="product.php?id=<?= $product['id'] ?>">
+										
+										<img 
+											src="<?= htmlspecialchars($product['cutout_image']) ?>" alt="image" 
+											class="img-fluid product-thumbnail"
+											alt="<?= htmlspecialchars($product['name']) ?>"
+										>
 
-								<span class="icon-cross">
-									<img src="images/cross.svg" class="img-fluid">
-								</span>
-							</a>
-						</div> 
+										<h3 class="product-title">
+											<?= htmlspecialchars($product['name']) ?>
+										</h3>
 
-						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="product.php">
-								<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
-								<h3 class="product-title">Babyliss Black Fx One Battery System Clipper</h3>
-								<strong class="product-price">$219.99</strong>
+										<strong class="product-price">
+											$<?= number_format($product['price'], 2) ?>
+										</strong>
 
-								<span class="icon-cross">
-									<img src="images/cross.svg" class="img-fluid">
-								</span>
-							</a>
-						</div>
+										<span class="icon-cross">
+											<img src="images/cross.svg" class="img-fluid">
+										</span>
 
-						<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-							<a class="product-item" href="product.php">
-								<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
-								<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
-								<strong class="product-price">$144.99</strong>
-
-								<span class="icon-cross">
-									<img src="images/cross.svg" class="img-fluid">
-								</span>
-							</a>
-						</div>
+									</a>
+								</div>
+							<?php endforeach; ?>
+						<?php endif; ?>
 
 					</div>
 				</div>
@@ -392,87 +500,63 @@
 					<div class="sales-products">
 						<div class="container">
 							<div class="row">
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-										<div class="product-image-wrapper">
-											<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-											 <div class="discount-badge">$10.99 Off</div>
+								<div class="slider-track">
+									<?php foreach ($activeSaleProducts as $product): 
+										$discount = $product['price'] - $product['sale_price'];
+									?>
+										<div class="col-12 col-md-4 col-lg-3 sale-slide">
+											<a class="product-item" href="product.php?id=<?= $product['id'] ?>">
+
+												<div class="product-image-wrapper">
+													<img 
+														src="<?= htmlspecialchars($product['cutout_image']) ?>" 
+														class="img-fluid product-thumbnail"
+														alt="<?= htmlspecialchars($product['name']) ?>"
+													>
+
+													<div class="discount-badge">
+														$<?= number_format($discount, 2) ?> Off
+													</div>
+												</div>
+
+												<h3 class="product-title">
+													<?= htmlspecialchars($product['name']) ?>
+												</h3>
+
+												<div class="price-wrapper">
+													<strong class="product-price">
+														$<?= number_format($product['sale_price'], 2) ?>
+													</strong>
+													<span class="product-old-price">
+														$<?= number_format($product['price'], 2) ?>
+													</span>
+												</div>
+
+												<span class="icon-cross">
+													<img src="images/cross.svg" class="img-fluid">
+												</span>
+
+											</a>
 										</div>
-										<h3 class="product-title">Andis Slimline Pro Chrome Trimmer</h3>
-										<div class="price-wrapper">
-											<strong class="product-price">$84.99</strong>
-											<span class="product-old-price">$199.99</span>
-										</div>
-										<span class="icon-cross">
-											<img src="images/cross.svg" class="img-fluid">
-										</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<div class="product-image-wrapper">
-										<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
-										<div class="discount-badge">$10.99 Off</div>
+									<?php endforeach; ?>
+									<div class="col-12 col-md-4 col-lg-3 sale-slide see-all-slide">
+										<a href="shop.php?page=1&sale=1" class="see-all-link">
+											<div class="see-all-content">
+												<span>See all sales</span>
+											</div>
+										</a>
 									</div>
-									<h3 class="product-title">Babyliss Black Fx One Battery System Clipper</h3>
-									<div class="price-wrapper">
-										<strong class="product-price">$219.99</strong>
-										<span class="product-old-price">$199.99</span>
-									</div>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<div class="product-image-wrapper">
-										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
-										<div class="discount-badge">$10.99 Off</div>
-									</div>
-									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
-									<div class="price-wrapper">
-										<strong class="product-price">$144.99</strong>
-										<span class="product-old-price">$199.99</span>
-									</div>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<div class="product-image-wrapper">
-										<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
-										<div class="discount-badge">$10.99 Off</div>
-									</div>
-									<h3 class="product-title">Babyliss Light Grey LithiumFX Clipper</h3>
-									<div class="price-wrapper">
-										<strong class="product-price">$144.99</strong>
-										<span class="product-old-price">$199.99</span>
-									</div>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="sales-pagination">
-						<span class="dot active"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-					</div>
+					<div class="sales-pagination"></div>
 				</div>
 			</div>
 			<!--  -->
 
 			<!-- Categories Section -->
-			 <div class="sales-section categories">
+			 <div class="sales-section categories" id="categories">
 				<div class="sales-container">
 					<div class="sales-header">
 					<h2>Categories</h2>
@@ -488,57 +572,36 @@
 					<div class="sales-products">
 						<div class="container">
 							<div class="row">
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<img src="images/products/thumb_1756950792_1b6a822b.png" class="img-fluid product-thumbnail">
-									<h3 class="product-title">Clippers</h3>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<img src="images/products/thumb_1756952632_c50fa0a8.png" class="img-fluid product-thumbnail">
-									<h3 class="product-title">Shavers</h3>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
-									<h3 class="product-title">Shaving Gel</h3>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
-								</div>
-
-								<div class="col-12 col-md-4 col-lg-3">
-									<a class="product-item" href="product.php">
-									<img src="images/products/thumb_1757007537_f8628076.png" class="img-fluid product-thumbnail">
-									<h3 class="product-title">Trimmers</h3>
-									<span class="icon-cross">
-										<img src="images/cross.svg" class="img-fluid">
-									</span>
-									</a>
+								<div class="slider-track">
+									<?php foreach ($mainCategories as $cat): ?>
+										<div class="col-12 col-md-4 col-lg-3 sale-slide category-slide">
+											<a class="product-item" href="shop.php?main=<?= $cat['id'] ?>&page=1">
+												<img
+													src="<?= $cat['cutout_image']
+														? htmlspecialchars($cat['cutout_image'])
+														: 'images/placeholder-category.png'
+													?>"
+													class="img-fluid product-thumbnail"
+													alt="<?= htmlspecialchars($cat['name']) ?>"
+												>
+												<h3 class="product-title">
+													<?= htmlspecialchars($cat['name']) ?>
+												</h3>
+											</a>
+										</div>
+									<?php endforeach; ?>
+									<div class="col-12 col-md-4 col-lg-3 sale-slide see-all-slide">
+										<a href="shop.php" class="navCategoriesLink see-all-link">
+											<div class="see-all-content">
+												<span>See all categories</span>
+											</div>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="sales-pagination">
-						<span class="dot active"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-					</div>
+					<div class="sales-pagination"></div>
 				</div>
 			</div>
 
@@ -605,36 +668,81 @@
         include '../includes/footer2.php'
         ?>
 		<script>
-			document.querySelectorAll(
-			'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
-			).forEach(icon => {
-			icon.addEventListener('click', function(event) {
-				event.preventDefault();
-				event.stopPropagation();
+			//Working pagination for sales and categories
+			document.addEventListener('DOMContentLoaded', () => {
 
-				const img = icon.querySelector('img');
-				if (img) {
-				img.remove();
-				const check = document.createElement('i');
-				check.classList.add('fas', 'fa-check');
-				check.style.color = 'white';  
-				check.style.fontSize = '18px';
-				icon.appendChild(check);
-				icon.classList.add('checkmark');
+				function initSlider(sectionSelector, slideSelector) {
+					const section = document.querySelector(sectionSelector);
+					if (!section) return;
 
-				const message = document.createElement('span');
-				message.className = 'added-message';
-				message.textContent = 'Added to cart!';
-				icon.appendChild(message);
-				void message.offsetWidth;
-				message.classList.add('show');
-				setTimeout(() => {
-					message.classList.remove('show');
-					setTimeout(() => message.remove(), 500);
-				}, 2000);
+					const slides = section.querySelectorAll(slideSelector);
+					const pagination = section.querySelector('.sales-pagination');
+					const prevBtn = section.querySelector('.sales-arrow.left');
+					const nextBtn = section.querySelector('.sales-arrow.right');
+
+					const perPage = 4;
+					const maxPages = 4;
+
+					const totalPages = Math.min(
+						Math.ceil(slides.length / perPage),
+						maxPages
+					);
+
+					let currentPage = 0;
+
+					/* --------- BUILD DOTS --------- */
+					pagination.innerHTML = '';
+
+					for (let i = 0; i < totalPages; i++) {
+						const dot = document.createElement('span');
+						dot.classList.add('dot');
+						if (i === 0) dot.classList.add('active');
+
+						dot.addEventListener('click', () => {
+							currentPage = i;
+							renderPage(currentPage);
+						});
+
+						pagination.appendChild(dot);
+					}
+
+					const dots = pagination.querySelectorAll('.dot');
+
+					/* --------- RENDER PAGE --------- */
+					function renderPage(page) {
+						const offset = page * 100;
+						section.querySelector('.slider-track')
+							.style.transform = `translateX(-${offset}%)`;
+
+						dots.forEach((dot, i) => {
+							dot.classList.toggle('active', i === page);
+						});
+					}
+
+					/* --------- CONTROLS --------- */
+					prevBtn?.addEventListener('click', () => {
+						currentPage = (currentPage - 1 + totalPages) % totalPages;
+						renderPage(currentPage);
+					});
+
+					nextBtn?.addEventListener('click', () => {
+						currentPage = (currentPage + 1) % totalPages;
+						renderPage(currentPage);
+					});
+
+					renderPage(0);
 				}
+
+				/* --------- INIT SLIDERS --------- */
+				initSlider('.sales-section:not(.categories)', '.sale-slide');
+				initSlider('.sales-section.categories', '.category-slide');
+
 			});
+			document.querySelectorAll('.navCategoriesLink').forEach(link => {
+				link.addEventListener('click', () => {
+					sessionStorage.setItem('openCategoriesDropdown', '1');
+				});
 			});
-		</script>
+			</script>
 	</body>
 </html>

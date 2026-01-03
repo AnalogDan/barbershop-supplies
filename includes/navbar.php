@@ -115,11 +115,13 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                                 <?= htmlspecialchars($categoriesById[52] ?? 'Category') ?>
                             </a>
                         </li>
-
+                        <li>
+                            <a href="<?= BASE_URL ?>/shop.php?page=1&sale=1">Sales</a>
+                        </li>
                         <li class="dropdown-divider"></li>
 
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php" id="navCategoriesLink">See All Categories</a>
+                            <a href="<?= BASE_URL ?>/shop.php" class="navCategoriesLink">See All Categories</a>
                         </li>
                     </ul>
                 </li>
@@ -143,7 +145,9 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
 </nav>
 <script src="/barbershopSupplies/public/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.getElementById('navCategoriesLink')?.addEventListener('click', () => {
-        sessionStorage.setItem('openCategoriesDropdown', '1');
+    document.querySelectorAll('.navCategoriesLink').forEach(link => {
+        link.addEventListener('click', () => {
+            sessionStorage.setItem('openCategoriesDropdown', '1');
+        });
     });
 </script>

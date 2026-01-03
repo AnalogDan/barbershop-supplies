@@ -287,34 +287,11 @@
 </div>
 
 <script>
+	//Add to cart
 	document.querySelectorAll(
 		'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
 	).forEach(icon => {
 		icon.addEventListener('click', function(event) {
-			// event.preventDefault();
-			// event.stopPropagation();
-
-			// const img = icon.querySelector('img');
-			// if (img) {
-			// img.remove();
-			// const check = document.createElement('i');
-			// check.classList.add('fas', 'fa-check');
-			// check.style.color = 'white';  
-			// check.style.fontSize = '18px';
-			// icon.appendChild(check);
-			// icon.classList.add('checkmark');
-
-			// const message = document.createElement('span');
-			// message.className = 'added-message';
-			// message.textContent = 'Added to cart!';
-			// icon.appendChild(message);
-			// void message.offsetWidth;
-			// message.classList.add('show');
-			// setTimeout(() => {
-			// 	message.classList.remove('show');
-			// 	setTimeout(() => message.remove(), 500);
-			// }, 2000);
-			// }
 			event.preventDefault();
 			event.stopPropagation();
 

@@ -23,16 +23,18 @@
         border-radius: 50%;
         font-size: 14px;
     }
+    .prev,
     .next{
         color: gray;
         cursor: pointer;
-        width: 46px;
+        width: 58px;
         height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        font-size: 14px;
+        font-size: 18px;
+        text-decoration: none;
     }
     .page:hover, .next:hover{
         color: black;
@@ -53,16 +55,38 @@ if (!empty($subCategoryId)) $baseParams['subcategory'] = $subCategoryId;
 
 <div class="pagination">
     <?php if ($currentPage > 1): ?>
-        <a class="next" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage - 1])) ?>">&lt; Prev</a>
+        <a class="prev" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage - 1])) ?>">&lt; Prev</a>
     <?php endif; ?>
 
-    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <?php if ($i == $currentPage): ?>
-            <span class="page current"><?= $i ?></span>
-        <?php else: ?>
-            <a class="page" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $i])) ?>"><?= $i ?></a>
-        <?php endif; ?>
-    <?php endfor; ?>
+    <?php
+    $window = 2;
+    $start = max(1, $currentPage - $window);
+    $end   = min($totalPages, $currentPage + $window);
+
+    if ($start > 1) {
+        echo '<a class="page" href="?' .
+            http_build_query(array_merge($baseParams, ['main_page' => 1])) .
+            '">1</a>';
+        if ($start > 2) echo '<span class="dots">…</span>';
+    }
+
+    for ($i = $start; $i <= $end; $i++) {
+        if ($i == $currentPage) {
+            echo '<span class="page current">' . $i . '</span>';
+        } else {
+            echo '<a class="page" href="?' .
+                http_build_query(array_merge($baseParams, ['main_page' => $i])) .
+                '">' . $i . '</a>';
+        }
+    }
+
+    if ($end < $totalPages) {
+        if ($end < $totalPages - 1) echo '<span class="dots">…</span>';
+        echo '<a class="page" href="?' .
+            http_build_query(array_merge($baseParams, ['main_page' => $totalPages])) .
+            '">' . $totalPages . '</a>';
+    }
+    ?>
 
     <?php if ($currentPage < $totalPages): ?>
         <a class="next" href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage + 1])) ?>">Next &gt;</a>

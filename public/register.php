@@ -97,14 +97,14 @@
 		include '../includes/modals.php'; 
         ?>
 		<script>
-			showAlertModal("Test alert.", () => {});
-			showConfirmModal(
-				`Test confirm`,
-				() => {
-				},
-				() => {
-				}
-			);
+			// showAlertModal("Test alert.", () => {});
+			// showConfirmModal(
+			// 	`Test confirm`,
+			// 	() => {
+			// 	},
+			// 	() => {
+			// 	}
+			// );
 
 			setTimeout(function () {
 				const alert = document.querySelector('.alert');
