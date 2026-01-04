@@ -322,8 +322,7 @@
 									<input type="text"
 										class="qty-input"
 										value="<?= (int)$item['quantity'] ?>"
-										data-max="<?= (int)$item['stock'] ?>"
-										readonly>
+										data-max="<?= (int)$item['stock'] ?>">
 									<button class="qty-btn qty-plus">+</button>
 								</div>
 							</div>
@@ -390,6 +389,7 @@
 						const newQty = current + 1;
 						input.value = newQty;
 						updateRowTotal(selector);
+						updateCartTotals();
 						updateQuantity(productId, newQty, input);
 					}else{
 						showMessage(selector, 'No more stock');
@@ -401,7 +401,37 @@
 						const newQty = current - 1;
 						input.value = newQty;
 						updateRowTotal(selector);
+						updateCartTotals();
 						updateQuantity(productId, newQty, input);
+					}
+				});
+
+				input.addEventListener('input', () => {
+					let value = input.value.replace(/\D/g, '');
+					if (value === '') {
+						input.value = '';
+						return;
+					}
+					value = parseInt(value, 10);
+					if (value < 1) value = 1;
+					if (value > max) {
+						value = max;
+						showMessage(selector, 'No more stock');
+					}
+					input.value = value;
+					updateRowTotal(selector);
+					updateCartTotals();
+				});
+				input.addEventListener('blur', () => {
+					const value = parseInt(input.value, 10);
+					if (!isNaN(value)) {
+						updateQuantity(productId, value, input);
+					}
+				});
+				input.addEventListener('keydown', e => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						input.blur();
 					}
 				});
 			});
@@ -445,15 +475,12 @@
 					const val = parseFloat(el.textContent.replace('$', '')) || 0;
 					subtotal += val;
 				});
-
 				// 8.25% sales tax
 				const taxRate = 0.0925;
 				const tax = subtotal * taxRate;
-
 				// sChange shipping later 0.0
 				const shipping = 0; 
 				const total = subtotal + tax + shipping;
-
 				// update DOM
 				document.querySelector('.subtotal').textContent = `$${subtotal.toFixed(2)}`;
 				document.querySelector('.tax').textContent = `$${tax.toFixed(2)}`;
@@ -476,6 +503,39 @@
                     }, 500);
                 }, 2000);
             }
+
+			//Romove from cart 
+			document.querySelectorAll('.fa-trash').forEach(trash => {
+				trash.addEventListener('click', function () {
+					const productId = this.dataset.productId;
+					const row = this.closest('.cart-row');
+					if (!productId || !row) return;
+
+					fetch('<?= BASE_URL ?>/../actions/cart-remove.php', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ product_id: productId })
+					})
+					.then(res => res.json())
+					.then(data => {
+						if (!data.success) return;
+						row.remove();
+						updateCartTotals();
+						if (!document.querySelector('.cart-row')) {
+							document.querySelector('.grid').innerHTML = `
+								<div class="item" style="grid-column: 1 / -1; text-align:center;">
+									Your cart is empty
+								</div>
+							`;
+						}
+					});
+				});
+			});
+
+			//Keep this at the end. Update totals on page load
+			document.addEventListener('DOMContentLoaded', () => {
+				updateCartTotals();
+			});
 		</script>
     </body>
 </html>

@@ -454,7 +454,7 @@
 						<?php if (!empty($bestsellers)): ?>
 							<?php foreach ($bestsellers as $product): ?>
 								<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-									<a class="product-item" href="product.php?id=<?= $product['id'] ?>">
+									<a class="product-item" href="product.php?id=<?= $product['id'] ?>" data-product-id="<?= $product['id'] ?>">
 										
 										<img 
 											src="<?= htmlspecialchars($product['cutout_image']) ?>" alt="image" 
@@ -505,7 +505,7 @@
 										$discount = $product['price'] - $product['sale_price'];
 									?>
 										<div class="col-12 col-md-4 col-lg-3 sale-slide">
-											<a class="product-item" href="product.php?id=<?= $product['id'] ?>">
+											<a class="product-item" href="product.php?id=<?= $product['id'] ?>" data-product-id="<?= $product['id'] ?>">
 
 												<div class="product-image-wrapper">
 													<img 
@@ -670,79 +670,128 @@
 		<script>
 			//Working pagination for sales and categories
 			document.addEventListener('DOMContentLoaded', () => {
-
 				function initSlider(sectionSelector, slideSelector) {
 					const section = document.querySelector(sectionSelector);
 					if (!section) return;
-
 					const slides = section.querySelectorAll(slideSelector);
 					const pagination = section.querySelector('.sales-pagination');
 					const prevBtn = section.querySelector('.sales-arrow.left');
 					const nextBtn = section.querySelector('.sales-arrow.right');
-
 					const perPage = 4;
 					const maxPages = 4;
-
 					const totalPages = Math.min(
 						Math.ceil(slides.length / perPage),
 						maxPages
 					);
-
 					let currentPage = 0;
-
 					/* --------- BUILD DOTS --------- */
 					pagination.innerHTML = '';
-
 					for (let i = 0; i < totalPages; i++) {
 						const dot = document.createElement('span');
 						dot.classList.add('dot');
 						if (i === 0) dot.classList.add('active');
-
 						dot.addEventListener('click', () => {
 							currentPage = i;
 							renderPage(currentPage);
 						});
-
 						pagination.appendChild(dot);
 					}
-
 					const dots = pagination.querySelectorAll('.dot');
-
 					/* --------- RENDER PAGE --------- */
 					function renderPage(page) {
 						const offset = page * 100;
 						section.querySelector('.slider-track')
 							.style.transform = `translateX(-${offset}%)`;
-
 						dots.forEach((dot, i) => {
 							dot.classList.toggle('active', i === page);
 						});
 					}
-
 					/* --------- CONTROLS --------- */
 					prevBtn?.addEventListener('click', () => {
 						currentPage = (currentPage - 1 + totalPages) % totalPages;
 						renderPage(currentPage);
 					});
-
 					nextBtn?.addEventListener('click', () => {
 						currentPage = (currentPage + 1) % totalPages;
 						renderPage(currentPage);
 					});
-
 					renderPage(0);
 				}
-
 				/* --------- INIT SLIDERS --------- */
 				initSlider('.sales-section:not(.categories)', '.sale-slide');
-				initSlider('.sales-section.categories', '.category-slide');
-
+				initSlider('.sales-section.categories', '.category-slide')
 			});
 			document.querySelectorAll('.navCategoriesLink').forEach(link => {
 				link.addEventListener('click', () => {
 					sessionStorage.setItem('openCategoriesDropdown', '1');
 				});
 			});
+
+			//Add to cart
+			document.querySelectorAll(
+				'.product-section .product-item .icon-cross, .sales-products .product-item .icon-cross'
+			).forEach(icon => {
+				icon.addEventListener('click', function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+
+					const productId = icon.closest('.product-item')?.dataset.productId;
+					if (!productId) return;
+
+					addToCart(productId, 1, () => {
+						const img = icon.querySelector('img');
+						if (img) {
+							img.remove();
+
+							const check = document.createElement('i');
+							check.classList.add('fas', 'fa-check');
+							check.style.color = 'white';  
+							check.style.fontSize = '18px';
+							icon.appendChild(check);
+
+							icon.classList.add('checkmark');
+
+							const message = document.createElement('span');
+							message.className = 'added-message';
+							message.textContent = 'Added to cart!';
+							icon.appendChild(message);
+
+							void message.offsetWidth;
+							message.classList.add('show');
+
+							setTimeout(() => {
+								message.classList.remove('show');
+								setTimeout(() => message.remove(), 500);
+							}, 2000);
+						}
+					});
+				});
+			});
+
+			//Function to add to cart
+			function addToCart(productId, quantity, onSuccess) {
+				fetch('/barbershopSupplies/actions/cart-add.php', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						product_id: productId,
+						quantity: quantity
+					})
+				})
+				.then(res => res.json())
+				.then(data => {
+					console.log('Add to cart response:', data);
+					if (!data.success) {
+						console.error(data.message);
+						return;
+					}
+
+					if (typeof onSuccess === 'function') {
+						onSuccess(data);
+					}
+				})
+				.catch(err => console.error('Fetch error:', err));
+			}
 			</script>
 	</body>
 </html>

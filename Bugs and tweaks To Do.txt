@@ -1,11 +1,11 @@
 Essential
 
-Make Home backend (maybe popular pr. later)
-Can't write in qty selector in cart 
 
 
 
 
 After release
 Putting only a space in admin add products descriptions causes the form to not be sent
+Fix pagination in admin Users section
+Put real sales and real bestsellers at home. 
  
