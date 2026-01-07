@@ -1,11 +1,13 @@
 Essential
-
+When you can create orders, revise if my-orders.php pagination (10 ords. p.p.). Also revise order snapshot.
 
 
 
 
 After release
-Putting only a space in admin add products descriptions causes the form to not be sent
+Putting only a space in admin add products descriptxions causes the form to not be sent
 Fix pagination in admin Users section
 Put real sales and real bestsellers at home. 
- 
+Change name and email from my-profile
+Can store many addresses, edit them from my-profile, and choose or add from checkout
+Add a few clickable favorites in my-profile.php

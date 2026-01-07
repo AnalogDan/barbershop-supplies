@@ -94,9 +94,10 @@
 				});
 				const result = await response.json();
 				if (result.success) {
-					showAlertModal(result.message, () => {
-						window.location.href = "home.php";
-					});
+					// showAlertModal(result.message, () => {
+					// 	window.location.href = "home.php";
+					// });
+					window.location.href = "home.php";
 				} else {
 					showAlertModal(result.message);
 				}

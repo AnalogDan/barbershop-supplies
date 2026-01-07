@@ -2,6 +2,48 @@
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = '';
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+    $userId = $_SESSION['user_id'] ?? null;
+
+    //Pagination operations
+    $ordersPerPage = 10;
+    $currentPageNum = isset($_GET['page']) && is_numeric($_GET['page'])
+        ? (int) $_GET['page']
+        : 1;
+    if ($currentPageNum < 1) {
+        $currentPageNum = 1;
+    }
+    $offset = ($currentPageNum - 1) * $ordersPerPage;
+
+    $countStmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM orders
+        WHERE user_id = ?
+    ");
+    $countStmt->execute([$userId]);
+    $totalOrders = (int) $countStmt->fetchColumn();
+    $totalPages = (int) ceil($totalOrders / $ordersPerPage);
+
+    //Fetch orders
+    if (!$userId) {
+        header('Location: login.php');
+        exit;
+    }
+    $stmt = $pdo->prepare("
+        SELECT id, number, status, total, placed_at
+        FROM orders
+        WHERE user_id = ?
+        ORDER BY placed_at DESC
+        LIMIT ? OFFSET ?
+    ");
+    $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+    $stmt->bindValue(2, $ordersPerPage, PDO::PARAM_INT);
+    $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -47,7 +89,7 @@
         height: auto;
         width: auto;
         /* background-color: lightblue; */
-        margin: 2rem auto 3rem auto;
+        margin: 2rem auto 10rem auto;
         color: #6f6f6fff;
         font-size: 1.5rem;
         font-weight: 600;
@@ -86,43 +128,38 @@
 
             <a href="my-profile.php" class="go-back">
                 <i class="fa-solid fa-circle-chevron-left back-icon"></i>
-</a>
+            </a>
             <div class="top-container">
                 <div>All orders</div>
                 <img src="images/Ornament1.png">
             </div>
 
             <div class="orders-list">
-                <div class="order-row">
-                    <div>
-                        Order #1090 - Apr 22, 2025 - $89.99 - Delivered -
+                <?php if (empty($orders)): ?>
+                    <div class="order-row">
+                        <div>You have no orders yet.</div>
                     </div>
-                    <a href="order.php" class="view">View</a>
-                </div>
-                <div class="order-row">
-                    <div>
-                        Order #1991 - Apr 23, 2025 - $69.99 - In transit -
-                    </div>
-                    <a href="order.php" class="view">View</a>
-                </div>
-                <div class="order-row">
-                    <div>
-                        Order #1093 - Dec 22, 2025 - $89.99 - Delivered -
-                    </div>
-                    <a href="order.php" class="view">View</a>
-                </div>
-                <div class="order-row">
-                    <div>
-                        Order #1090 - Jan 22, 2025 - $109.99 - Delivered -
-                    </div>
-                    <a href="order.php" class="view">View</a>
-                </div>
-                
+                <?php else: ?>
+                    <?php foreach ($orders as $order): ?>
+                        <div class="order-row">
+                            <div>
+                                Order #<?= htmlspecialchars($order['number']) ?>
+                                - <?= date('M d, Y', strtotime($order['placed_at'])) ?>
+                                - $<?= number_format($order['total'], 2) ?>
+                                - <?= ucfirst($order['status']) ?> -
+                            </div>
+                            <a href="order.php?id=<?= $order['id'] ?>" class="view">
+                                View
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
             </div>
 
-            <?php 
-            include __DIR__ . '/../includes/paginator.php'; 
-            ?>
+            <?php if ($totalPages > 1): ?>
+                <?php include __DIR__ . '/../includes/paginator-orders.php'; ?>
+            <?php endif; ?>
             
         </main>
         <?php 

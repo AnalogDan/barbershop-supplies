@@ -2,7 +2,45 @@
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = '';
-?>
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+    $userId = $_SESSION['user_id'] ?? null;
+
+    
+    $orderId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+    if ($orderId <= 0) {
+        die('Invalid order ID.');
+    }
+
+    // Fetch order and user address
+    $stmt = $pdo->prepare("
+        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip
+        FROM orders o
+        LEFT JOIN addresses a ON o.address_id = a.id
+        WHERE o.id = ? AND o.user_id = ?
+    ");
+    $stmt->execute([$orderId, $userId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$order) {
+        die('Order not found.');
+    }
+    //Fetch order items
+    $stmtItems = $pdo->prepare("
+        SELECT 
+            oi.product_id,
+            oi.quantity, 
+            oi.price, 
+            oi.product_name, 
+            p.cutout_image
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+    ");
+    $stmtItems->execute([$orderId]);
+    $orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+    ?>
 
 <style>
     /*Top row*/
@@ -97,6 +135,35 @@
         justify-content: right;
     }
 
+    /*Image */
+    .item-row span:nth-child(2) {
+        width: 65px;       
+        height: 65px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;       
+    }
+    .item-row span:nth-child(2) img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;  
+        display: block;
+    }
+    /*Right align product price*/
+    .item-row span:nth-child(4) {
+        margin-left: auto;
+        text-align: right;
+        white-space: nowrap;
+    }
+    /*Item link */
+    .item-name a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .item-name a:hover {
+        text-decoration: underline;
+    }
 
 </style>
 
@@ -123,39 +190,56 @@
                 <i class="fa-solid fa-circle-chevron-left back-icon"></i>
             </a>
             <div class="top-container">
-                <div>Order #1090</div>
+                <div>Order #<?= htmlspecialchars($order['number']) ?></div>
                 <img src="images/Ornament1.png">
             </div>
 
             <div class="info">
-                <div>Date: May 28, 2025</div>
-                <div>Status: In transit</div>
-                <div>Addres: 1911 S Main St, Santa Ana, 92707</div>
+                <div>Date: <?= date('M d, Y', strtotime($order['placed_at'])) ?></div>
+                <div>Status: <?= ucfirst($order['status']) ?></div>
+                <div>Payment method: <?= htmlspecialchars($order['payment_method']) ?></div>
+                <div>Address: <?= htmlspecialchars($order['street'] . ', ' . $order['city'] . ', ' . $order['state'] . ', ' . $order['zip']) ?></div>
+                <div>Delivery estimated time: <?= htmlspecialchars($order['delivery_eta_start']) ?> -- <?= htmlspecialchars($order['delivery_eta_end']) ?></div>
+                <div>Tracking number: 1234567</div> <!-- Dummy for now -->
                 <div>Products ordered:</div>
                 <div class="products">
-                    <div class="item-row">
-                        <span>1</span>
-                        <span><img src="images/products/thumb_1756950792_1b6a822b.png" alt="productImage"></span>
-                        <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                        <span>$59.99</span>
-                    </div>
-                    <div class="item-row">
-                        <span>3</span>
-                        <span><img src="images/products/thumb_1756950792_1b6a822b.png" alt="productImage"></span>
-                        <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                        <span>$189.99</span>
+                    <?php foreach ($orderItems as $item): ?>
+                        <div class="item-row">
+                            <span><?= (int)$item['quantity'] ?></span>
+
+                            <span>
+                                <img
+                                    src="<?= htmlspecialchars($item['cutout_image'] ?: 'images/products/gallery_123456789.jpg') ?>"
+                                    alt="<?= htmlspecialchars($item['product_name']) ?>"
+                                >
+                            </span>
+
+                            <span class="item-name">
+                                <a href="product.php?id=<?= (int)$item['product_id'] ?>">
+                                    <?= htmlspecialchars($item['product_name']) ?>
+                                </a>
+                            </span>
+
+                            <span>
+                                $<?= number_format($item['price'], 2) ?>
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="calc-row">
+                        <span class="type">Subtotal</span>
+                        <span class="money">$<?= number_format($order['subtotal'], 2) ?></span>
                     </div>
                     <div class="calc-row">
                         <span class="type">Shipping</span>
-                        <span class="money">$22.99</span>
+                        <span class="money">$<?= number_format($order['shipping_cost'], 2) ?></span>
                     </div>
                     <div class="calc-row">
                         <span class="type">Tax</span>
-                        <span class="money">$9.99</span>
+                        <span class="money">$<?= number_format($order['sales_tax'], 2) ?></span>
                     </div>
                     <div class="calc-row">
                         <span class="type">Total</span>
-                        <span class="money">$262.99</span>
+                        <span class="money">$<?= number_format($order['total'], 2) ?></span>
                     </div>
                 </div>
             </div>

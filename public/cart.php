@@ -69,7 +69,6 @@
 			$stmt->execute([$cartId]);
 			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
-
 ?>
 
 <style>
@@ -98,6 +97,13 @@
 	.item i:hover {
 	color: black;
 	transform: scale(1.15);
+	}
+	.item a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.item a:hover {
+		text-decoration: underline;
 	}
 
 	/*Grid title row*/
@@ -255,6 +261,17 @@
 		display: contents; 
 	}
 
+	/*Sale price */
+	.price-original {
+		opacity: 0.45;
+		text-decoration: line-through;
+		margin-right: 10px;
+		white-space: nowrap;
+	}
+	.price-final {
+		white-space: nowrap;
+	}
+
 </style>
 
 <!DOCTYPE html>
@@ -306,12 +323,24 @@
 							</div>
 							<!-- Product -->
 							<div class="item">
-								<?= htmlspecialchars($item['name']) ?>
+								<a href="product.php?id=<?= (int)$item['product_id'] ?>">
+									<?= htmlspecialchars($item['name']) ?>
+								</a>
 							</div>
 							<!-- Unit price -->
 							<div class="item price"
 								data-price="<?= number_format($item['final_price'], 2, '.', '') ?>">
-								$<?= number_format($item['final_price'], 2) ?>
+
+								<?php if (!empty($item['is_on_sale'])): ?>
+									<span class="price-original">
+										$<?= number_format($item['original_price'], 2) ?>
+									</span>
+								<?php endif; ?>
+
+								<span class="price-final">
+									$<?= number_format($item['final_price'], 2) ?>
+								</span>
+
 							</div>
 							<!-- Quantity -->
 							<div class="item">

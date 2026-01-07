@@ -2,6 +2,54 @@
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'account';
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    //Fetch user and address info
+    $userId = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("
+        SELECT first_name, last_name, email, phone
+        FROM users
+        WHERE id = ?
+    ");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("
+        SELECT full_name, street, city, state, zip
+        FROM user_addresses
+        WHERE user_id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$userId]);
+    $address = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    //Fetch favorites
+    $stmt = $pdo->prepare("
+        SELECT 
+            p.id,
+            p.name,
+            p.cutout_image
+        FROM favorites f
+        JOIN products p ON p.id = f.product_id
+        WHERE f.user_id = ?
+        ORDER BY f.product_id DESC
+        LIMIT 3
+    ");
+    $stmt->execute([$_SESSION['user_id']]);
+    $favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //Fetch orders
+    $stmt = $pdo->prepare("
+        SELECT id, number, status
+        FROM orders
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 3
+    ");
+    $stmt->execute([$_SESSION['user_id']]);
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -29,9 +77,7 @@
         transition: max-height 0.9s ease;
         background: #ccccccff;
     }
-    /* .section.open .section-content {
-        max-height: 600px;   
-    } */
+
     
     .section:nth-child(odd) .section-header {
         background: #dedede;   
@@ -93,6 +139,7 @@
         gap: 2rem;
         margin-top: 2rem;
         margin-bottom: 2rem;
+        padding-bottom: 1rem;
     }
      .item-row{
         color: #3b3b3bff;
@@ -131,6 +178,17 @@
         height: 0.1rem;
         width: 100px;
         flex-shrink: 0;
+    }
+    .fav-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .fav-link:hover .item-name {
+        text-decoration: underline;
     }
     
     /*Order history*/
@@ -191,12 +249,28 @@
                     </div>
                     <div class="section-content">
                        <div class="user-info">
-                            Name: John Doe
+                            Name: <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
                         </div>
                         <div class="user-info">
-                            Email: johndoe@gmail.com
+                            Email: <?= htmlspecialchars($user['email']) ?>
                         </div>
-                        <a href="#" class="user-change">Change password</a> 
+                        <div class="user-info">
+                            Address: 
+                            <?php if ($address): ?>
+                                <?= htmlspecialchars(
+                                    $address['street'] . ', ' .
+                                    $address['city'] . ', ' .
+                                    $address['state'] . ' ' .
+                                    $address['zip']
+                                ) ?>
+                            <?php else: ?>
+                                <em>No address added</em>
+                            <?php endif; ?>
+                        </div>
+                        <!-- <a href="#" class="user-change">Change name</a>
+                        <a href="#" class="user-change">Change email</a> -->
+                        <a href="change-address.php" class="user-change">Change address</a> 
+                        <a href="change-password.php" class="user-change">Change password</a> 
                     </div>
                 </div>
                 <div class="section">
@@ -204,25 +278,42 @@
                         My favorites
                         <span class="chevron">&rsaquo;</span>
                     </div>
-                    <div class="section-content">
+                    <div class="section-content debug-fav">
                         <div class="favs">
-                            <div class="item-row">
-                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
-                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
-                            </div>
-                            <div class="item-row">
-                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
-                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
-                            </div>
-                            <div class="item-row">
-                                <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
-                                <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                                <span class="trash"><i class="fa-solid fa-trash"></i></span>
-                            </div>
-                            <a href="#" class="btn check-btn">See all</a>
-                            <div class="spacer"></div>
+                            <?php if (!empty($favorites)): ?>
+                                <?php foreach ($favorites as $fav): ?>
+                                    <div class="item-row">
+                                        <a 
+                                            href="product.php?id=<?= $fav['id'] ?>" 
+                                            class="fav-link"
+                                        >
+                                            <span>
+                                                <img src="<?= htmlspecialchars($fav['cutout_image']) ?>" alt="">
+                                            </span>
+
+                                            <span class="item-name">
+                                                <?= htmlspecialchars($fav['name']) ?>
+                                            </span>
+                                        </a>
+                                        <span class="trash" data-product-id="<?= $fav['id'] ?>">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </span>
+                                    </div>
+                                <?php endforeach; ?>
+
+                                <a href="shop.php?page=1&favorites=1" class="btn check-btn">See all</a>
+
+                            <?php else: ?>
+                                <p style="
+                                    text-align: center;
+                                    height: 300px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                ">
+                                    You have no favorites yet.
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -232,10 +323,27 @@
                         <span class="chevron">&rsaquo;</span>
                     </div>
                     <div class="section-content">
-                        <a href="#" class="order">Order #1090 - Delivered</a><br>
-                        <a href="#" class="order">Order #1091 - Delivered</a><br>
-                        <a href="#" class="order">Order #1098 - In transit</a><br> 
-                        <a href="my-orders.php" class="order-end">See all</a> 
+                        <?php if (!empty($orders)): ?>
+                            <?php foreach ($orders as $order): ?>
+                                <a 
+                                    href="order.php?id=<?= $order['id'] ?>" 
+                                    class="order"
+                                >
+                                    Order #<?= htmlspecialchars($order['number']) ?> – <?= htmlspecialchars(ucfirst($order['status'])) ?>
+                                </a><br>
+                            <?php endforeach; ?>
+
+                            <a href="my-orders.php" class="order-end">See all</a>
+                        <?php else: ?>
+                            <p style="
+                                height: 100px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                You have no orders yet.
+                            </p>
+                        <?php endif; ?> 
                     </div>
                 </div>
             </div>
@@ -258,14 +366,53 @@
                     const isOpen = section.classList.toggle('open');
 
                     if (isOpen) {
-                        content.style.maxHeight = content.scrollHeight + "px";
+                        content.style.maxHeight = (content.scrollHeight + 24) + "px";
                     } else {
                         content.style.maxHeight = "0px";
                     }
                 });
             });
 
-            
+            //Remove favorite 
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.trash').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const productId = btn.dataset.productId;
+                        removeFavorite(productId, btn);
+                    });
+                });
+            });
+
+        function removeFavorite(productId, btn) {
+            fetch('/barbershopSupplies/actions/remove-favorite.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const row = btn.closest('.item-row');
+                    row.remove();
+                    if (!document.querySelector('.item-row')) {
+                        document.querySelector('.favs').innerHTML = `
+                            <p style="padding: 15px; opacity: 0.7;">
+                                You have no favorites yet.
+                            </p>
+                        `;
+                    }
+                } else {
+                    showAlertModal(data.message || 'Could not remove favorite.');
+                }
+            })
+            .catch(() => {
+                showAlertModal('Server error. Please try again.');
+            });
+        }
 		</script>
     </body>
 </html>
