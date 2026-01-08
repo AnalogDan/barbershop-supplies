@@ -4,7 +4,9 @@
 	$currentPage = 'cart';
 
     require_once __DIR__ . '/../includes/pricing.php';
-	$tz = new DateTimeZone('America/Los_Angeles'); 
+	$tz = new DateTimeZone('America/Los_Angeles');
+    $checkoutSteps = $_SESSION['checkout']['steps'] ?? []; 
+    
 
 	//Fetch cart/product info
 	$cartItems = [];
@@ -29,6 +31,7 @@
 		$stmt->execute([$cartId]);
 		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
+
 	//Correct for stock changes
 	if (!empty($cartItems)) {
 		foreach ($cartItems as $item) {
@@ -120,6 +123,44 @@
             $userPhone = $user['phone'] ?? '';
         }
     }
+
+    //Fetch user address data 
+    $address = [
+        'full_name' => '',
+        'street'    => '',
+        'city'      => '',
+        'state'     => '',
+        'zip'       => ''
+    ];
+    $country = 'United States';
+    if (!empty($_SESSION['user_id'])) {
+        $userId = $_SESSION['user_id'];
+        $stmt = $pdo->prepare("
+            SELECT full_name, street, city, state, zip
+            FROM user_addresses
+            WHERE user_id = ? AND is_primary = 1
+            LIMIT 1
+        ");
+        $stmt->execute([$userId]);
+        $dbAddress = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($dbAddress) {
+            $address = array_merge($address, $dbAddress);
+        }
+    }
+    $step1 = $checkoutSteps[1] ?? [];
+    $step2 = $checkoutSteps[2] ?? [];
+    $email = $step1['email'] ?? $userEmail ?? '';
+    $phone = $step1['phone'] ?? $userPhone ?? '';
+    $fullName = $step2['full_name'] ?? $address['full_name'] ?? '';
+    $street   = $step2['street']    ?? $address['street']    ?? '';
+    $city     = $step2['city']      ?? $address['city']      ?? '';
+    $state    = $step2['state']     ?? $address['state']     ?? '';
+    $zip      = $step2['zip']       ?? $address['zip']       ?? '';
+    $hasAddress = !empty($fullName)
+    || !empty($street)
+    || !empty($city)
+    || !empty($state)
+    || !empty($zip);
 ?>
 
 <style>
@@ -191,6 +232,31 @@
         text-decoration: line-through;
         margin-right: 10px;
         white-space: nowrap;
+    }
+    /*Address summary */
+    .summary-address {
+        margin-top: 1.2rem;
+        padding: 1rem 0;
+        border-top: 1px solid #5b5b5bff;
+        color: #3b3b3bff;
+        font-weight: 500;
+    }
+    .summary-address-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 0.6rem;
+    }
+    .summary-address-header span {
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .summary-address-content {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: #4a4a4aff;
     }
 
     /*Main structure*/
@@ -531,12 +597,39 @@
                         <span>$<?= number_format($total, 2) ?></span>
                     </div>
                 </div>
+
+                <div class="summary-address">
+                    <div class="summary-address-content">
+                        <strong>Address:</strong>
+                        <span id="summary-address">
+                            <?php if ($hasAddress): ?>
+                                <?= htmlspecialchars(trim(implode(', ', array_filter([
+                                    $fullName,
+                                    $street,
+                                    $city,
+                                    $state . ($zip ? " $zip" : ''),
+                                    $country
+                                ])))) ?>
+                            <?php else: ?>
+                                No address yet
+                            <?php endif; ?>
+                        </span>
+                        <br><br>
+
+                        <strong>Contact information:</strong>
+                        <span id="summary-contact">
+                            <?= htmlspecialchars(trim(implode(', ', array_filter([
+                                $email,
+                                $phone
+                            ])))) ?>
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div class="giant-container">
                 <div class="section active open" data-step="1" id="step-1">
                     <div class="section-header">
-                        <!-- <i class="fa-solid fa-circle-check"></i> -->
                         <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
                         1 - Contact information
                         <span class="chevron">&rsaquo;</span>
@@ -548,14 +641,24 @@
                                     <label>Email</label>
                                     <input type="text"
                                         name="email"
-                                        value="<?= htmlspecialchars($userEmail) ?>"
+                                        id="checkout-email"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[1]['email']
+                                            ?? $userEmail
+                                            ?? ''
+                                        ) ?>"
                                     >
                                 </div>
                                 <div class="field small">
                                     <label>Phone</label>
-                                    <input type="text"
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
                                         name="phone"
-                                        value="<?= htmlspecialchars($userPhone) ?>"
+                                        id="checkout-phone"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[1]['phone']
+                                            ?? $userPhone
+                                            ?? ''
+                                        ) ?>"
                                     >
                                 </div>
                             </div>
@@ -582,80 +685,79 @@
                             <div class="row">
                                 <div class="field huge">
                                     <label>Full name</label>
-                                    <input type="text">
+                                    <input type="text" name="full_name" id="checkout-fullname"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[2]['full_name']
+                                            ?? $address['full_name']
+                                            ?? ''
+                                        ) ?>"
+                                    >
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="field huge">
                                     <label>Street address</label>
-                                    <input type="text">
+                                    <input type="text" name="street" id="checkout-street"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[2]['street']
+                                            ?? $address['street']
+                                            ?? ''
+                                        ) ?>"
+                                    >
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="field big">
                                     <label>City</label>
-                                    <input type="text">
+                                    <input type="text" name="city" id="checkout-city"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[2]['city']
+                                            ?? $address['city']
+                                            ?? ''
+                                        ) ?>"
+                                    >
                                 </div>
                                 <div class="field small">
                                     <label>Zip code</label>
-                                    <input type="text" name="zip" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" name="zip" inputmode="numeric" pattern="[0-9]*" id="checkout-zip"
+                                        value="<?= htmlspecialchars(
+                                            $checkoutSteps[2]['zip']
+                                            ?? $address['zip']
+                                            ?? ''
+                                        ) ?>"
+                                    >
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="field huge">
                                     <label>State</label>
-                                    <select>
+                                    <select name="state" id="checkout-state">
                                         <option value="">Select a state</option>
-                                        <option value="AL">Alabama</option>
-                                        <option value="AK">Alaska</option>
-                                        <option value="AZ">Arizona</option>
-                                        <option value="AR">Arkansas</option>
-                                        <option value="CA">California</option>
-                                        <option value="CO">Colorado</option>
-                                        <option value="CT">Connecticut</option>
-                                        <option value="DE">Delaware</option>
-                                        <option value="FL">Florida</option>
-                                        <option value="GA">Georgia</option>
-                                        <option value="HI">Hawaii</option>
-                                        <option value="ID">Idaho</option>
-                                        <option value="IL">Illinois</option>
-                                        <option value="IN">Indiana</option>
-                                        <option value="IA">Iowa</option>
-                                        <option value="KS">Kansas</option>
-                                        <option value="KY">Kentucky</option>
-                                        <option value="LA">Louisiana</option>
-                                        <option value="ME">Maine</option>
-                                        <option value="MD">Maryland</option>
-                                        <option value="MA">Massachusetts</option>
-                                        <option value="MI">Michigan</option>
-                                        <option value="MN">Minnesota</option>
-                                        <option value="MS">Mississippi</option>
-                                        <option value="MO">Missouri</option>
-                                        <option value="MT">Montana</option>
-                                        <option value="NE">Nebraska</option>
-                                        <option value="NV">Nevada</option>
-                                        <option value="NH">New Hampshire</option>
-                                        <option value="NJ">New Jersey</option>
-                                        <option value="NM">New Mexico</option>
-                                        <option value="NY">New York</option>
-                                        <option value="NC">North Carolina</option>
-                                        <option value="ND">North Dakota</option>
-                                        <option value="OH">Ohio</option>
-                                        <option value="OK">Oklahoma</option>
-                                        <option value="OR">Oregon</option>
-                                        <option value="PA">Pennsylvania</option>
-                                        <option value="RI">Rhode Island</option>
-                                        <option value="SC">South Carolina</option>
-                                        <option value="SD">South Dakota</option>
-                                        <option value="TN">Tennessee</option>
-                                        <option value="TX">Texas</option>
-                                        <option value="UT">Utah</option>
-                                        <option value="VT">Vermont</option>
-                                        <option value="VA">Virginia</option>
-                                        <option value="WA">Washington</option>
-                                        <option value="WV">West Virginia</option>
-                                        <option value="WI">Wisconsin</option>
-                                        <option value="WY">Wyoming</option>
+                                        <?php
+                                        $selectedState =
+                                            $checkoutSteps[2]['state']
+                                            ?? $address['state']
+                                            ?? '';
+                                        foreach ([
+                                            'AL'=>'Alabama','AK'=>'Alaska','AZ'=>'Arizona','AR'=>'Arkansas',
+                                            'CA'=>'California','CO'=>'Colorado','CT'=>'Connecticut','DE'=>'Delaware',
+                                            'FL'=>'Florida','GA'=>'Georgia','HI'=>'Hawaii','ID'=>'Idaho','IL'=>'Illinois',
+                                            'IN'=>'Indiana','IA'=>'Iowa','KS'=>'Kansas','KY'=>'Kentucky','LA'=>'Louisiana',
+                                            'ME'=>'Maine','MD'=>'Maryland','MA'=>'Massachusetts','MI'=>'Michigan',
+                                            'MN'=>'Minnesota','MS'=>'Mississippi','MO'=>'Missouri','MT'=>'Montana',
+                                            'NE'=>'Nebraska','NV'=>'Nevada','NH'=>'New Hampshire','NJ'=>'New Jersey',
+                                            'NM'=>'New Mexico','NY'=>'New York','NC'=>'North Carolina','ND'=>'North Dakota',
+                                            'OH'=>'Ohio','OK'=>'Oklahoma','OR'=>'Oregon','PA'=>'Pennsylvania',
+                                            'RI'=>'Rhode Island','SC'=>'South Carolina','SD'=>'South Dakota',
+                                            'TN'=>'Tennessee','TX'=>'Texas','UT'=>'Utah','VT'=>'Vermont',
+                                            'VA'=>'Virginia','WA'=>'Washington','WV'=>'West Virginia',
+                                            'WI'=>'Wisconsin','WY'=>'Wyoming'
+                                        ] as $code => $name):
+                                        ?>
+                                            <option value="<?= $code ?>" <?= $code === $selectedState ? 'selected' : '' ?>>
+                                                <?= $name ?>
+                                            </option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
                             </div>
@@ -675,7 +777,7 @@
                     <div class="section-content">
                         <div class="option-group">
                             <label class="option">
-                                <input type="radio" name="choice" value="option1">
+                                <input type="radio" name="2nd_day" value="option1">
                                 <span class="circle"></span>
                                 UPS 2nd Day Air
                                 <span class="price">-</span>
@@ -683,7 +785,7 @@
                             </label>
 
                             <label class="option">
-                                <input type="radio" name="choice" value="option2">
+                                <input type="radio" name="3_day" value="option2">
                                 <span class="circle"></span>
                                 UPS 3 Day Select
                                 <span class="price">-</span>
@@ -691,7 +793,7 @@
                             </label>
 
                             <label class="option">
-                                <input type="radio" name="choice" value="option3">
+                                <input type="radio" name="ground" value="option3">
                                 <span class="circle"></span>
                                 UPS Ground
                                 <span class="price">-</span>
@@ -759,9 +861,19 @@
 
         </main>
         <?php 
-        include '../includes/footer.php'
+        include '../includes/footer.php';
+        include '../includes/modals.php'
         ?>
         <script>
+            
+            // showAlertModal("Test alert.", () => {});
+            // showConfirmModal(
+            //     `Test confirm`,
+            //     () => {
+            //     },
+            //     () => {
+            //     }
+            // );
             let currentStep = 1;
 
             //Function when completing a step UI changes
@@ -802,18 +914,84 @@
                 });
             }
 
-           
-            
-            
+            //Function to update summary contact and address
+            function updateSummary() {
+                const fullName = document.getElementById('checkout-fullname')?.value.trim() || '';
+                const street   = document.getElementById('checkout-street')?.value.trim() || '';
+                const city     = document.getElementById('checkout-city')?.value.trim() || '';
+                const state    = document.getElementById('checkout-state')?.value.trim() || '';
+                const zip      = document.getElementById('checkout-zip')?.value.trim() || '';
+                const country  = 'United States';
+                const email = document.getElementById('checkout-email')?.value.trim() || '';
+                const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+
+                const addressParts = [fullName, street, city, state + (zip ? " " + zip : ''), country].filter(Boolean);
+                document.getElementById('summary-address').textContent = addressParts.length ? addressParts.join(', ') : 'No address yet';
+                const contactParts = [email, phone].filter(Boolean);
+                document.getElementById('summary-contact').textContent = contactParts.join(', ');
+            }
+
+            //Listener changing summary dinamically
+            ['checkout-email','checkout-phone','checkout-fullname','checkout-street','checkout-city','checkout-state','checkout-zip'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', updateSummary);
+                }
+            });
+            updateSummary();
+          
 
             //Handle continue button 
+            const stepFieldMap = {
+                1: ['email', 'phone'],
+                2: ['full_name', 'street', 'city', 'zip', 'state']
+            };
             document.querySelectorAll('.step-continue').forEach(button => {
-                button.addEventListener('click', e => {
+                button.addEventListener('click', async e => {
                     e.preventDefault();
                     const section = button.closest('.section');
                     const step = parseInt(section.dataset.step, 10);
                     const nextStep = step + 1;
-                    completeStep(section, step, nextStep);
+                    const fields = stepFieldMap[step] || [];
+                    const stepData = {};
+                    fields.forEach(name => {
+                        const input = section.querySelector(`[name="${name}"]`);
+                        stepData[name] = input ? input.value.trim() : null;
+                    });
+                    const payload = {
+                        step: step,
+                        data: stepData
+                    };
+                    // Validate/store in session before completing the step
+                     try {
+                        const response = await fetch('/barbershopSupplies/actions/checkout-continue.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+                        console.log('Checkout continue response:', result);
+                        // console.log('STEP:', step);
+                        // console.log('STEP DATA:', stepData);
+                        // console.log('PAYLOAD:', payload);
+                        if (!result.success) {
+                            showAlertModal(
+                                result.message || 'Validation error',
+                                () => {}
+                            );
+                            return;
+                        }
+                        completeStep(section, step, nextStep);
+                    } catch (err) {
+                        console.error(err);
+                        showAlertModal(
+                            'Network error. Please try again.',
+                            () => {}
+                        );
+                    }
+  
                 });
             });
             
@@ -841,11 +1019,9 @@
                         : '0px';
                 });
             });
-
-            
             
 
-            /*Limit zip code input*/
+            /*Limit zip code and phone numeric input*/
             document.addEventListener("DOMContentLoaded", function () {
                 const zip = document.querySelector('input[name="zip"]');
 
@@ -859,6 +1035,59 @@
                     });
                 }
             });
+            document.addEventListener("DOMContentLoaded", function () {
+                const phone = document.querySelector('input[name="phone"]');
+
+                if (phone) {
+                    phone.addEventListener("input", function () {
+                        this.value = this.value.replace(/\D/g, "");
+                    });
+                }
+            });
+
+            //Modal functions
+            function showConfirmModal(message, onYes, onNo) {
+                const template = document.getElementById('confirmModal');
+                const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+                document.body.appendChild(modal);
+                modal.querySelector('p').textContent = message;
+                modal.classList.add('show');
+                const yesBtn = modal.querySelector('#confirmYes');
+                const noBtn = modal.querySelector('#confirmNo');
+                function cleanup() {
+                    yesBtn.removeEventListener('click', yesHandler);
+                    noBtn.removeEventListener('click', noHandler);
+                    modal.remove();
+                }
+                function yesHandler() {
+                    cleanup();
+                    if (typeof onYes === 'function') onYes();
+                }
+                function noHandler() {
+                    cleanup();
+                    if (typeof onNo === 'function') onNo();
+                }
+                yesBtn.addEventListener('click', yesHandler);
+                noBtn.addEventListener('click', noHandler);
+            }
+            function showAlertModal(message, onOk){
+                const template = document.getElementById('alertModal');
+                const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+                document.body.appendChild(modal);
+                modal.querySelector('p').textContent = message;
+                modal.classList.add('show');
+                const okBtn = modal.querySelector('#confirmOk');
+                function cleanup() {
+                    okBtn.removeEventListener('click', okHandler);
+                    modal.remove();
+                }
+                function okHandler(){
+                    cleanup();
+                    if (typeof onOk === 'function'){ onOk()}
+                    else{};
+                }
+                okBtn.addEventListener('click', okHandler);
+            }
 		</script>
     </body>
 </html>
