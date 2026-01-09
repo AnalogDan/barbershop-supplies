@@ -72,12 +72,14 @@
         flex-direction: column;     
         justify-content: center;    
         align-items: center;   
-        color: black;
-        font-family: 'OldLondon', serif;
-        font-size: 3rem;
+        /* font-family: 'OldLondon', serif; */
+        font-size: 2.5rem;
+        color: #414141ff;
+        weight: 800;
     }
     .top-container img{
         height: 5rem;
+        margin-top: 1rem;
     }
 
     /*Info*/
@@ -191,7 +193,7 @@
             </a>
             <div class="top-container">
                 <div>Order #<?= htmlspecialchars($order['number']) ?></div>
-                <img src="images/Ornament1.png">
+                <!-- <img src="images/Ornament1.png"> -->
             </div>
 
             <div class="info">

@@ -15,13 +15,26 @@ if (!$input || !isset($input['step'], $input['data'])) {
 $step = (int) $input['step'];
 $data = $input['data'];
 
-// Potentially create session and save data 
+// Potentially create session and save data / save totals if in payload
 if (!isset($_SESSION['checkout'])) {
     $_SESSION['checkout'] = [
-        'steps' => []
+        'steps' => [],
+        'totals' => [
+            'subtotal'   => 0,
+            'sales_tax'  => 0,
+            'shipping'   => 0,
+            'total'      => 0
+        ]
     ];
 }
 $_SESSION['checkout']['steps'][$step] = $data;
+
+if (isset($input['totals']) && is_array($input['totals'])) {
+    $_SESSION['checkout']['totals']['subtotal']  = $input['totals']['subtotal']  ?? $_SESSION['checkout']['totals']['subtotal'];
+    $_SESSION['checkout']['totals']['sales_tax'] = $input['totals']['sales_tax'] ?? $_SESSION['checkout']['totals']['sales_tax'];
+    $_SESSION['checkout']['totals']['shipping']  = $input['totals']['shipping']  ?? $_SESSION['checkout']['totals']['shipping'];
+    $_SESSION['checkout']['totals']['total']     = $input['totals']['total']     ?? $_SESSION['checkout']['totals']['total'];
+}
 
 echo json_encode([
     'success' => true,

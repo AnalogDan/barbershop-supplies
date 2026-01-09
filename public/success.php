@@ -1,6 +1,37 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
+
+    //Only accessible once
+    // if (!isset($_GET['token'], $_SESSION['order_success_token']) || $_GET['token'] !== $_SESSION['order_success_token']) {
+    //     header('Location: /barbershopSupplies/public/index.php');
+    //     exit;
+    // }
+    // unset($_SESSION['order_success_token']);
+    
+    //Fetch data
+    $orderId = (int)$_GET['order_id'];
+    $stmt = $pdo->prepare("
+        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip, u.email, u.phone
+        FROM orders o
+        JOIN addresses a ON o.address_id = a.id
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE o.id = ?
+    ");
+    $stmt->execute([$orderId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$order) {
+        echo "Order not found!";
+        exit;
+    }
+    $stmt = $pdo->prepare("
+        SELECT oi.*, p.cutout_image
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+    ");
+    $stmt->execute([$orderId]);
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -72,6 +103,24 @@
     .message{
         max-width: 35rem;
     }
+
+    /*Totals */
+    .order-summary-row {
+        display: flex;
+        justify-content: space-between; 
+        padding: 0.3rem 0;         
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #676767;
+        width: 100%;        /* default fills parent */
+        max-width: 23rem;
+    }
+    .order-summary-row .label {
+    }
+    .order-summary-row .value {
+        text-align: right;
+        min-width: 5rem; 
+    }
     
 
 </style>
@@ -101,23 +150,37 @@
             </div>
             <div class="top-row">
                 <div class="info">
-                    <div>Order number: #1081</div>
-                    <div>Date of purchase: 6/21/2025</div>
+                    <div>Order number: #<?= htmlspecialchars($order['number']) ?></div>
+                    <div>Date of purchase: <?= date('m/d/Y', strtotime($order['placed_at'])) ?></div>
                     <div>Items purchased:</div>
-                    <div class="item-row">
-                        <span>1</span>
-                        <span><img src="images/products/thumb_1756950792_1b6a822b.png"></span>
-                        <span class="item-name">Andis Slimline Pro Chrome Trimmer</span>
-                        <span>$59.99</span>
+
+                    <?php foreach ($items as $item): ?>
+                        <div class="item-row">
+                            <span>
+                                <img src="<?= htmlspecialchars($item['cutout_image']) ?>" alt="">
+                            </span>
+                            <span class="item-name"><?= htmlspecialchars($item['product_name']) ?></span>
+                            <span>$<?= number_format($item['price'], 2) ?></span>
+                            <span>X<?= (int)$item['quantity'] ?></span>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <div class="order-summary-row">
+                        <span class="label">Tax:</span>
+                        <span class="value">$<?= number_format($order['sales_tax'], 2) ?></span>
                     </div>
-                    <div class="item-row">
-                        <span>3</span>
-                        <span><img src="images/products/thumb_1756951211_dfdb4e50.png"></span>
-                        <span class="item-name">Trimmer OMG Super Trimmer Pro</span>
-                        <span>$159.98</span>
+                    <div class="order-summary-row">
+                        <span class="label">Shipping:</span>
+                        <span class="value">$<?= number_format($order['shipping_cost'], 2) ?></span>
                     </div>
-                    <div>Total (shipment and tax included): $219.99</div>
-                    <div>Payment method: Visa ****4242</div>
+                    <div class="order-summary-row">
+                        <span class="label">Total:</span>
+                        <span class="value">$<?= number_format($order['total'], 2) ?></span>
+                    </div>
+                    <div class="order-summary-row">
+                        <span class="label">Payment method:</span>
+                        <span class="value"><?= htmlspecialchars($order['payment_method']) ?></span>
+                    </div>    
                 </div>
                 <div class="green-mark">
                     <img src="images/check.png" alt="checkmark">
@@ -129,10 +192,10 @@
                     Shipping information
                 </div>
                 <div class="info">
-                    <div>John Doe</div>
-                    <div>1911 S Main St, Santa Ana, CA 92707</div>
+                    <div><?= htmlspecialchars($order['full_name']) ?></div>
+                    <div><?= htmlspecialchars($order['street'] . ', ' . $order['city'] . ', ' . $order['state'] . ' ' . $order['zip']) ?></div>
                     <div>UPS Ground</div>
-                    <div>Estimated delivery date: June 25-29</div>
+                    <div>Estimated delivery date: <?= date('m/d/Y', strtotime($order['delivery_eta_start'])) ?> - <?= date('m/d/Y', strtotime($order['delivery_eta_end'])) ?></div>
                 </div>
             </div>
 
@@ -141,8 +204,8 @@
                     Contact information
                 </div>
                 <div class="info">
-                    <div>johndoes_things@irs.gov</div>
-                    <div>3921077756</div>
+                    <div><?= htmlspecialchars($order['email'] ?? '') ?></div>
+                    <div><?= htmlspecialchars($order['phone'] ?? '') ?></div>
                 </div>
             </div>
 

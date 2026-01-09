@@ -852,7 +852,7 @@
                                 </div>
                             </div>
                             <div class="button-row">
-                                <a href="success.php" class="btn check-btn step-continue">Confirm and pay</a>
+                                <a href="#" class="btn check-btn step-continue" id="confirm-order-btn">Confirm and pay</a>
                             </div>
                         </div>
                     </div>
@@ -875,6 +875,40 @@
             //     }
             // );
             let currentStep = 1;
+
+            //Define 'totals' variables on load
+            window.checkoutSubtotal = <?= $_SESSION['checkout']['totals']['subtotal'] ?? 0 ?>;
+            window.checkoutSalesTax = <?= $_SESSION['checkout']['totals']['sales_tax'] ?? 0 ?>;
+            window.checkoutShipping = <?= $_SESSION['checkout']['totals']['shipping'] ?? 0 ?>;
+            window.checkoutTotal = <?= $_SESSION['checkout']['totals']['total'] ?? 0 ?>;
+            window.cartItems = <?= json_encode($summaryItems, JSON_UNESCAPED_UNICODE) ?>;
+
+            //Functions to calculate totals
+            function calculateSubtotal() {
+                if (!Array.isArray(window.cartItems)) {
+                    return 0;
+                }
+                let subtotal = 0;
+                for (const item of window.cartItems) {
+                    subtotal += Number(item.line_total) || 0;
+                }
+                return subtotal;
+            }
+            function calculateSalesTax() {
+                const TAX_RATE = 0.0925;
+                const subtotal = calculateSubtotal();
+                const tax = subtotal * TAX_RATE;
+                return Math.round(tax * 100) / 100;
+            }
+            function calculateShipping() {
+                return 0;
+            }
+            function calculateTotal() {
+                const subtotal = calculateSubtotal();
+                const salesTax = calculateSalesTax();
+                const shipping = calculateShipping(); 
+                return subtotal + salesTax + (shipping ?? 0);
+            }
 
             //Function when completing a step UI changes
             function completeStep(section, step, nextStep) {
@@ -931,6 +965,17 @@
                 document.getElementById('summary-contact').textContent = contactParts.join(', ');
             }
 
+            //Functions to validate all data before continuing
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+            function isValidPhone(phone) {
+                return /^[0-9\-\(\) ]{7,20}$/.test(phone);
+            }
+            function isNotEmpty(value) {
+                return value && value.trim() !== '';
+            }
+
             //Listener changing summary dinamically
             ['checkout-email','checkout-phone','checkout-fullname','checkout-street','checkout-city','checkout-state','checkout-zip'].forEach(id => {
                 const input = document.getElementById(id);
@@ -960,9 +1005,36 @@
                     });
                     const payload = {
                         step: step,
-                        data: stepData
+                        data: stepData,
+                        totals: {
+                            subtotal: calculateSubtotal(),   
+                            sales_tax: calculateSalesTax(),
+                            shipping: calculateShipping(),
+                            total: calculateSubtotal() + calculateSalesTax() + calculateShipping()
+                        }
                     };
-                    // Validate/store in session before completing the step
+                    //Validate fields depending on step
+                    let invalidMessage = '';
+                    if (step === 1) {
+                        if (!isValidEmail(stepData.email)) {
+                            invalidMessage = 'Please enter a valid email address.';
+                        } else if (!isValidPhone(stepData.phone)) {
+                            invalidMessage = 'Please enter a valid phone number.';
+                        }
+                    } else if (step === 2) {
+                        const requiredFields = ['full_name', 'street', 'city', 'state', 'zip'];
+                        for (let field of requiredFields) {
+                            if (!isNotEmpty(stepData[field])) {
+                                invalidMessage = 'Please fill in all address fields.';
+                                break;
+                            }
+                        }
+                    }
+                    if (invalidMessage) {
+                        showAlertModal(invalidMessage, () => {});
+                        return; 
+                    }
+                    // Store in session before completing the step
                      try {
                         const response = await fetch('/barbershopSupplies/actions/checkout-continue.php', {
                             method: 'POST',
@@ -972,10 +1044,15 @@
                             body: JSON.stringify(payload)
                         });
                         const result = await response.json();
+                        if (result.session_checkout?.totals) {
+                            const totals = result.session_checkout.totals;
+                            window.checkoutSubtotal = totals.subtotal ?? 0;
+                            window.checkoutSalesTax = totals.sales_tax ?? 0;
+                            window.checkoutShipping = totals.shipping ?? 0;
+                            window.checkoutTotal = totals.total ?? 0;
+                            console.log('Updated totals from session:', totals);
+                        }
                         console.log('Checkout continue response:', result);
-                        // console.log('STEP:', step);
-                        // console.log('STEP DATA:', stepData);
-                        // console.log('PAYLOAD:', payload);
                         if (!result.success) {
                             showAlertModal(
                                 result.message || 'Validation error',
@@ -1042,6 +1119,56 @@
                     phone.addEventListener("input", function () {
                         this.value = this.value.replace(/\D/g, "");
                     });
+                }
+            });
+
+            //Confirm button handler
+            document.getElementById('confirm-order-btn')?.addEventListener('click', async e => {
+                e.preventDefault();
+                const btn = e.currentTarget;
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+
+                const payload = {
+                    step1: {
+                        email: document.querySelector('[name="email"]')?.value.trim() || '',
+                        phone: document.querySelector('[name="phone"]')?.value.trim() || ''
+                    },
+                    step2: {
+                        full_name: document.querySelector('[name="full_name"]')?.value.trim() || '',
+                        street: document.querySelector('[name="street"]')?.value.trim() || '',
+                        city: document.querySelector('[name="city"]')?.value.trim() || '',
+                        state: document.querySelector('[name="state"]')?.value.trim() || '',
+                        zip: document.querySelector('[name="zip"]')?.value.trim() || ''
+                    },
+                    subtotal: window.checkoutSubtotal,
+                    sales_tax: window.checkoutSalesTax,
+                    shipping: window.checkoutShipping,
+                    total: window.checkoutTotal,
+                    cart_items: window.cartItems
+                };
+                try {
+                    const response = await fetch('/barbershopSupplies/actions/confirm-order.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    console.log('Confirm order response:', result);
+                    if (!result.success) {
+                        showAlertModal(result.message || 'Order could not be processed.', () => {});
+                        btn.disabled = false;
+                        btn.textContent = 'Confirm & Pay';
+                        return;
+                    }
+                    window.location.href = '/barbershopSupplies/public/success.php?order_id=' + result.order_id + '&token=' + result.token;
+                } catch (err) {
+                    console.error(err);
+                    showAlertModal('Network error. Please try again.', () => {});
+                    btn.disabled = false;
+                    btn.textContent = 'Confirm & Pay';
                 }
             });
 
