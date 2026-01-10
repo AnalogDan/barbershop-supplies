@@ -35,15 +35,27 @@
     $stmt = $pdo->prepare("
         SELECT id, number, status, total, placed_at
         FROM orders
-        WHERE user_id = ?
+        WHERE user_id = :userId
         ORDER BY placed_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT :limit OFFSET :offset
     ");
-    $stmt->bindValue(1, $userId, PDO::PARAM_INT);
-    $stmt->bindValue(2, $ordersPerPage, PDO::PARAM_INT);
-    $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+    $stmt->bindValue(':userId', $userId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $ordersPerPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    function buildLinkWithParams(array $overrides = []){
+        $params = $_GET;
+        foreach($overrides as $key => $value){
+            if ($value === null){
+                unset($params[$key]);
+            }else{
+                $params[$key] = $value;
+            }
+        }
+        return '?' . http_build_query($params);
+    }
 ?>
 
 <style>
@@ -157,9 +169,12 @@
             </div>
             </div>
 
-            <?php if ($totalPages > 1): ?>
-                <?php include __DIR__ . '/../includes/paginator-orders.php'; ?>
-            <?php endif; ?>
+            <?php
+            if ($totalPages > 1) {
+                $totalPages = $totalPages ?? 1;
+                include __DIR__ . '/../includes/paginator-orders.php';
+            }
+            ?>
             
         </main>
         <?php 

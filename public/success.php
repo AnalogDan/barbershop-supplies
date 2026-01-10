@@ -3,19 +3,18 @@
     require_once __DIR__ . '/../includes/header.php';
 
     //Only accessible once
-    // if (!isset($_GET['token'], $_SESSION['order_success_token']) || $_GET['token'] !== $_SESSION['order_success_token']) {
-    //     header('Location: /barbershopSupplies/public/index.php');
-    //     exit;
-    // }
-    // unset($_SESSION['order_success_token']);
+    if (!isset($_GET['token'], $_SESSION['order_success_token']) || $_GET['token'] !== $_SESSION['order_success_token']) {
+        header('Location: /barbershopSupplies/public/index.php');
+        exit;
+    }
+    unset($_SESSION['order_success_token']);
     
     //Fetch data
     $orderId = (int)$_GET['order_id'];
     $stmt = $pdo->prepare("
-        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip, u.email, u.phone
+        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip, a.email, a.phone
         FROM orders o
         JOIN addresses a ON o.address_id = a.id
-        LEFT JOIN users u ON o.user_id = u.id
         WHERE o.id = ?
     ");
     $stmt->execute([$orderId]);

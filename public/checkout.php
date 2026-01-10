@@ -71,6 +71,10 @@
 			$stmt->execute([$cartId]);
 			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
+      if (empty($cartItems)) {
+        header('Location: /barbershopSupplies/public/cart.php');
+        exit;
+    }
 
     //Derive effective sale prices and have a final items list
     $summaryItems = [];
@@ -666,7 +670,7 @@
                             <div class="button-row">
                                 <?php if (!$isLoggedIn): ?>
                                     <a href="#" class="btn check-btn step-continue">Continue as guest</a>
-                                    <a href="#" class="btn btn-secondary me-2 my-btn-custom">Log in</a>
+                                    <a href="login.php" class="btn btn-secondary me-2 my-btn-custom">Log in</a>
                                 <?php else: ?>
                                     <a href="#" class="btn check-btn step-continue">Continue</a>
                                 <?php endif; ?>
@@ -832,7 +836,8 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="three-section-bar">
+                            <!-- Paypal payment add later-->
+                            <!-- <div class="three-section-bar">
                                 <div class="sec1">
                                     <label class="option">
                                         <input type="radio" name="select1">
@@ -850,7 +855,7 @@
                                         <img src="images/paypal.png" alt="PayPal">
                                     </span>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="button-row">
                                 <a href="#" class="btn check-btn step-continue" id="confirm-order-btn">Confirm and pay</a>
                             </div>
@@ -864,8 +869,11 @@
         include '../includes/footer.php';
         include '../includes/modals.php'
         ?>
+        <script src="https://js.stripe.com/v3/"></script>
         <script>
-            
+            //stripe variables
+            const stripe = Stripe('pk_test_51SnmmVJznFlGH0nYPwDArcRPi9LNClQFgBACL9ilYZdLK2nmXSOucoJ7Jui57G1Ty7mGVEvr0KY3zpVTuk0oHv7Z00r4BWSRKa');
+        
             // showAlertModal("Test alert.", () => {});
             // showConfirmModal(
             //     `Test confirm`,
@@ -1147,29 +1155,57 @@
                     total: window.checkoutTotal,
                     cart_items: window.cartItems
                 };
+                //Stripe
                 try {
-                    const response = await fetch('/barbershopSupplies/actions/confirm-order.php', {
+                    const response = await fetch('/barbershopSupplies/actions/create-stripe-session.php', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     const result = await response.json();
-                    console.log('Confirm order response:', result);
+
                     if (!result.success) {
-                        showAlertModal(result.message || 'Order could not be processed.', () => {});
+                        showAlertModal(result.message || 'Could not start payment.', () => {});
                         btn.disabled = false;
-                        btn.textContent = 'Confirm & Pay';
+                        btn.textContent = 'Confirm and pay';
                         return;
                     }
-                    window.location.href = '/barbershopSupplies/public/success.php?order_id=' + result.order_id + '&token=' + result.token;
+
+                    const stripe = Stripe(result.publicKey); 
+                    await stripe.redirectToCheckout({ sessionId: result.stripeSessionId });
+
                 } catch (err) {
                     console.error(err);
                     showAlertModal('Network error. Please try again.', () => {});
                     btn.disabled = false;
                     btn.textContent = 'Confirm & Pay';
                 }
+            
+                
+                //Confirm order
+            //     try {
+            //         const response = await fetch('/barbershopSupplies/actions/confirm-order.php', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json'
+            //             },
+            //             body: JSON.stringify(payload)
+            //         });
+            //         const result = await response.json();
+            //         console.log('Confirm order response:', result);
+            //         if (!result.success) {
+            //             showAlertModal(result.message || 'Order could not be processed.', () => {});
+            //             btn.disabled = false;
+            //             btn.textContent = 'Confirm & Pay';
+            //             return;
+            //         }
+            //         window.location.href = '/barbershopSupplies/public/success.php?order_id=' + result.order_id + '&token=' + result.token;
+            //     } catch (err) {
+            //         console.error(err);
+            //         showAlertModal('Network error. Please try again.', () => {});
+            //         btn.disabled = false;
+            //         btn.textContent = 'Confirm & Pay';
+            //     }
             });
 
             //Modal functions

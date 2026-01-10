@@ -16,7 +16,7 @@
 
     // Fetch order and user address
     $stmt = $pdo->prepare("
-        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip
+        SELECT o.*, a.full_name, a.street, a.city, a.state, a.zip, a.email, a.phone
         FROM orders o
         LEFT JOIN addresses a ON o.address_id = a.id
         WHERE o.id = ? AND o.user_id = ?
@@ -202,6 +202,8 @@
                 <div>Payment method: <?= htmlspecialchars($order['payment_method']) ?></div>
                 <div>Address: <?= htmlspecialchars($order['street'] . ', ' . $order['city'] . ', ' . $order['state'] . ', ' . $order['zip']) ?></div>
                 <div>Delivery estimated time: <?= htmlspecialchars($order['delivery_eta_start']) ?> -- <?= htmlspecialchars($order['delivery_eta_end']) ?></div>
+                <div>Email: <?= htmlspecialchars($order['email']) ?></div>
+                <div>Phone: <?= htmlspecialchars($order['phone']) ?></div>
                 <div>Tracking number: 1234567</div> <!-- Dummy for now -->
                 <div>Products ordered:</div>
                 <div class="products">
