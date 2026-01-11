@@ -1163,6 +1163,7 @@
                         body: JSON.stringify(payload)
                     });
                     const result = await response.json();
+                    console.log(result);
 
                     if (!result.success) {
                         showAlertModal(result.message || 'Could not start payment.', () => {});
@@ -1170,7 +1171,6 @@
                         btn.textContent = 'Confirm and pay';
                         return;
                     }
-
                     const stripe = Stripe(result.publicKey); 
                     await stripe.redirectToCheckout({ sessionId: result.stripeSessionId });
 

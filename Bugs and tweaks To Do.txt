@@ -1,8 +1,20 @@
 Essential
 Check cart.php logic regarding cart status
 
+This is a quick recap of what I will do 
+create-stripe-session.php will see the data exists and recalculate totals, then, 
+open stripe,it will only receive the total and email. 
 
+Once the credit card data is correctly written and stripe redirects back, 
+I'll save the needed data in checkout_sessions in the database, make cart innactive 
+and wait for the webhook. 
 
+If the webhook success response is instant, 
+store real order in the database, 
+show a version of success.php that says the order details, make cart vanish
+if it isn't instant, show processing order.
+
+after upload modify addresses of stripe success
 
 After release
 Putting only a space in admin add products descriptxions causes the form to not be sent

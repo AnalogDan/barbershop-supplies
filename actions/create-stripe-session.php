@@ -3,7 +3,9 @@ session_start();
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/pricing.php';
 header('Content-Type: application/json');
-$tz = new DateTimeZone(timezone: 'America/Los_Angeles');
+$tz = new DateTimeZone('America/Los_Angeles');
+ini_set('display_errors', 0);
+error_reporting(0);
 
 //Make sure all required fields and data exist
 $userId = $_SESSION['user_id'] ?? null;
@@ -110,17 +112,17 @@ $shipping = 0; // API later
 $total    = $subtotal + $salesTax + $shipping;
 
 //Create order snapshot the webhook can rely on 
-require_once __DIR__ . '/../vendor/autoload.php'; // Stripe PHP library
+require_once __DIR__ . '/../vendor/autoload.php'; 
 $stripeConfig = require __DIR__ . '/../config/stripe.php';
 \Stripe\Stripe::setApiKey($stripeConfig['secret_key']);
-$expiresAt = (new DateTime('now', $tz))->modify('+1 hour')->format('Y-m-d H:i:s');
+$now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
 $expiresAt = (new DateTime('now', $tz))->modify('+1 hour')->format('Y-m-d H:i:s');
 try {
     $stmt = $pdo->prepare("
         INSERT INTO checkout_sessions 
         (cart_id, user_id, email, subtotal, sales_tax, shipping_cost, 
         total, status, order_id, expires_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->execute([
         $cartId,
@@ -155,12 +157,20 @@ try {
         'success_url' => 'http://localhost/barbershopSupplies/public/success.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => 'http://localhost/barbershopSupplies/public/checkout.php',
     ]);
+    $stmt = $pdo->prepare("
+        UPDATE checkout_sessions
+        SET stripe_session_id = ?
+        WHERE id = ?
+    ");
+    $stmt->execute([
+    $stripeSession->id,
+    $checkoutSessionId
+    ]);
 
-    // 3️⃣ Return the Stripe session ID to frontend
     echo json_encode([
         'success' => true,
-        'publicKey' => $stripeConfig['publishable_key'], // add this to your stripe.php config
-        'stripeSessionId' => $stripeSession->id  // match the JS casing
+        'publicKey' => $stripeConfig['publishable_key'], 
+        'stripeSessionId' => $stripeSession->id  
     ]);
     exit;
 
