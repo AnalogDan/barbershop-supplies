@@ -143,20 +143,25 @@ try {
     // Create Stripe Checkout session
     $stripeSession = \Stripe\Checkout\Session::create([
         'mode' => 'payment',
-        'customer_email' => $step1['email'], // optional but helpful
+        'customer_email' => $step1['email'],
+        'metadata' => [
+            'checkout_sessions_id' => $checkoutSessionId
+        ],
         'line_items' => [[
             'price_data' => [
                 'currency' => 'usd',
                 'product_data' => [
-                    'name' => 'Barbershop Order #' . $checkoutSessionId,
+                    'name' => 'New Vision Barbershop Supplies Order',
                 ],
-                'unit_amount' => (int) round($total * 100), // cents
+                'unit_amount' => (int) round($total * 100),
             ],
             'quantity' => 1,
         ]],
-        'success_url' => 'http://localhost/barbershopSupplies/public/success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => 'http://localhost/barbershopSupplies/public/checkout.php',
+        'success_url' => 'http://localhost/barbershopSupplies/public/process-success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => 'http://localhost/barbershopSupplies/public/checkout.php'
     ]);
+    http_response_code(303);
+    // header("Location: " . $stripeSession->url);
     $stmt = $pdo->prepare("
         UPDATE checkout_sessions
         SET stripe_session_id = ?
@@ -170,7 +175,8 @@ try {
     echo json_encode([
         'success' => true,
         'publicKey' => $stripeConfig['publishable_key'], 
-        'stripeSessionId' => $stripeSession->id  
+        'stripeSessionId' => $stripeSession->id,
+        'stripeUrl' => $stripeSession->url
     ]);
     exit;
 

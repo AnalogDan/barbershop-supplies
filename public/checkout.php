@@ -1171,8 +1171,9 @@
                         btn.textContent = 'Confirm and pay';
                         return;
                     }
-                    const stripe = Stripe(result.publicKey); 
-                    await stripe.redirectToCheckout({ sessionId: result.stripeSessionId });
+                    window.location.href = result.stripeUrl;
+                    // const stripe = Stripe(result.publicKey); 
+                    // await stripe.redirectToCheckout({ sessionId: result.stripeSessionId });
 
                 } catch (err) {
                     console.error(err);
