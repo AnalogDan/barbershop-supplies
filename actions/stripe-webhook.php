@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $tz = new DateTimeZone('America/Los_Angeles');
 $now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
 
-$endpointSecret = 'whsec_XXXXXXXXXXXX'; // replace later
+$endpointSecret = 'whsec_4b8e793d014f83c11c4addb4eae31b10fd820422e600e67d5405eccc437058b7'; 
 
 $payload = @file_get_contents('php://input');
 $sigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
@@ -27,13 +27,18 @@ if ($event->type === 'checkout.session.completed') {
     $session = $event->data->object;
     if ($session->payment_status === 'paid') {
         $checkoutSessionId = $session->metadata->checkout_sessions_id ?? null;
+        $token = bin2hex(random_bytes(32));
+        $stmt = $pdo->prepare("
+            UPDATE checkout_sessions
+            SET
+                status = 'paid',
+                success_token = ?,
+                updated_at = ?
+            WHERE id = ?
+        ");
+        $stmt->execute([$token, $now, $checkoutSessionId]);
         if ($checkoutSessionId) {
-            $stmt = $pdo->prepare("
-                UPDATE checkout_sessions
-                SET status = 'paid', updated_at = ?
-                WHERE id = ?
-            ");
-            $stmt->execute([$now, $checkoutSessionId]);
+            require __DIR__ . '/finalize-order.php';
         }
     }
 }

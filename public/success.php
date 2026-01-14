@@ -1,13 +1,38 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
+    $tz = new DateTimeZone('America/Los_Angeles');
+    $now = (new DateTime('now', timezone: $tz))->format('Y-m-d H:i:s');
 
-    //Only accessible once
-    if (!isset($_GET['token'], $_SESSION['order_success_token']) || $_GET['token'] !== $_SESSION['order_success_token']) {
+
+    //Only accessible once via success_token flag in database
+    $orderId = $_GET['order_id'] ?? null;
+    $token   = $_GET['token'] ?? null;
+    if (!$orderId || !$token) {
         header('Location: /barbershopSupplies/public/index.php');
         exit;
     }
-    unset($_SESSION['order_success_token']);
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM checkout_sessions
+        WHERE order_id = ?
+        AND success_token = ?
+        AND token_used_at IS NULL
+        AND status = 'paid'
+        LIMIT 1
+    ");
+    $stmt->execute([$orderId, $token]);
+    $checkout = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$checkout) {
+        header('Location: /barbershopSupplies/public/index.php');
+        exit;
+    }
+    $stmt = $pdo->prepare("
+        UPDATE checkout_sessions
+        SET token_used_at = ?
+        WHERE id = ?
+    ");
+    $stmt->execute([$now, $checkout['id']]);
     
     //Fetch data
     $orderId = (int)$_GET['order_id'];

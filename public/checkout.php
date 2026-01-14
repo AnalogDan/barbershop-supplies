@@ -1172,41 +1172,14 @@
                         return;
                     }
                     window.location.href = result.stripeUrl;
-                    // const stripe = Stripe(result.publicKey); 
-                    // await stripe.redirectToCheckout({ sessionId: result.stripeSessionId });
-
+                    
                 } catch (err) {
                     console.error(err);
                     showAlertModal('Network error. Please try again.', () => {});
                     btn.disabled = false;
                     btn.textContent = 'Confirm & Pay';
                 }
-            
-                
-                //Confirm order
-            //     try {
-            //         const response = await fetch('/barbershopSupplies/actions/confirm-order.php', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json'
-            //             },
-            //             body: JSON.stringify(payload)
-            //         });
-            //         const result = await response.json();
-            //         console.log('Confirm order response:', result);
-            //         if (!result.success) {
-            //             showAlertModal(result.message || 'Order could not be processed.', () => {});
-            //             btn.disabled = false;
-            //             btn.textContent = 'Confirm & Pay';
-            //             return;
-            //         }
-            //         window.location.href = '/barbershopSupplies/public/success.php?order_id=' + result.order_id + '&token=' + result.token;
-            //     } catch (err) {
-            //         console.error(err);
-            //         showAlertModal('Network error. Please try again.', () => {});
-            //         btn.disabled = false;
-            //         btn.textContent = 'Confirm & Pay';
-            //     }
+        
             });
 
             //Modal functions
