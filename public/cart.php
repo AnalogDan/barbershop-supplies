@@ -23,10 +23,11 @@
 				p.sale_start,
 				p.sale_end
 			FROM cart_items ci
+			JOIN carts c ON c.id = ci.cart_id
 			JOIN products p ON p.id = ci.product_id
-			WHERE ci.cart_id = ?
+			WHERE ci.cart_id = ? and c.status = ?
 		");
-		$stmt->execute([$cartId]);
+		$stmt->execute([$cartId, 'active']);
 		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
@@ -38,15 +39,22 @@
 			$quantity  = (int) $item['quantity'];
 			if ($stock <= 0) {
 				$stmt = $pdo->prepare("
-					DELETE FROM cart_items
-					WHERE cart_id = ? AND product_id = ?
+					DELETE ci
+					FROM cart_items ci
+					JOIN carts c ON c.id = ci.cart_id
+					WHERE ci.cart_id = ?
+					AND ci.product_id = ?
+					AND c.status = 'active';
 				");
 				$stmt->execute([$cartId, $productId]);
 			} elseif ($quantity > $stock) {
 				$stmt = $pdo->prepare("
-					UPDATE cart_items
-					SET quantity = ?
-					WHERE cart_id = ? AND product_id = ?
+					UPDATE cart_items ci
+					JOIN carts c ON c.id = ci.cart_id
+					SET ci.quantity = ?
+					WHERE ci.cart_id = ?
+					AND ci.product_id = ?
+					AND c.status = 'active';
 				");
 				$stmt->execute([$stock, $cartId, $productId]);
 			}
@@ -63,11 +71,13 @@
 					p.sale_start,
 					p.sale_end
 				FROM cart_items ci
+				JOIN carts c ON c.id = ci.cart_id
 				JOIN products p ON p.id = ci.product_id
 				WHERE ci.cart_id = ?
+				AND c.status = 'active';
 			");
-			$stmt->execute([$cartId]);
-			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$stmt->execute([$cartId]);
+		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 ?>
 
