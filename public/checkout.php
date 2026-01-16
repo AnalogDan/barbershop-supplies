@@ -7,12 +7,13 @@
 	$tz = new DateTimeZone('America/Los_Angeles');
     $checkoutSteps = $_SESSION['checkout']['steps'] ?? []; 
     
+    //Get correct cartId
+    require_once __DIR__ . '\..\actions\cart-resolver.php';
+    $cartId = getActiveCartId($pdo);
 
 	//Fetch cart/product info
 	$cartItems = [];
-	if (!empty($_SESSION['cart_id'])) {
-		$cartId = (int) $_SESSION['cart_id'];
-
+	if ($cartId) {
 		$stmt = $pdo->prepare("
 			SELECT
 				ci.product_id,
@@ -25,8 +26,10 @@
 				p.sale_start,
 				p.sale_end
 			FROM cart_items ci
+            JOIN carts c ON c.id = ci.cart_id
 			JOIN products p ON p.id = ci.product_id
 			WHERE ci.cart_id = ?
+            AND c.status = 'active'
 		");
 		$stmt->execute([$cartId]);
 		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -40,16 +43,23 @@
 			$quantity  = (int) $item['quantity'];
 			if ($stock <= 0) {
 				$stmt = $pdo->prepare("
-					DELETE FROM cart_items
-					WHERE cart_id = ? AND product_id = ?
-				");
+					DELETE ci
+                        FROM cart_items ci
+                        JOIN carts c ON c.id = ci.cart_id
+                        WHERE ci.cart_id = ?
+                        AND ci.product_id = ?
+                        AND c.status = 'active'
+                    ");
 				$stmt->execute([$cartId, $productId]);
 			} elseif ($quantity > $stock) {
 				$stmt = $pdo->prepare("
-					UPDATE cart_items
-					SET quantity = ?
-					WHERE cart_id = ? AND product_id = ?
-				");
+					UPDATE cart_items ci
+                        JOIN carts c ON c.id = ci.cart_id
+                        SET ci.quantity = ?
+                        WHERE ci.cart_id = ?
+                        AND ci.product_id = ?
+                        AND c.status = 'active'
+                    ");
 				$stmt->execute([$stock, $cartId, $productId]);
 			}
 		}
@@ -65,8 +75,10 @@
 					p.sale_start,
 					p.sale_end
 				FROM cart_items ci
+                JOIN carts c ON c.id = ci.cart_id
 				JOIN products p ON p.id = ci.product_id
 				WHERE ci.cart_id = ?
+                AND c.status = 'active'
 			");
 			$stmt->execute([$cartId]);
 			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -818,12 +830,12 @@
                     <div class="section-content">
                         <div class="payment-method">
                             <div class="three-section-bar">
-                                <div class="sec1">
+                                <!-- <div class="sec1">
                                     <label class="option">
                                         <input type="radio" name="select1">
                                         <span class="circle circle-sec1"></span>
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="sec2">
                                     <div class="sec2-text">
                                         <div class="main">Credit/Debit card</div>
@@ -871,7 +883,7 @@
         ?>
         <script src="https://js.stripe.com/v3/"></script>
         <script>
-            //stripe variables
+            //stripe variable
             const stripe = Stripe('pk_test_51SnmmVJznFlGH0nYPwDArcRPi9LNClQFgBACL9ilYZdLK2nmXSOucoJ7Jui57G1Ty7mGVEvr0KY3zpVTuk0oHv7Z00r4BWSRKa');
         
             // showAlertModal("Test alert.", () => {});
@@ -1005,6 +1017,7 @@
                     const section = button.closest('.section');
                     const step = parseInt(section.dataset.step, 10);
                     const nextStep = step + 1;
+                    const LAST_STEP = 4;
                     const fields = stepFieldMap[step] || [];
                     const stepData = {};
                     fields.forEach(name => {
@@ -1068,7 +1081,9 @@
                             );
                             return;
                         }
-                        completeStep(section, step, nextStep);
+                        if (step < LAST_STEP) {
+                            completeStep(section, step, nextStep);
+                        }
                     } catch (err) {
                         console.error(err);
                         showAlertModal(

@@ -23,6 +23,7 @@ try {
     exit;
 }
 
+//Success case
 if ($event->type === 'checkout.session.completed') {
     $session = $event->data->object;
     if ($session->payment_status === 'paid') {
@@ -35,11 +36,28 @@ if ($event->type === 'checkout.session.completed') {
                 success_token = ?,
                 updated_at = ?
             WHERE id = ?
+            AND status != 'paid'
         ");
         $stmt->execute([$token, $now, $checkoutSessionId]);
-        if ($checkoutSessionId) {
+        if ($stmt->rowCount() === 1) {
             require __DIR__ . '/finalize-order.php';
         }
+    }
+}
+
+//Fail case
+if ($event->type === 'checkout.session.expired') {
+    $session = $event->data->object;
+    $checkoutSessionId = $session->metadata->checkout_sessions_id ?? null;
+    if ($checkoutSessionId) {
+        $stmt = $pdo->prepare("
+            UPDATE checkout_sessions
+            SET status = 'expired',
+                updated_at = ?
+            WHERE id = ?
+              AND status != 'paid'
+        ");
+        $stmt->execute([$now, $checkoutSessionId]);
     }
 }
 

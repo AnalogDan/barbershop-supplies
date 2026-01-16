@@ -111,6 +111,10 @@ try {
     $stmt = $pdo->prepare("UPDATE carts SET status = 'completed' WHERE id = ?");
     $stmt->execute([$checkout['cart_id']]);
 
+    //Kill all session references
+    unset($_SESSION['cart_id']);
+
+
     //Update checkout_sessions with success_token and order id
     $successToken = bin2hex(random_bytes(32));
     $stmt = $pdo->prepare("

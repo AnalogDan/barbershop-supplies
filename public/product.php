@@ -611,7 +611,6 @@
                     console.log(`Quantity in cart: ${data.quantity}`);
                     console.log(`Action to the cart: ${data.message}`);
                     showMessage2(addToCartBtn, 'Added to cart!');
-                    // here you can show a toast / message
                 })
                 .catch(err => console.error('Fetch error:', err));
             });

@@ -6,11 +6,25 @@
 	require_once __DIR__ . '/../includes/pricing.php';
 	$tz = new DateTimeZone('America/Los_Angeles'); 
 
+	//Set the cartId from session or logged user
+	$cartId = null;
+	if (isset($_SESSION['user_id'])) {
+		$stmt = $pdo->prepare("
+			SELECT c.id
+			FROM carts c
+			WHERE c.user_id = ?
+			AND c.status = 'active'
+			LIMIT 1
+		");
+		$stmt->execute([$_SESSION['user_id']]);
+		$cartId = $stmt->fetchColumn();
+	} elseif (!empty($_SESSION['cart_id'])) {
+		$cartId = (int) $_SESSION['cart_id'];
+	}
+
 	//Fetch cart/product info
 	$cartItems = [];
-	if (!empty($_SESSION['cart_id'])) {
-		$cartId = (int) $_SESSION['cart_id'];
-
+	if ($cartId) {
 		$stmt = $pdo->prepare("
 			SELECT
 				ci.product_id,

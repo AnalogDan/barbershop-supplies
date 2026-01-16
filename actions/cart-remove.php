@@ -4,10 +4,9 @@ require_once __DIR__ . '/../includes/db.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['cart_id'])) {
-	echo json_encode(['success' => false, 'message' => 'No cart']);
-	exit;
-}
+//Get correct cartId
+require_once __DIR__ . '\cart-resolver.php';
+$cartId = getActiveCartId($pdo);
 
 $data = json_decode(file_get_contents('php://input'), true);
 $productId = (int)($data['product_id'] ?? 0);
@@ -25,7 +24,7 @@ $stmt = $pdo->prepare("
 ");
 
 $stmt->execute([
-	'cart_id' => $_SESSION['cart_id'],
+	'cart_id' => $cartId,
 	'product_id' => $productId
 ]);
 

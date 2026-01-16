@@ -1,12 +1,7 @@
 Essential
-Check cart.php logic regarding cart status
--Creating new cart should have active status
--Olny can update an active cart, places that can update:
-     -Adding stuff from all 3 places
-     -Editing quantity in cart.php
-     -Deleting from cart.php
-     -Rendering in cart.php                DONE
-     -Rendering in checkout 
+
+To have a working delivery system:
+idk haha
 
 After getting the delivery right:
 Insert delivery_eta when creating order in finalize-order.php
@@ -14,10 +9,11 @@ Insert in table addresses the correct address in finalize-order.php
 Put the correct $addressId in finalize-order.php (when creating order)
 
 After going live:
-Modify public key in 2 places and secret key in 1 place
-Modify urls of stripe success and cancel
-Modify webhook destination
+Modify Stripe public key in 2 places and secret key in 1 place
+Modify Stripe urls of success and cancel
+Modify Stripe webhook destination
 Modify in stripe-webhook.php $endpointSecret
+Turn on Stripe->settings ->business->customeremails->successful payments
 
 After release
 Putting only a space in admin add products descriptxions causes the form to not be sent

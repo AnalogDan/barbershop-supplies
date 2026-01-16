@@ -65,12 +65,24 @@ $_SESSION['user_email'] = $user['email'];
 $_SESSION['user_first_name'] = $user['first_name'];
 $userId = (int)$user['id'];
 
-//CART SHIT - fetch guest and user carts
-$guestCartId = $_SESSION['cart_id'] ?? null;
+//CART SHIT - Set guest cartId, fetch guest and user carts
+$guestCartId = null;
+if (!empty($_SESSION['cart_id'])) {
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM carts
+        WHERE id = ?
+        AND status = 'active'
+    ");
+    $stmt->execute([$_SESSION['cart_id']]);
+    $guestCartId = $stmt->fetchColumn() ?: null;
+}
+
 $stmt = $pdo->prepare("
     SELECT id
     FROM carts
     WHERE user_id = ?
+    AND status = 'active'
     LIMIT 1
 ");
 $stmt->execute([$userId]);
@@ -90,7 +102,7 @@ if ($guestCartId && !$userCartId) {
     $guestCartPromoted = true;
 }
 //Both user and guest have cars, merge 'em (it works because the if $guestItems is empty the loop doesn't execute, duh)
-if ($guestCartId && $userCartId && !$guestCartPromoted) {
+if ($guestCartId && $userCartId && !$guestCartPromoted && $guestCartId !== $userCartId) {
     $stmt = $pdo->prepare("
         SELECT product_id, quantity
         FROM cart_items
@@ -140,10 +152,21 @@ if ($guestCartId && $userCartId && !$guestCartPromoted) {
     }
 }
 //Delete guest cart 
-if (!$guestCartPromoted && $guestCartId) {
-    $stmt = $pdo->prepare("DELETE FROM cart_items WHERE cart_id = ?");
+if ($guestCartId && $guestCartId !== $userCartId) {
+    $stmt = $pdo->prepare("
+        DELETE ci
+        FROM cart_items ci
+        JOIN carts c ON c.id = ci.cart_id
+        WHERE c.id = ?
+        AND c.status = 'active'
+    ");
     $stmt->execute([$guestCartId]);
-    $stmt = $pdo->prepare("DELETE FROM carts WHERE id = ?");
+
+    $stmt = $pdo->prepare("
+        DELETE FROM carts
+        WHERE id = ?
+        AND status = 'active'
+    ");
     $stmt->execute([$guestCartId]);
 }
 //Save the user cart in session

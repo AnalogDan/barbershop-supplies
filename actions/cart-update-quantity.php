@@ -4,11 +4,9 @@ require_once __DIR__ . '/../includes/db.php';
 
 header('Content-Type: application/json');
 
-/*Cart exists? Fail if not */
-if (empty($_SESSION['cart_id'])) {
-    echo json_encode(['success' => false, 'message' => 'No cart']);
-    exit;
-}
+//Get correct cartId
+require_once __DIR__ . '\cart-resolver.php';
+$cartId = getActiveCartId($pdo);;
 
 //Validate data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -18,7 +16,6 @@ if ($productId <= 0 || $quantity < 1) {
     echo json_encode(['success' => false, 'message' => 'Invalid data']);
     exit;
 }
-$cartId = (int)$_SESSION['cart_id'];
 
 /*Sanitize quantity (stock cap), product exists?*/
 $stmt = $pdo->prepare("
