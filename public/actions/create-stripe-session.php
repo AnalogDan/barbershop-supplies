@@ -1,7 +1,8 @@
 <?php
 session_start();
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/pricing.php';
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+require_once BASE_PATH . 'includes/pricing.php';
 header('Content-Type: application/json');
 $tz = new DateTimeZone('America/Los_Angeles');
 ini_set('display_errors', 0);
@@ -54,7 +55,7 @@ foreach ($requiredStep2Fields as $field) {
 }
 
 //Rebuild and recalculate cart items
-require_once __DIR__ . '\cart-resolver.php';
+require_once __DIR__ . '/cart-resolver.php';
 $cartId = getActiveCartId($pdo);
 $stmt = $pdo->prepare("
     SELECT
@@ -113,8 +114,8 @@ $shipping = 0; // API later
 $total    = $subtotal + $salesTax + $shipping;
 
 //Create order snapshot the webhook can rely on 
-require_once __DIR__ . '/../vendor/autoload.php'; 
-$stripeConfig = require __DIR__ . '/../config/stripe.php';
+require_once __DIR__ . '/../../vendor/autoload.php'; 
+$stripeConfig = require __DIR__ . '/../../config/stripe.php';
 \Stripe\Stripe::setApiKey($stripeConfig['secret_key']);
 $now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
 $expiresAt = (new DateTime('now', $tz))->modify('+1 hour')->format('Y-m-d H:i:s');
@@ -162,7 +163,6 @@ try {
         'cancel_url'  => 'http://localhost/barbershopSupplies/public/checkout.php'
     ]);
     http_response_code(303);
-    // header("Location: " . $stripeSession->url);
     $stmt = $pdo->prepare("
         UPDATE checkout_sessions
         SET stripe_session_id = ?

@@ -330,7 +330,7 @@
 
 	//Function to add to cart
 	function addToCart(productId, quantity, onSuccess) {
-		fetch('/barbershopSupplies/actions/cart-add.php', {
+		fetch('<?= BASE_URL ?>actions/cart-add.php', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({

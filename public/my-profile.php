@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'account';
@@ -386,7 +387,7 @@
             });
 
         function removeFavorite(productId, btn) {
-            fetch('/barbershopSupplies/actions/remove-favorite.php', {
+            fetch('<?= BASE_URL ?>actions/remove-favorite.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

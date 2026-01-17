@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'account';
@@ -118,7 +119,7 @@
                 const oldPassword = document.getElementById('old_password').value;
                 const newPassword = document.getElementById('new_password').value;
 
-                const checkRes = await fetch('/barbershopSupplies/actions/check-old-password.php', {
+                const checkRes = await fetch('<?= BASE_URL ?>actions/check-old-password.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ old_password: oldPassword })
@@ -137,7 +138,7 @@
                 showConfirmModal(
                     'Are you sure you want to change your password?',
                     async () => {
-                        const changeRes = await fetch('/barbershopSupplies/actions/change-password.php', {
+                        const changeRes = await fetch('<?= BASE_URL ?>actions/change-password.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ new_password: newPassword })

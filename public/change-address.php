@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'account';
@@ -247,7 +248,7 @@
 
                 const formData = new FormData(form);
 
-                fetch('/barbershopSupplies/actions/change-address.php', {
+                fetch('<?= BASE_URL ?>actions/change-address.php', {
                     method: 'POST',
                     body: formData
                 })

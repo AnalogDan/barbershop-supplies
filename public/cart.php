@@ -1,6 +1,7 @@
 <?php
     require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
+	require_once __DIR__ . '/../config.php';
 	$currentPage = 'cart';
 
 	require_once __DIR__ . '/../includes/pricing.php';
@@ -491,7 +492,7 @@
 
 			//Update quantity function
 			function updateQuantity(productId, newQty, input) {
-				fetch('<?= BASE_URL ?>/../actions/cart-update-quantity.php', {
+				fetch('<?= BASE_URL ?>actions/cart-update-quantity.php', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
@@ -564,7 +565,7 @@
 					const row = this.closest('.cart-row');
 					if (!productId || !row) return;
 
-					fetch('<?= BASE_URL ?>/../actions/cart-remove.php', {
+					fetch('<?= BASE_URL ?>actions/cart-remove.php', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ product_id: productId })

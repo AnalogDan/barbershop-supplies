@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
 session_start();
 
 $message = "";
@@ -41,7 +42,7 @@ $currentPage = '';
 }
 </style>
 <html lang="en">
-	<?php include '../includes/head.php'; ?>
+	<?php include BASE_PATH . 'includes/head.php'; ?>
 	<body>
 		<main>
             <?php if (!empty($message)): ?>

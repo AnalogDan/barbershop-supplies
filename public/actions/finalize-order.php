@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/pricing.php';
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+require_once BASE_PATH . 'includes/pricing.php';
 $tz = new DateTimeZone('America/Los_Angeles');
 $now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
 

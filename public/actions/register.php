@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require __DIR__ . '/../phpmailer/vendor/autoload.php';
+require BASE_PATH . 'phpmailer/vendor/autoload.php';
 header('Content-Type: application/json');
 
 function respond($success, $message) {
@@ -50,7 +51,7 @@ $stmt->execute([$first, $last, $email, $hashed, $created_at, $is_active, $token]
 
 // 7. Send activation email
 //Google app pasword (phpmailer-newvisionbarbersupplies@gmail.com) is: ybnc jweo jjje hlde
-$activation_link = "http://localhost/barbershopSupplies/actions/activate.php?token=" . $token;
+$activation_link = "http://localhost/barbershopSupplies/public/actions/activate.php?token=" . $token;
 $mail = new PHPMailer(exceptions: true);
 $mail->isSMTP();
 $mail->Host = 'smtp.gmail.com';

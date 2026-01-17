@@ -1,8 +1,8 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
-    // define('BASE_URL', '/barbershopSupplies/public');
-    require_once __DIR__ . '/../actions/config.php';
+    require_once __DIR__ . '/../config.php';
 
     //Fetch all the thingies you need
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -479,15 +479,15 @@
             <span>Andis Slimline Pro Chrome Trimmer</span>
         </div> -->
         <div class="breadcrumb">
-            <a href="<?= BASE_URL ?>/shop.php">Shop</a>
+            <a href="<?= BASE_URL ?>shop.php">Shop</a>
             <span>&gt;</span>
 
-            <a href="<?= BASE_URL ?>/shop.php?main=<?= (int)$product['main_category_id'] ?>&page=1">
+            <a href="<?= BASE_URL ?>shop.php?main=<?= (int)$product['main_category_id'] ?>&page=1">
                 <?= htmlspecialchars($product['main_category_name']) ?>
             </a>
             <span>&gt;</span>
 
-            <a href="<?= BASE_URL ?>/shop.php?subcategory=<?= (int)$product['subcategory_id'] ?>&page=1">
+            <a href="<?= BASE_URL ?>shop.php?subcategory=<?= (int)$product['subcategory_id'] ?>&page=1">
                 <?= htmlspecialchars($product['subcategory_name']) ?>
             </a>
             <span>&gt;</span>
@@ -592,7 +592,7 @@
                 const productId = addToCartBtn.dataset.productId;
                 const quantity = parseInt(qtyInput.value, 10);
 
-                fetch('/barbershopSupplies/actions/cart-add.php', {
+                fetch('<?= BASE_URL ?>actions/cart-add.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -784,7 +784,7 @@
                 const isAdding = heart.classList.contains('fa-regular');
                 const productId = heart.dataset.productId;
 
-                fetch(`/barbershopSupplies/actions/favorite.php`, {
+                fetch('<?= BASE_URL ?>actions/favorite.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -1,4 +1,5 @@
 <?php
+	require_once __DIR__ . '/../config.php';
 	require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
 	if (isset($_SESSION['user_id'])) {
@@ -148,7 +149,7 @@
 				try{
 					const form = document.getElementById('register-form');
 					const formData = new FormData(form);
-					const response = await fetch('../actions/register.php', {
+					const response = await fetch('<?= BASE_URL ?>actions/register.php', {
 						method: 'POST',
 						body: formData
 					});

@@ -1,4 +1,5 @@
 <?php
+	require_once __DIR__ . '/../config.php';
 	require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
 	if (isset($_SESSION['user_id'])) {
@@ -88,15 +89,12 @@
 				if (!validateForm()) return;
 				const form = document.getElementById('login-form');
 				const formData = new FormData(form);
-				const response = await fetch('../actions/login.php', {
+				const response = await fetch('<?= BASE_URL ?>actions/login.php', {
 					method: 'POST',
 					body: formData
 				});
 				const result = await response.json();
 				if (result.success) {
-					// showAlertModal(result.message, () => {
-					// 	window.location.href = "home.php";
-					// });
 					window.location.href = "home.php";
 				} else {
 					showAlertModal(result.message);

@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
 session_start();
 header('Content-Type: application/json');
 

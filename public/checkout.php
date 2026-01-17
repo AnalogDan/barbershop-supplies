@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'cart';
@@ -8,7 +9,7 @@
     $checkoutSteps = $_SESSION['checkout']['steps'] ?? []; 
     
     //Get correct cartId
-    require_once __DIR__ . '\..\actions\cart-resolver.php';
+    require_once __DIR__ . '/actions/cart-resolver.php';
     $cartId = getActiveCartId($pdo);
 
 	//Fetch cart/product info
@@ -1043,6 +1044,7 @@
                             invalidMessage = 'Please enter a valid phone number.';
                         }
                     } else if (step === 2) {
+                        //Check data isn't empty
                         const requiredFields = ['full_name', 'street', 'city', 'state', 'zip'];
                         for (let field of requiredFields) {
                             if (!isNotEmpty(stepData[field])) {
@@ -1050,14 +1052,34 @@
                                 break;
                             }
                         }
+
+                        // //Validate address with UPS
+                        // const res = await fetch('<= BASE_URL ?>actions/ups-validate-address.php', {
+                        //     method: 'POST',
+                        //     headers: { 'Content-Type': 'application/json' },
+                        //     body: JSON.stringify({
+                        //         street: stepData.street,
+                        //         city: stepData.city,
+                        //         state: stepData.state,
+                        //         zip: stepData.zip
+                        //     })
+                        // });
+                        // const upsResult = await res.json();
+                        // if (!upsResult.success) {
+                        //     showAlertModal(
+                        //         'UPS could not validate this address. Please check spelling.',
+                        //         () => {}
+                        //     );
+                        //     return;
+                        // }
                     }
                     if (invalidMessage) {
                         showAlertModal(invalidMessage, () => {});
                         return; 
                     }
                     // Store in session before completing the step
-                     try {
-                        const response = await fetch('/barbershopSupplies/actions/checkout-continue.php', {
+                    try {
+                        const response = await fetch('<?= BASE_URL ?>actions/checkout-continue.php', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -1172,7 +1194,7 @@
                 };
                 //Stripe
                 try {
-                    const response = await fetch('/barbershopSupplies/actions/create-stripe-session.php', {
+                    const response = await fetch('<?= BASE_URL ?>actions/create-stripe-session.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

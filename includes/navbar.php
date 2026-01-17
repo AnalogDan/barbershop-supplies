@@ -1,6 +1,5 @@
 <?php
-// define('BASE_URL', '/barbershopSupplies/public');
-require_once __DIR__ . '/../actions/config.php';
+require_once __DIR__ . '/../config.php';
 $stmt = $pdo->query("
     SELECT id, name
     FROM categories
@@ -99,29 +98,29 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                     <a class="nav-link" href="shop.php">Shop</a>
                     <ul class="dropdown-menu-custom">
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php?subcategory=50&page=1#top-bar">
+                            <a href="<?= BASE_URL ?>shop.php?subcategory=50&page=1#top-bar">
                                 <?= htmlspecialchars($categoriesById[50] ?? 'Category') ?>
                             </a>
                         </li>
 
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php?subcategory=51&page=1#top-bar">
+                            <a href="<?= BASE_URL ?>shop.php?subcategory=51&page=1#top-bar">
                                 <?= htmlspecialchars($categoriesById[51] ?? 'Category') ?>
                             </a>
                         </li>
 
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php?subcategory=52&page=1#top-bar">
+                            <a href="<?= BASE_URL ?>shop.php?subcategory=52&page=1#top-bar">
                                 <?= htmlspecialchars($categoriesById[52] ?? 'Category') ?>
                             </a>
                         </li>
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php?page=1&sale=1">Sales</a>
+                            <a href="<?= BASE_URL ?>shop.php?page=1&sale=1">Sales</a>
                         </li>
                         <li class="dropdown-divider"></li>
 
                         <li>
-                            <a href="<?= BASE_URL ?>/shop.php" class="navCategoriesLink">See All Categories</a>
+                            <a href="<?= BASE_URL ?>shop.php" class="navCategoriesLink">See All Categories</a>
                         </li>
                     </ul>
                 </li>

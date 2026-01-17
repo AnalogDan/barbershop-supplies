@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../config.php';
 session_start();
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -7,7 +8,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 ?>
 <?php
-	require_once __DIR__ . '/../includes/db.php';
+	require_once __DIR__ . '/../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
 ?>
 <!DOCTYPE html>
 
@@ -81,7 +83,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             showAlertModal("Please enter a category name.");
             return;
         }
-        fetch('/barbershopSupplies/admin/includes/check-duplicate-main.php', {
+        fetch('<?= BASE_URL ?>admin/includes/check-duplicate-main.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: `name=${encodeURIComponent(name)}`
@@ -94,7 +96,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 showConfirmModal(
                     `Do you want to add "${name}" as a new main category?`,
                     () => {
-                                fetch('/barbershopSupplies/admin/includes/add-main-category-handler.php', {
+                                fetch('<?= BASE_URL ?>admin/includes/add-main-category-handler.php', {
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                                     body: `name=${encodeURIComponent(name)}`
