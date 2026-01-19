@@ -1,16 +1,19 @@
+<?php
+require_once __DIR__ . '/../../../config.php';
+?>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="author" content="New Vision Admin">
-  <link rel="shortcut icon" href="/barbershopSupplies/public/favicon.png">
+  <link rel="shortcut icon" href="<?= BASE_URL ?>favicon.png">
 
   <meta name="description" content="Admin Panel" />
   <meta name="keywords" content="admin, dashboard" />
 
-  <link href="/barbershopSupplies/public/css/bootstrap.min.css" rel="stylesheet">
+  <link href="<?= BASE_URL ?>css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <link href="/barbershopSupplies/public/css/style.css" rel="stylesheet">
-  <link href="/barbershopSupplies/public/css/tiny-slider.css" rel="stylesheet">
+  <link href="<?= BASE_URL ?>css/style.css" rel="stylesheet">
+  <link href="<?= BASE_URL ?>css/tiny-slider.css" rel="stylesheet">
 
   <title>New Vision Admin Panel</title>
 </head>

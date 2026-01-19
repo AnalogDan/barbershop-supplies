@@ -85,7 +85,7 @@
 			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
       if (empty($cartItems)) {
-        header('Location: /barbershopSupplies/public/cart.php');
+        header("Location: " . BASE_URL . "cart.php");
         exit;
     }
 

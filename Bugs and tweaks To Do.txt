@@ -14,6 +14,7 @@ Modify Stripe urls of success and cancel
 Modify Stripe webhook destination
 Modify in stripe-webhook.php $endpointSecret
 Turn on Stripe->settings ->business->customeremails->successful payments
+Modify $activation_link in register.php
 
 After release
 Putting only a space in admin add products descriptxions causes the form to not be sent
@@ -23,3 +24,4 @@ Allow change name and email from my-profile
 Can store many addresses, edit them from my-profile, and choose or add from checkout
 Add a few clickable favorites in my-profile.php
 Add pay-pal
+Add forgot password in login.php

@@ -99,7 +99,7 @@
         include '../includes/footer2.php';
         include '../includes/modals.php';
     ?>
-    <script src="/barbershopSupplies/public/js/password-toggle-multi.js"></script>
+    <script src="<?= BASE_URL ?>js/password-toggle-multi.js"></script>
     <script>
         // showAlertModal("Test alert.", () => {});
         // showConfirmModal(

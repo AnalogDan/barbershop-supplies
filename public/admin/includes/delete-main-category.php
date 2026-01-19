@@ -1,5 +1,6 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
 
     if (!isset($_POST['id'])) {
         http_response_code(400);

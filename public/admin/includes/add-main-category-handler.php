@@ -1,5 +1,6 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $name = trim($_POST['name'] ?? '');
         if ($name === ''){

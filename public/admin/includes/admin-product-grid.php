@@ -132,7 +132,7 @@ if (isset($_GET['subcategory'])) {
         <?php foreach ($products as $product): ?>
             <div class="product-row" data-product-id="<?= $product['id'] ?>">
                 <div class="thumbnail">
-                    <img src="/barbershopSupplies/public/<?= htmlspecialchars($product['cutout_image']) ?>" 
+                    <img src="<?= BASE_URL ?><?= htmlspecialchars($product['cutout_image']) ?>" 
                         alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
                 </div>
                 <div class="name"><?= htmlspecialchars($product['name']) ?></div>
@@ -161,7 +161,7 @@ if (isset($_GET['subcategory'])) {
             const productId = this.dataset.productId;
             const newStock = this.textContent.trim();
 
-            fetch('/barbershopSupplies/admin/includes/update-stock.php', {
+            fetch('<?= BASE_URL ?>admin/includes/update-stock.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -193,7 +193,7 @@ if (isset($_GET['subcategory'])) {
                 () => {
                         const productRow = icon.closest('.product-row');
                         const productId = productRow.dataset.productId;
-                        fetch('/barbershopSupplies/admin/includes/products-delete-handler.php', {
+                        fetch('<?= BASE_URL ?>admin/includes/products-delete-handler.php', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({ id: productId })

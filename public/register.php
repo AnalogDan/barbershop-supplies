@@ -3,7 +3,7 @@
 	require_once __DIR__ . '/../includes/db.php';
 	require_once __DIR__ . '/../includes/header.php';
 	if (isset($_SESSION['user_id'])) {
-    	header("Location: /barbershopSupplies/public/my-profile.php");
+    	header("Location: " . BASE_URL . "my-profile.php");
     	exit;
 	}
 ?> 
@@ -51,7 +51,7 @@
 		<main>
 		<div class="section-title">
 				<h2>Create account</h2>
-				<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
+				<img src="<?= BASE_URL ?>images/Ornament1.png" alt="Ornament">
 		</div>
 		<form class="admin-login-form" id="register-form" novalidate>
 			<div>
@@ -89,7 +89,7 @@
 				Loading...
 			</div>
 			<div class="login-links">
-				<a href="/barbershopSupplies/public/login.php">Already have an account? Log in</a><br>
+				<a href="<?= BASE_URL ?>login.php">Already have an account? Log in</a><br>
 			</div>
 		</form>
 		</main>

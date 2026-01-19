@@ -489,7 +489,7 @@
 				<div class="sales-container">
 					<div class="sales-header">
 					<h2>Sales</h2>
-					<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
+					<img src="<?= BASE_URL ?>images/Ornament1.png" alt="Ornament">
 					</div>
 					<button class="sales-arrow left">
 						<i class="fas fa-chevron-left"></i>
@@ -561,7 +561,7 @@
 				<div class="sales-container">
 					<div class="sales-header">
 					<h2>Categories</h2>
-					<img src="/barbershopSupplies/public/images/Ornament2.png" alt="Ornament">
+					<img src="<?= BASE_URL ?>images/Ornament2.png" alt="Ornament">
 					</div>
 					<button class="sales-arrow left">
 						<i class="fas fa-chevron-left"></i>
@@ -611,9 +611,9 @@
 				<div class="sales-container">
 					<div class="sales-header">
 						<h2>Our brands</h2>
-						<img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+						<img src="<?= BASE_URL ?>images/Ornament3.png" alt="Ornament">
 					</div>
-					<img class="brands-img" src="/barbershopSupplies/public/images/brands2.png" alt="brands">
+					<img class="brands-img" src="<?= BASE_URL ?>images/brands2.png" alt="brands">
 
 					
 				</div>

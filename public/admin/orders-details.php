@@ -1,10 +1,11 @@
 <?php
+    require_once __DIR__ . '/../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     session_start();
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         header("Location: login.php");
         exit;
     }
-	require_once __DIR__ . '/../includes/db.php';
 
     $orderNumber = $_GET['order'];
 
@@ -152,7 +153,7 @@
                 </div>
                 <div class="info-row">
                     <span class="label">Phone: </span>
-                    <span class="value"><?= htmlspecialchars($order['phone']) ?></span>
+                    <span class="value"><?= htmlspecialchars($order['phone'] ?: '—') ?></span>
                 </div>
                 <div class="info-row">
                     <span class="label">Placed on date: </span>
@@ -206,7 +207,7 @@
                     <div class="product-row">
                         <div class="qty"><?= htmlspecialchars($product['quantity']) ?>x</div>
                         <div class="thumbnail">
-                            <img src="<?= '/barbershopSupplies/public/' . htmlspecialchars($product['cutout_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
+                            <img src="<?= BASE_URL . htmlspecialchars($product['cutout_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
                         </div>
                         <div class="name"><?= htmlspecialchars($product['product_name']) ?></div>
                         <div class="price">$<?= number_format((float)$product['price'], 2) ?></div>
@@ -236,7 +237,7 @@
                         return;
                     }
 
-                    fetch('/barbershopSupplies/admin/includes/update-order.php', {
+                    fetch('<?= BASE_URL ?>admin/includes/update-order.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ order_number: orderNumber, status: newStatus })

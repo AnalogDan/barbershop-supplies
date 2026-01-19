@@ -1,1 +1,16 @@
+# Secrets (only secrets, not all config)
+config/stripe.php
+
+# Environment files
+.env
+.env.*
+
+# Vendor (composer deps)
+vendor/
+
+# Public uploads
 public/images/
+
+# Local dev stuff
+xampp/
+.DS_Store

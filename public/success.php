@@ -9,7 +9,7 @@
     $orderId = $_GET['order_id'] ?? null;
     $token   = $_GET['token'] ?? null;
     if (!$orderId || !$token) {
-        header('Location: /barbershopSupplies/public/index.php');
+        header("Location: " . BASE_URL . "index.php");
         exit;
     }
     $stmt = $pdo->prepare("
@@ -24,7 +24,7 @@
     $stmt->execute([$orderId, $token]);
     $checkout = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$checkout) {
-        header('Location: /barbershopSupplies/public/index.php');
+        header("Location: " . BASE_URL . "index.php");
         exit;
     }
     $stmt = $pdo->prepare("

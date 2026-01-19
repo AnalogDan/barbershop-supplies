@@ -464,7 +464,7 @@
                         }
                     ?>
                 </h2>
-                <img src="/barbershopSupplies/public/images/Ornament3.png" alt="Ornament">
+                <img src="<?= BASE_URL ?>images/Ornament3.png" alt="Ornament">
             </div>
 
             <div class="sort-dropdown" id="sortDropdown">

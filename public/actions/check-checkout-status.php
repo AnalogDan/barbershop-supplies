@@ -25,25 +25,3 @@ echo json_encode([
     'order_id' => $checkout['order_id'] ?? null,
     'token' => $checkout['success_token'] ?? null
 ]);
-
-
-// $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// if (!$row) {
-//     echo json_encode(['status' => 'error']);
-//     exit;
-// }
-
-// //If paid, return success json, pending if otherwise 
-// if ($row['status'] === 'paid') {
-//     echo json_encode([
-//         'status' => 'paid',
-//         'redirect' =>
-//             '/barbershopSupplies/public/success.php'
-//             . '?order_id=' . $row['order_id']
-//             . '&token=' . $row['success_token']
-//     ]);
-//     exit;
-// }
-
-// echo json_encode(['status' => 'pending']);

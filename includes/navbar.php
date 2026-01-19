@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once BASE_PATH . 'includes/db.php';
+
 $stmt = $pdo->query("
     SELECT id, name
     FROM categories
@@ -142,7 +144,7 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     </div>
         
 </nav>
-<script src="/barbershopSupplies/public/js/bootstrap.bundle.min.js"></script>
+<script src="<?= BASE_URL ?>js/bootstrap.bundle.min.js"></script>
 <script>
     document.querySelectorAll('.navCategoriesLink').forEach(link => {
         link.addEventListener('click', () => {

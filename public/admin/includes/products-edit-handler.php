@@ -1,5 +1,6 @@
 <?php 
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
         http_response_code(405);
         echo 'Method Not Allowed';
@@ -28,18 +29,20 @@
         exit;
     }
 
-    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/images/products/';
+    $uploadDir = BASE_PATH . 'public/images/products/';
     $rawThumbnail = $_POST['existingThumbnail'] ?? '';
     $rawMainImg = $_POST['existingMainImg'] ?? '';
-    $thumbnailPath = str_replace('/barbershopSupplies/public/', '', $rawThumbnail);
-    $mainImagePath = str_replace('/barbershopSupplies/public/', '', $rawMainImg);
+    $thumbnailPath = str_replace('<?= BASE_URL ?>', '', $rawThumbnail);
+    $oldThumbPath = BASE_PATH . 'public/' . $thumbnailPath;
+    $mainImagePath = str_replace('<?= BASE_URL ?>', '', $rawMainImg);
+    $oldMainPath = BASE_PATH . 'public/' . $mainImagePath;
     if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION);
         $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . $newName;
         if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $dest)) {
-            if (!empty($thumbnailPath) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $thumbnailPath)) {
-                unlink($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $thumbnailPath);
+            if (!empty($thumbnailPath) && file_exists($oldThumbPath)) {
+                unlink($oldThumbPath);
             }
             $thumbnailPath = 'images/products/' . $newName;
         } else {
@@ -53,8 +56,8 @@
         $newName = 'main_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . $newName;
         if (move_uploaded_file($_FILES['mainImg']['tmp_name'], $dest)) {
-            if (!empty($mainImagePath) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $mainImagePath)) {
-                unlink($_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $mainImagePath);
+            if (!empty($mainImagePath) && file_exists($oldMainPath)) {
+                unlink($oldMainPath);
             }
             $mainImagePath = 'images/products/' . $newName;
         } else {
@@ -75,7 +78,7 @@
         if (!in_array($imagePath, $existingGallery, true)){
             $delStmt = $pdo->prepare("DELETE FROM product_gallery_images WHERE product_id = ? AND image_path = ?");
             $delStmt->execute([$product_id, $imagePath]);
-            $fileToDelete = $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $imagePath;
+            $fileToDelete = BASE_PATH . 'public/' . $imagePath;
             if(file_exists($fileToDelete)){
                 unlink($fileToDelete);
             }

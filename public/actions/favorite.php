@@ -14,7 +14,7 @@ $response = [
 if (!isset($_SESSION['user_id'])) {
     echo json_encode([
         'success' => false,
-        'redirect' => '/barbershopSupplies/public/login.php',
+        'redirect' => BASE_URL . 'login.php',
         'message' => 'Please log in to continue'
     ]);
     exit;

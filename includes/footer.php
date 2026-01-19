@@ -1,3 +1,8 @@
+<?php
+    require_once __DIR__ . '/../config.php';
+    require_once BASE_PATH . 'includes/db.php';
+?>
+
 <style>
     .custom-footer {
         background-color: #2b2b2b;
@@ -99,7 +104,7 @@
     .custom-footer-ornament {
         width: 100%;
         height: 100px;
-        background: url('/barbershopSupplies/public/images/footer-fade.png') no-repeat center bottom;
+        background: url('<?= BASE_URL ?>images/footer-fade.png') no-repeat center bottom;
         background-size: cover;
     }
 
@@ -142,7 +147,7 @@
                 <span class="footer-col-left">
                 <a href="https://www.instagram.com/new_vision_barbersupplies" target="_blank">
 
-                    <img src="/barbershopSupplies/public/images/instagram-gray.png" class="footer-instagram-icon" alt="Instagram">
+                    <img src="<?= BASE_URL ?>images/instagram-gray.png" class="footer-instagram-icon" alt="Instagram">
                     <span class="footer-col-text">
                             Follow us on Instagram<br>@new_vision_barbersupplies
                         

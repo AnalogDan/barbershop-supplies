@@ -316,7 +316,7 @@
         galleryFiles.forEach((file) => {
             formData.append('gallery[]', file);
         });
-        fetch('/barbershopSupplies/admin/includes/products-add-handler.php', {
+        fetch('<?= BASE_URL ?>admin/includes/products-add-handler.php', {
             method: 'POST',
             body: formData
         })

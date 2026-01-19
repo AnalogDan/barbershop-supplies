@@ -1,5 +1,6 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if (!isset($_GET['id']) || !is_numeric($_GET['id'])){
         die('Invalid product ID');
     }
@@ -10,8 +11,8 @@
     if (!$product){
         die('Product not found.');
     }
-    $thumbnailUrl = !empty($product['cutout_image']) ? '/barbershopSupplies/public/' . $product['cutout_image'] : '';
-    $mainImgUrl = !empty($product['main_image']) ? '/barbershopSupplies/public/' . $product['main_image'] : '';
+    $thumbnailUrl = !empty($product['cutout_image']) ? $product['cutout_image'] : '';
+    $mainImgUrl = !empty($product['main_image']) ? $product['main_image'] : '';
     $stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
     $stmt->execute([$product['id']]);
     $galleryImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -140,7 +141,7 @@
     
     <label for="thumbnail">Thumbnail cutout</label>
     <div class="image-input" id="thumbnailPreview">
-        <img src="<?= htmlspecialchars($thumbnailUrl) ?>" alt="Preview">
+        <img src="<?= BASE_URL . $thumbnailUrl ?>" alt="Preview">
         <div class="overlay">
             <button type="button" class="edit-icon-btn">
                 <i class="fa-solid fa-pen"></i>
@@ -153,7 +154,7 @@
 
     <label for="mainImg">Main Image</label>
     <div class="image-input" id="mainImgPreview">
-        <img src="<?= htmlspecialchars($mainImgUrl) ?>" alt="Preview">
+        <img src="<?= BASE_URL . $mainImgUrl ?>" alt="Preview">
         <div class="overlay">
             <button type="button" class="edit-icon-btn">
                 <i class="fa-solid fa-pen"></i>
@@ -170,7 +171,7 @@
         <?php if(!empty($galleryImages)): ?>
             <?php foreach ($galleryImages as $image): ?>
                 <div class="image-input existing-image" data-filename="<?= htmlspecialchars($image['image_path']) ?>">
-                    <img src="/barbershopSupplies/public/<?= htmlspecialchars($image['image_path']) ?>" alt="Gallery image">
+                    <img src="<?= BASE_URL . $image['image_path'] ?>" alt="Gallery image">
                     <div class="overlay">
                         <button type="button" class="edit-icon-btn">
                             <i class="fas fa-trash"></i>
@@ -358,7 +359,7 @@
         });
         const galleryInput = document.getElementById('gallery');
         galleryInput.parentNode.removeChild(galleryInput);
-        fetch('/barbershopSupplies/admin/includes/products-edit-handler.php', {
+        fetch('<?= BASE_URL ?>admin/includes/products-edit-handler.php', {
             method: 'POST',
             body: formData
         })

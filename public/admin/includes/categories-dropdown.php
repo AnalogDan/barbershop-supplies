@@ -1,7 +1,14 @@
+<?php
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
+    $mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
+    $mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 <style>
     @font-face {
         font-family: 'Old London';
-        src: url('/barbershopSupplies/public/fonts/OldLondon.ttf') format('truetype'); /* Adjust path as needed */
+        src: url('<?= BASE_URL ?>fonts/OldLondon.ttf') format('truetype'); 
     }
 
     .upper-container{
@@ -83,12 +90,6 @@
 </style>
 
 
-
-<?php
-    require_once '../includes/db.php'; 
-    $mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
-    $mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
-?>
 <div id="categoriesDropdown" class="categories-dropdown">
     <div class="categories-inner">
         <div class="categories-dropdown-content">

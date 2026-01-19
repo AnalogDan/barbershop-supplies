@@ -91,7 +91,7 @@ $sessionId = $_GET['session_id'];
         </div>
     </body>
     <script>
-
+        const BASE_URL = "<?= BASE_URL ?>";
         let attempts = 0;
         const maxAttempts = 10;
 
@@ -101,7 +101,7 @@ $sessionId = $_GET['session_id'];
 
             try {
                 const res = await fetch(
-                    '/barbershopSupplies/actions/check-checkout-status.php?session_id=<?= $sessionId ?>'
+                    BASE_URL + 'actions/check-checkout-status.php?session_id=<?= $sessionId ?>'
                 );
 
                 // Log raw response for debugging
@@ -121,7 +121,7 @@ $sessionId = $_GET['session_id'];
                 // Only redirect if paid AND order created
                 if (data.status === 'paid' && data.order_id && data.token) {
                     clearInterval(interval);
-                    window.location.href = `/barbershopSupplies/public/success.php?order_id=${data.order_id}&token=${data.token}`;
+                    window.location.href = BASE_URL + `success.php?order_id=${data.order_id}&token=${data.token}`;
                     return;
                 }
                 if (data.status === 'failed' || data.status === 'expired') {
@@ -138,7 +138,7 @@ $sessionId = $_GET['session_id'];
                     }
                     if (note) {
                         note.innerHTML =
-                            '<a href="/barbershopSupplies/public/cart.php">Return to cart</a>';
+                            '<a href="${BASE_URL}cart.php">Return to cart</a>';
                     }
                     return;
                 }

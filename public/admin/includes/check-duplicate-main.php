@@ -1,7 +1,7 @@
 <?php
     header('Content-Type: application/json');
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
-
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if (!isset($_POST['name'])) {
         echo json_encode(['exists' => false, 'error' => 'Missing name parameter']);
         exit;

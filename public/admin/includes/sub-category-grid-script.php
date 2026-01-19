@@ -5,7 +5,7 @@
         const id = div.dataset.id;
         const newName = div.textContent.trim();
 
-        fetch('/barbershopSupplies/admin/includes/sub-category-update-name.php', {
+        fetch('<?= BASE_URL ?>admin/includes/sub-category-update-name.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, name: newName })
@@ -24,7 +24,7 @@
             const subCategoryId = event.target.dataset.id;
             const newMainCategoryId = event.target.value;
 
-            fetch('/barbershopSupplies/admin/includes/update-parent-sub.php', {
+            fetch('<?= BASE_URL ?>admin/includes/update-parent-sub.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `sub_category_id=${encodeURIComponent(subCategoryId)}&main_category_id=${encodeURIComponent(newMainCategoryId)}`
@@ -48,7 +48,7 @@
         showConfirmModal(
             "Delete sub category?",
             () => { 
-                fetch('/barbershopSupplies/admin/includes/delete-subcategory.php', {
+                fetch('<?= BASE_URL ?>admin/includes/delete-subcategory.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `sub_category_id=${encodeURIComponent(subCategoryId)}`

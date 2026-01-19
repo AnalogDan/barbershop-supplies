@@ -1,5 +1,6 @@
 <?php
-	require_once __DIR__ . '/../includes/db.php';
+	require_once __DIR__ . '/../../config.php';
+	require_once BASE_PATH . 'includes/db.php';
 	session_start();
 	$error = $_SESSION['login_error'] ?? null;
 	unset($_SESSION['login_error']);
@@ -27,9 +28,9 @@
 		<main>
 		<div class="section-title">
 				<h2>Admin Login</h2>
-				<img src="/barbershopSupplies/public/images/Ornament1.png" alt="Ornament">
+				<img src="<?= BASE_URL ?>images/Ornament1.png" alt="Ornament">
 		</div>
-		<form class="admin-login-form" action="/barbershopSupplies/admin/process-login.php" method="POST">
+		<form class="admin-login-form" action="<?= BASE_URL ?>admin/process-login.php" method="POST">
 			<div>
 				<label for="email"><strong>User</strong></label>
 				<input id="email" type="text" name="email" required>
@@ -52,7 +53,7 @@
 			</div>
 			<div class="footer-ornament"></div>
 		</footer>
-		<script src="/barbershopSupplies/public/js/password-toggle.js"></script>
+		<script src="<?= BASE_URL ?>js/password-toggle.js"></script>
 		<script>
 			setTimeout(function () {
 				const alert = document.querySelector('.alert');

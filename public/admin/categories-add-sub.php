@@ -1,12 +1,12 @@
 <?php
+    require_once __DIR__ . '/../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     session_start();
 
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         header("Location: login.php");
         exit;
     }
-
-	require_once __DIR__ . '/../includes/db.php';
 
     $stmt = $pdo->query("SELECT id, name FROM main_categories ORDER BY name");
     $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -99,7 +99,7 @@
                 return;
             }
 
-            fetch('/barbershopSupplies/admin/includes/check-duplicate-sub.php', {
+            fetch('<?= BASE_URL ?>admin/includes/check-duplicate-sub.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `name=${encodeURIComponent(name)}&main_category_id=${encodeURIComponent(mainCategoryId)}`
@@ -112,7 +112,7 @@
                     showConfirmModal(
                         `Do you want to add "${name}" as a new subcategory?`,
                         () => {
-                            fetch('/barbershopSupplies/admin/includes/add-subcategory-handler.php', {
+                            fetch('<?= BASE_URL ?>admin/includes/add-subcategory-handler.php', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                                 body: `name=${encodeURIComponent(name)}&main_category_id=${encodeURIComponent(mainCategoryId)}`

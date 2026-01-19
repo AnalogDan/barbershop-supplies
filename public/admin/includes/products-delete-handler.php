@@ -1,5 +1,6 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     header('Content-Type: application/json');
     if($_SERVER['REQUEST_METHOD'] !== 'POST'){
         http_response_code(405);
@@ -15,7 +16,7 @@
         $stmt->execute([$product_id]);
         $images = $stmt->fetchAll(PDO::FETCH_COLUMN);
         foreach($images as $image){
-            $filePath = $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $image;
+            $filePath = BASE_PATH . 'public/' . $image;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -27,7 +28,7 @@
         if($product){
             foreach(['main_image', 'cutout_image'] as $field){
                 if(!empty($product[$field])){
-                    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/' . $product[$field];
+                    $filePath = BASE_PATH . 'public/' . $product[$field];
                     if(file_exists($filePath)){
                         unlink($filePath);
                     }

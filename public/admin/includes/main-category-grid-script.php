@@ -5,7 +5,7 @@
         let id = el.dataset.id;
         let newName = el.innerText.trim();
 
-        fetch('/barbershopSupplies/admin/includes/update-main-category.php', {
+        fetch('<?= BASE_URL ?>admin/includes/update-main-category.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: `id=${encodeURIComponent(id)}&name=${encodeURIComponent(newName)}`
@@ -23,7 +23,7 @@
         showConfirmModal(
             "Delete main category?",
             () => {
-                fetch('/barbershopSupplies/admin/includes/delete-main-category.php', {
+                fetch('<?= BASE_URL ?>admin/includes/delete-main-category.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `id=${encodeURIComponent(id)}`

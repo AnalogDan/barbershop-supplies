@@ -1,4 +1,6 @@
 <?php
+    require_once __DIR__ . '/../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
 session_start();
 
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -6,9 +8,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 ?>
-<?php
-	require_once __DIR__ . '/../includes/db.php';
-?>
+
 <!DOCTYPE html>
 <html lang="en">
     <?php include 'includes/admin_head.php'; ?>

@@ -1,6 +1,6 @@
 <?php 
-    
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
         http_response_code(405);
         echo 'Method Not Allowed';
@@ -23,7 +23,7 @@
         exit;
     }
 
-    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/public/images/products/';
+    $uploadDir = BASE_PATH . 'public/images/products/';
     $thumbnailPath = '';
     $mainImagePath = '';
     if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {

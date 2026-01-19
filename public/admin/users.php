@@ -5,7 +5,8 @@
         header("Location: login.php");
         exit;
     }
-	require_once __DIR__ . '/../includes/db.php';
+	require_once __DIR__ . '/../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
 
     $currentPagee = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
     $searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';

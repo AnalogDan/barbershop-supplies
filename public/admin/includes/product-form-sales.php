@@ -1,5 +1,6 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/barbershopSupplies/includes/db.php';
+    require_once __DIR__ . '/../../../config.php';
+    require_once BASE_PATH . 'includes/db.php';
     if (!isset($_GET['id']) || !is_numeric($_GET['id'])){
         die('Invalid product ID');
     }
@@ -165,7 +166,7 @@
                 const form = e.target;
                 const formData = new FormData(form);
 
-                fetch('/barbershopSupplies/admin/includes/products-sale-handler.php', {
+                fetch('<?= BASE_URL ?>admin/includes/products-sale-handler.php', {
                     method: 'POST',
                     body: formData
                 })
