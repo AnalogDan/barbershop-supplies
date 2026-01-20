@@ -1,5 +1,5 @@
 Essential
-
+stripe listen --forward-to http://localhost/public_html/actions/stripe-webhook.php
 To have a working delivery system:
 idk haha
 
@@ -15,6 +15,7 @@ Modify Stripe webhook destination
 Modify in stripe-webhook.php $endpointSecret
 Turn on Stripe->settings ->business->customeremails->successful payments
 Modify $activation_link in register.php
+db.php and config.php explain by themselves what needs to change in them
 
 After release
 Putting only a space in admin add products descriptxions causes the form to not be sent

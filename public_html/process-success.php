@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../config.php';
 if (!isset($_GET['session_id'])) {
     echo 'Missing session ID.';
     exit;
@@ -89,8 +90,9 @@ $sessionId = $_GET['session_id'];
                 <p class="note" id="status-note">Do not refresh or close this page.</p>
             </div>
         </div>
-    </body>
+    
     <script>
+        console.log('SCRIPT STARTED');
         const BASE_URL = "<?= BASE_URL ?>";
         let attempts = 0;
         const maxAttempts = 10;
@@ -138,7 +140,7 @@ $sessionId = $_GET['session_id'];
                     }
                     if (note) {
                         note.innerHTML =
-                            '<a href="${BASE_URL}cart.php">Return to cart</a>';
+                            '<a href="' + BASE_URL + 'cart.php">Return to cart</a>';
                     }
                     return;
                 }
@@ -172,4 +174,5 @@ $sessionId = $_GET['session_id'];
             }
         }, 2000);
     </script>
+    </body>
 </html>

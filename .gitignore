@@ -1,5 +1,6 @@
-# Secrets (only secrets, not all config)
+# Secrets 
 config/stripe.php
+public_html/actions/stripe-webhook.php
 
 # Environment files
 .env
@@ -9,7 +10,7 @@ config/stripe.php
 vendor/
 
 # Public uploads
-public/images/
+public_html/images/
 
 # Local dev stuff
 xampp/

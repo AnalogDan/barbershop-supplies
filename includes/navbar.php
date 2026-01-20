@@ -131,12 +131,12 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 </li>
                 <li class="nav-item <?= ($currentPage === 'cart') ? 'active' : '' ?>">
                     <a class="nav-link" href="cart.php">
-                        <img src="../public/images/cart.png" alt="Cart" style="height:24px; width:auto;">
+                        <img src="<?= BASE_URL ?>images/cart.png" alt="Cart" style="height:24px; width:auto;">
                     </a>
                 </li>
                 <li class="nav-item <?= ($currentPage === 'account') ? 'active' : '' ?>">
                     <a class="nav-link" href="login.php">
-                        <img src="../public/images/account.png" alt="account" style="height:24px; width:auto;">
+                        <img src="<?= BASE_URL ?>images/account.png" alt="account" style="height:24px; width:auto;">
                     </a>
                 </li>
             </ul>

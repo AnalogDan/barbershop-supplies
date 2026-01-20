@@ -6,7 +6,7 @@ require_once BASE_PATH . 'includes/db.php';
 header('Content-Type: application/json');
 
 //Get correct cartId
-require_once __DIR__ . '\cart-resolver.php';
+require_once __DIR__ . '/cart-resolver.php';
 $cartId = getActiveCartId($pdo);;
 
 //Validate data

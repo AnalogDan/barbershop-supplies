@@ -51,7 +51,7 @@ $stmt->execute([$first, $last, $email, $hashed, $created_at, $is_active, $token]
 
 // 7. Send activation email
 //Google app pasword (phpmailer-newvisionbarbersupplies@gmail.com) is: ybnc jweo jjje hlde
-$activation_link = "http://localhost/barbershopSupplies/public/actions/activate.php?token=" . $token;
+$activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
 $mail = new PHPMailer(exceptions: true);
 $mail->isSMTP();
 $mail->Host = 'smtp.gmail.com';

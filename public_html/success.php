@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../includes/db.php';
     require_once __DIR__ . '/../includes/header.php';
     $tz = new DateTimeZone('America/Los_Angeles');
@@ -219,7 +220,11 @@
                     <div><?= htmlspecialchars($order['full_name']) ?></div>
                     <div><?= htmlspecialchars($order['street'] . ', ' . $order['city'] . ', ' . $order['state'] . ' ' . $order['zip']) ?></div>
                     <div>UPS Ground</div>
-                    <div>Estimated delivery date: <?= date('m/d/Y', strtotime($order['delivery_eta_start'])) ?> - <?= date('m/d/Y', strtotime($order['delivery_eta_end'])) ?></div>
+                    <?php
+                    $start = !empty($order['delivery_eta_start']) ? date('m/d/Y', strtotime($order['delivery_eta_start'])) : 'TBD';
+                    $end   = !empty($order['delivery_eta_end'])   ? date('m/d/Y', strtotime($order['delivery_eta_end']))   : 'TBD';
+                    ?>
+                    <div>Estimated delivery date: <?= htmlspecialchars($start) ?> - <?= htmlspecialchars($end) ?></div>
                 </div>
             </div>
 

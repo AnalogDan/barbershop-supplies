@@ -159,8 +159,8 @@ try {
             ],
             'quantity' => 1,
         ]],
-        'success_url' => 'http://localhost/barbershopSupplies/public/process-success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => 'http://localhost/barbershopSupplies/public/checkout.php'
+        'success_url' => 'http://localhost/public_html/process-success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => 'http://localhost/public_html/checkout.php'
     ]);
     http_response_code(303);
     $stmt = $pdo->prepare("

@@ -23,7 +23,7 @@
         exit;
     }
 
-    $uploadDir = BASE_PATH . 'public/images/products/';
+    $uploadDir = PUBLIC_PATH . 'images/products/';
     $thumbnailPath = '';
     $mainImagePath = '';
     if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {

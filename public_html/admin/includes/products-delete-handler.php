@@ -16,7 +16,7 @@
         $stmt->execute([$product_id]);
         $images = $stmt->fetchAll(PDO::FETCH_COLUMN);
         foreach($images as $image){
-            $filePath = BASE_PATH . 'public/' . $image;
+            $filePath = PUBLIC_PATH . $image;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -28,7 +28,7 @@
         if($product){
             foreach(['main_image', 'cutout_image'] as $field){
                 if(!empty($product[$field])){
-                    $filePath = BASE_PATH . 'public/' . $product[$field];
+                    $filePath = PUBLIC_PATH . $product[$field];
                     if(file_exists($filePath)){
                         unlink($filePath);
                     }

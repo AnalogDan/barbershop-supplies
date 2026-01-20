@@ -201,7 +201,12 @@
                 <div>Status: <?= ucfirst($order['status']) ?></div>
                 <div>Payment method: <?= htmlspecialchars($order['payment_method']) ?></div>
                 <div>Address: <?= htmlspecialchars($order['street'] . ', ' . $order['city'] . ', ' . $order['state'] . ', ' . $order['zip']) ?></div>
-                <div>Delivery estimated time: <?= htmlspecialchars($order['delivery_eta_start']) ?> -- <?= htmlspecialchars($order['delivery_eta_end']) ?></div>
+                <div> 
+                    Delivery estimated time:
+                    <?= htmlspecialchars($order['delivery_eta_start'] ?? '—') ?>
+                    --
+                    <?= htmlspecialchars($order['delivery_eta_end'] ?? '—') ?>
+                </div>    
                 <div>Email: <?= htmlspecialchars($order['email']) ?></div>
                 <div>Phone: <?= htmlspecialchars($order['phone']) ?></div>
                 <div>Tracking number: 1234567</div> <!-- Dummy for now -->

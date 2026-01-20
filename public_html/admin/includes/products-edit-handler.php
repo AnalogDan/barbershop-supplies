@@ -29,13 +29,13 @@
         exit;
     }
 
-    $uploadDir = BASE_PATH . 'public/images/products/';
+    $uploadDir = PUBLIC_PATH . 'images/products/';
     $rawThumbnail = $_POST['existingThumbnail'] ?? '';
     $rawMainImg = $_POST['existingMainImg'] ?? '';
     $thumbnailPath = str_replace('<?= BASE_URL ?>', '', $rawThumbnail);
-    $oldThumbPath = BASE_PATH . 'public/' . $thumbnailPath;
+    $oldThumbPath = PUBLIC_PATH . $thumbnailPath;
     $mainImagePath = str_replace('<?= BASE_URL ?>', '', $rawMainImg);
-    $oldMainPath = BASE_PATH . 'public/' . $mainImagePath;
+    $oldMainPath = PUBLIC_PATH . $mainImagePath;
     if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION);
         $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
@@ -78,7 +78,7 @@
         if (!in_array($imagePath, $existingGallery, true)){
             $delStmt = $pdo->prepare("DELETE FROM product_gallery_images WHERE product_id = ? AND image_path = ?");
             $delStmt->execute([$product_id, $imagePath]);
-            $fileToDelete = BASE_PATH . 'public/' . $imagePath;
+            $fileToDelete = PUBLIC_PATH . $imagePath;
             if(file_exists($fileToDelete)){
                 unlink($fileToDelete);
             }

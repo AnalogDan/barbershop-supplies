@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 //header and default response
 session_start();
 require_once __DIR__ . '/../../config.php';
@@ -44,7 +47,7 @@ if ($stock <= 0) {
 }
 
 //Get correct cartId
-require_once __DIR__ . '\cart-resolver.php';
+require_once __DIR__ . '/cart-resolver.php';
 $cartId = getActiveCartId($pdo);
 
 // Is the cart from guest or user? Always define $cartId

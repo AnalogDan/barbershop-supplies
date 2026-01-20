@@ -241,7 +241,7 @@
 			?>
 
 			<div class="sales-products">
-				<a class="product-item" href="../public/product.php?id=<?php echo $p['id']; ?>" data-product-id="<?php echo $p['id']; ?>">
+				<a class="product-item" href="<?= BASE_URL ?>product.php?id=<?php echo $p['id']; ?>" data-product-id="<?php echo $p['id']; ?>">
 					<div class="product-image-wrapper">
 						<img src="<?php echo htmlspecialchars($p['cutout_image']); ?>" class="img-fluid product-thumbnail">
 

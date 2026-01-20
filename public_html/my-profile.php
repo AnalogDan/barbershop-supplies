@@ -350,7 +350,7 @@
             </div>
 
             <div class="log-out">
-                <a href="../includes/logout.php" class="btn btn-secondary me-2 my-btn-custom">Log out</a>
+                <a href="logout.php" class="btn btn-secondary me-2 my-btn-custom">Log out</a>
             </div>
         </main>
         <?php 

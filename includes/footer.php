@@ -171,7 +171,7 @@
 
     </div>
     <div class="custom-footer-shaver">
-        <img src="../public/images/footer-shaver.png" alt="Shaver">
+        <img src="<?= BASE_URL ?>images/footer-shaver.png" alt="Shaver">
     </div>
 
     <div class="custom-footer-ornament"></div>
