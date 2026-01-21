@@ -1,7 +1,9 @@
 Essential
 stripe listen --forward-to http://localhost/public_html/actions/stripe-webhook.php
+
 To have a working delivery system:
 idk haha
+When everything is set send order emails to EVERYONE EVER
 
 After getting the delivery right:
 Insert delivery_eta when creating order in finalize-order.php
@@ -16,6 +18,7 @@ Modify in stripe-webhook.php $endpointSecret
 Turn on Stripe->settings ->business->customeremails->successful payments
 Modify $activation_link in register.php
 db.php and config.php explain by themselves what needs to change in them
+Add .htaccess to /public_html (it's in /xampp)
 
 After release
 Putting only a space in admin add products descriptxions causes the form to not be sent

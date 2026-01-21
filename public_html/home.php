@@ -413,7 +413,12 @@
 	.category-slide {
 		flex: 0 0 25%; 
 	}
+	.hero{
+		height: 450px !important;
+	}
+	
 </style>
+<link rel="stylesheet" href="css/home.mobile.css">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -654,7 +659,7 @@
 											<img src="images/truck.svg" alt="Image" class="imf-fluid">
 										</div>
 										<h3>On-demand shipping</h3>
-										<p>We offer on-demand delivery of your favorite and hottest products on the market. If you cannot come to us, we will come to you.</p>
+										<p>We offer on-demand delivery of your favorite products on the market. If you cannot come to us, we will come to you.</p>
 									</div>
 								</div>
 
