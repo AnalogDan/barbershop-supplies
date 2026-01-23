@@ -534,11 +534,9 @@
     .section.locked {
         opacity: 0.5;
     }
-
-    
-
-
 </style>
+<link rel="stylesheet" href="css/checkout.mobile.css">
+
 
 <!DOCTYPE html>
 <html lang="en">

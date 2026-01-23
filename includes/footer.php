@@ -134,6 +134,7 @@
     .footer-link-right {
     }
 </style>
+<link rel="stylesheet" href="<?= BASE_URL ?>css/footer.mobile.css">
 
 <footer class="custom-footer">
     <div class="custom-footer-container">

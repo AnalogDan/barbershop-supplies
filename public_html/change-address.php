@@ -131,6 +131,12 @@
         display: flex;
         gap: 15px;
     }
+
+    @media (max-width: 768px) {
+        .change-address-page .giant-container{
+            padding: 50px 10% 90px 10%;
+        }
+    }
 </style>
 
 <!DOCTYPE html>

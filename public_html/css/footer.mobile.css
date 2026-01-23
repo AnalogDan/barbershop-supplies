@@ -1,0 +1,27 @@
+@media (max-width: 768px) {
+.custom-footer-container {
+    margin: 0 20px;   
+    padding: 0;    
+}
+.footer-col-text {
+    font-size: 15.5px;
+    line-height: 1.55;
+}
+.custom-footer-clipper {
+    top: -130px; 
+    right: 2%;    
+}
+.custom-footer-clipper img {
+    width: 85px;
+    max-width: 85px;
+}
+
+.custom-footer-shaver {
+    top: -110px; 
+    right: 2%;    
+}
+.custom-footer-shaver img {
+    width: 110px;
+    max-width: 110px;
+}
+}

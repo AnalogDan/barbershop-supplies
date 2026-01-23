@@ -1,0 +1,72 @@
+@media (max-width: 768px) {
+/*Info top*/
+.info-container {
+    flex-direction: column !important; 
+    width: 95% !important;
+    padding: 1rem 0;
+    align-items: center; 
+    height: auto;
+    margin-bottom: -2rem;
+}
+.info-row {
+    flex-direction: column !important; 
+    align-items: center !important; 
+    height: auto !important;
+    margin-bottom: 1.5rem;
+}
+.info1, .info2, .info3 {
+    width: auto !important;
+    justify-content: center !important; 
+    margin-bottom: 1rem;
+}
+.square {
+    height: 3.5rem !important;
+    width: 3.5rem !important;
+}
+.text {
+    font-size: 0.9rem !important;
+    margin-left: 0.8rem !important;
+    text-align: center; 
+}
+.insta-icon {
+    height: 2.5rem !important;
+}
+
+/*Map container*/
+.gray-container {
+    flex-direction: column !important; 
+    width: 95% !important;
+    padding: 2rem 1rem !important;
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+    height: auto !important;
+    min-height: 0 !important;
+}
+.map {
+    width: 100% !important;
+    height: 250px !important; 
+    margin-bottom: 1.5rem;
+}
+.map iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: 0;
+}
+.hours {
+    all: unset;              
+    display: flex !important; 
+    flex-direction: column !important; 
+    justify-content: flex-start !important; 
+    align-items: center !important;   
+    width: 100% !important;
+    height: auto !important;  
+    margin: 1rem 0 0 0 !important; 
+    text-align: center !important;
+}
+.title {
+    font-size: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+.days, .times {
+    font-size: 1.1rem !important;
+}
+}

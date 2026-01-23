@@ -297,7 +297,12 @@
 		white-space: nowrap;
 	}
 
+	.mobile-qty {
+		display: none; 
+	}
+
 </style>
+<link rel="stylesheet" href="css/cart.mobile.css">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -363,7 +368,7 @@
 								<?php endif; ?>
 
 								<span class="price-final">
-									$<?= number_format($item['final_price'], 2) ?>
+									<span class="mobile-qty">1 x - </span> $<?= number_format($item['final_price'], 2) ?>
 								</span>
 
 							</div>

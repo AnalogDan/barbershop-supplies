@@ -1,0 +1,28 @@
+@media (max-width: 768px) {
+    /*Shrink order font, not view font*/
+     .order-row {
+        align-items: flex-start;
+        font-size: 1.1rem; 
+        margin-bottom: 2rem;
+    }
+    .order-row .view {
+        font-size: 1.5rem; 
+        margin-top: 0.3rem; 
+    }
+    .order-row div {
+        font-size: 1.2rem; 
+    }
+
+    /*Add little padding*/
+    .orders-list{
+        padding: 0 1rem;
+    }
+
+    /*Make back button vanish. The button must relinquish power and dissipate into the shadow realm*/
+    .go-back{
+        display: none;
+    }
+    .top-container{
+        margin-top: 2.5rem;
+    }
+}

@@ -1071,3 +1071,28 @@ textarea {
     height: 50px;
     border-radius: 50%;
     background: rgba(59, 93, 80, 0.2); }
+
+@media (max-width: 768px) {
+/*Hero section*/
+.hero{
+    height: 350px !important;
+}
+.hero-img-wrap {
+  display: none;
+}
+.hero .intro-excerpt {
+  margin-left: 0 !important;
+}
+.hero h1 {
+  font-size: 3.2rem !important;
+  line-height: 1.1;
+}
+.hero p {
+  font-size: 1.1rem !important;
+  line-height: 1.4;
+}
+.hero .btn {
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+}
+}

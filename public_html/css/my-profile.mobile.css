@@ -1,0 +1,17 @@
+@media (max-width: 768px) {
+    /*NBit more general width*/
+    .giant-container {
+        padding: 20px 5%;  
+        width: 100% !important;
+        margin: 0 auto !important;     
+    }
+
+     /* My favorites adjustments */
+    .item-name {
+        font-size: 0.85rem; 
+        max-width: 140px;  
+        word-wrap: break-word; 
+        white-space: normal;   
+    }
+ 
+}

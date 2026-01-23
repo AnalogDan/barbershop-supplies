@@ -494,7 +494,7 @@
             include __DIR__ . '/../includes/product-grid.php'; 
             include __DIR__ . '/../includes/paginator.php'; 
             ?>
-  
+            <link rel="stylesheet" href="css/shop.mobile.css">
         </main>
         
         <?php 

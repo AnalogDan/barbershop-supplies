@@ -1,28 +1,103 @@
 @media (max-width: 768px) {
-/*Hero section*/
-.hero{
-    height: 350px !important;
+
+/*Popular products*/
+.popular-intro {
+  padding-left: 2rem !important;
+  padding-right: 1rem !important;
 }
-.hero-img-wrap {
-  display: none;
+.sales-products .product-item.active .product-thumbnail {
+  top: -25px;
 }
-.hero .intro-excerpt {
-  margin-left: 0 !important;
+.sales-products .product-item.active:before {
+  height: 70%;
 }
-.hero h1 {
-  font-size: 3.2rem !important;
-  line-height: 1.1;
+.sales-products .product-item.active .icon-cross {
+  opacity: 1;
+  visibility: visible;
 }
-.hero p {
-  font-size: 1.1rem !important;
-  line-height: 1.4;
+.product-item:hover .product-thumbnail {
+  top: 0;
 }
-.hero .btn {
-  padding: 0.7rem 1rem;
-  font-size: 1rem;
+.product-item:hover:before {
+  height: 0%;
+}
+.product-item:hover .icon-cross {
+  opacity: 0;
+  visibility: hidden;
+}
+.product-section .popular-intro {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 100% !important;
+}
+.product-section .row > div:not(.popular-intro) {
+  width: 45% !important;
+  max-width: 45% !important;
+  flex: 0 0 45% !important;
+}
+.product-section .row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
+/*Sales section*/
+.sales-arrow,
+.sales-pagination {
+  display: none !important;
+}
+.sales-products {
+  overflow: visible !important;
+}
+.sales-products .row,
+.sales-products .slider-track {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  transform: none !important;
+}
+.sales-products [class*="col-"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: unset !important;
+}
+.sale-slide {
+  padding-bottom: 0;
+}
+.see-all-content {
+  min-height: 200px;
+}
+.sales-products .row,
+.sales-products .slider-track {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  transform: none !important;
+}
+.sales-products .sale-slide {
+  width: 45% !important;
+  max-width: 45% !important;
+  flex: 0 0 45% !important;
+  margin-bottom: 1rem;
+}
+.sales-products .see-all-slide {
+  width: 45% !important;
+  max-width: 45% !important;
+  flex: 0 0 45% !important;
+}
 
+/*Our brands*/
+.brands-img {
+  width: 90vw;
+  max-width: 90vw;
+  margin-right: auto;
+  margin-left: auto;
+}
 
+/*Why choose section*/
+.choose-section .container {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
 
 }

@@ -4,26 +4,6 @@
 	require_once __DIR__ . '/../includes/header.php';
 	$currentPage = 'home';
 
-	//fetch 3 bestsellers
-	$sql = "
-		SELECT 
-			p.id,
-			p.name,
-			p.price,
-			p.cutout_image,
-			SUM(oi.quantity) AS total_sold
-		FROM order_items oi
-		INNER JOIN orders o ON o.id = oi.order_id
-		INNER JOIN products p ON p.id = oi.product_id
-		WHERE 
-			o.status = 'delivered'
-		GROUP BY p.id
-		ORDER BY total_sold DESC
-		LIMIT 3
-	";
-	$stmt = $pdo->query($sql);
-	$bestsellers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 	//Fetch sales
 	require_once __DIR__ . '/../includes/pricing.php';
 	$tz = new DateTimeZone('America/Los_Angeles');
@@ -48,6 +28,29 @@
 		fn($p) => isProductOnSale($p, $tz)
 	));
 	$activeSaleProducts = array_slice($activeSaleProducts, 0, 16);
+
+	//fetch 3 bestsellers (most order delivered product)
+	$sql = "
+		SELECT 
+			p.id,
+			p.name,
+			p.price,
+			p.sale_price,
+			p.sale_start,
+			p.sale_end,
+			p.cutout_image,
+			SUM(oi.quantity) AS total_sold
+		FROM order_items oi
+		INNER JOIN orders o ON o.id = oi.order_id
+		INNER JOIN products p ON p.id = oi.product_id
+		WHERE 
+			o.status = 'delivered'
+		GROUP BY p.id
+		ORDER BY total_sold DESC
+		LIMIT 3
+	";
+	$stmt = $pdo->query($sql);
+	$bestsellers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 	//Fetch main categories 
 	$stmt = $pdo->prepare("
@@ -451,7 +454,7 @@
 				<div class="container">
 					<div class="row">
 
-						<div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
+						<div class="col-md-6 col-lg-3 mb-5 mb-lg-0 popular-intro">
 							<h2 class="popular-title">Popular products</h2>
 							<p class="popular-subtitle">The bestsellers</p>
 							<p><a href="shop.php" class="btn">Explore</a></p>
@@ -459,23 +462,37 @@
 
 						<?php if (!empty($bestsellers)): ?>
 							<?php foreach ($bestsellers as $product): ?>
-								<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
+								<div class="col-6 col-md-4 col-lg-3 mb-5 mb-md-0">
 									<a class="product-item" href="product.php?id=<?= $product['id'] ?>" data-product-id="<?= $product['id'] ?>">
-										
-										<img 
-											src="<?= htmlspecialchars($product['cutout_image']) ?>" alt="image" 
-											class="img-fluid product-thumbnail"
-											alt="<?= htmlspecialchars($product['name']) ?>"
-										>
-
+										<div class="product-image-wrapper">
+											<img 
+												src="<?= htmlspecialchars($product['cutout_image']) ?>" 
+												class="img-fluid product-thumbnail"
+												alt="<?= htmlspecialchars($product['name']) ?>"
+											>
+											<?php if (!empty($product['sale_price'])): ?>
+												<div class="discount-badge">
+													$<?= number_format($product['price'] - $product['sale_price'], 2) ?> Off
+												</div>
+											<?php endif; ?>
+										</div>
 										<h3 class="product-title">
 											<?= htmlspecialchars($product['name']) ?>
 										</h3>
-
-										<strong class="product-price">
-											$<?= number_format($product['price'], 2) ?>
-										</strong>
-
+										<div class="price-wrapper">
+											<?php if (!empty($product['sale_price'])): ?>
+												<strong class="product-price">
+													$<?= number_format($product['sale_price'], 2) ?>
+												</strong>
+												<span class="product-old-price">
+												$<?= number_format($product['price'], 2) ?>
+												</span>
+											<?php else: ?>
+												<strong class="product-price">
+													$<?= number_format($product['price'], 2) ?>
+												</strong>
+											<?php endif; ?>
+										</div>
 										<span class="icon-cross">
 											<img src="images/cross.svg" class="img-fluid">
 										</span>
@@ -798,6 +815,24 @@
 				})
 				.catch(err => console.error('Fetch error:', err));
 			}
+
+			//Product hover effect on mobile
+			function enableMobileHover() {
+			if (window.innerWidth > 768) return;
+				document.querySelectorAll('.product-item').forEach(item => {
+					item.addEventListener('click', function (e) {
+					if (e.target.closest('.icon-cross')) return;
+
+					if (!this.classList.contains('active')) {
+						e.preventDefault();
+						document.querySelectorAll('.product-item.active')
+						.forEach(i => i.classList.remove('active'));
+						this.classList.add('active');
+					}
+					});
+				});
+			}
+			enableMobileHover();
 			</script>
 	</body>
 </html>

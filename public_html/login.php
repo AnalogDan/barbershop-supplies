@@ -20,6 +20,8 @@
 		color: #333;           
 	}
 </style>
+<link rel="stylesheet" href="css/login.mobile.css">
+
 <html lang="en">
 	<?php include '../includes/head.php'; ?>
     <?php include '../includes/navbar.php'; ?>

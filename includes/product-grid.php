@@ -352,4 +352,23 @@
 		})
 		.catch(err => console.error('Fetch error:', err));
 	}
+
+	//Product hover effect on mobile
+	function enableMobileHover() {
+	if (window.innerWidth > 768) return;
+		document.querySelectorAll('.product-item').forEach(item => {
+			item.addEventListener('click', function (e) {
+			if (e.target.closest('.icon-cross')) return;
+
+			if (!this.classList.contains('active')) {
+				e.preventDefault();
+				document.querySelectorAll('.product-item.active')
+				.forEach(i => i.classList.remove('active'));
+				this.classList.add('active');
+			}
+			});
+		});
+	}
+	enableMobileHover();
 </script>
+

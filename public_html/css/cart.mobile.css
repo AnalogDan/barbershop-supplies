@@ -1,0 +1,116 @@
+@media (max-width: 768px) {
+    /* Override grid structure */
+    .grid {
+        width: 95% !important;
+        margin: 60px auto 0;
+        grid-template-columns: 1fr;
+    }
+    .item.header {
+        display: none;
+    }
+    .cart-row {
+        display: flex;
+        flex-direction: column; 
+        border-bottom: 2px solid #929292;
+        padding: 15px 0;
+    }
+    .cart-row .item {
+        border-bottom: none;
+        text-align: left;
+        padding: 8px 0;
+    }
+    .quantity-selector {
+        transform: scale(0.9);
+    }
+
+    /* Make image and name inline */
+    .cart-row .item:nth-child(1) {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        justify-content: left;
+    }
+    .cart-row .item:nth-child(2) {
+        margin-top: -60px;
+        margin-left: 75px;
+        padding-top: 0;
+        text-align: left;
+    }
+    .cart-row .item:nth-child(2) a {
+        font-size: 1rem;
+        font-weight: 600;
+        display: block;
+    }
+    .img-cell {
+        width: 90px;
+        height: 90px;
+        margin: 0;
+    }
+    .mobile-qty {
+        display: inline; 
+    }
+
+    /* bottom row: quantity + total + trash */
+    .cart-row .item:nth-child(4) { /* quantity */
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: -200px;
+        justify-content: flex-start !important;
+    }
+    .cart-row .item:nth-child(5) { /* total */
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: -52px; 
+        margin-left: 15px; 
+    }
+    .cart-row .item:nth-child(6) { /* trash */
+        display: inline-flex;
+        align-items: center;
+        margin-top: -42px; 
+        margin-left: auto;  
+    }
+
+    /*Gift card/totals section*/
+    .bottom-section {
+        display: flex;
+        flex-direction: column;  
+        gap: 20px;              
+    }
+    .bottom-section .left,
+    .bottom-section .right {
+        width: 100%;            
+        float: none;             
+        padding: 0;             
+        box-sizing: border-box;
+    }
+    .inline-wrapper {
+        display: flex;
+        flex-direction: column;  
+        gap: 10px;           
+        width: 100%;
+    }
+    #product-search-form {
+        width: 100% !important;
+        margin: 0;
+    }
+    #product-search-form .search-wrapper {
+        width: 100%;
+    }
+    #product-search-form input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .inline-wrapper .btn {
+        width: 100%;
+        margin-top: 0;
+        text-align: center;
+    }
+    .check-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: 15px;
+    }
+    
+}

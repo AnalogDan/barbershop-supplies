@@ -87,14 +87,14 @@
         top: 80px; 
     }
 
-    .custom-footer-shaver {
+    .custom-footer-clipper {
         position: absolute;
         top: -230px;
         right: 10%;  
         z-index: 1;
     }
 
-    .custom-footer-shaver img {
+    .custom-footer-clipper img {
         width: 120px;      
         max-width: 120px;  
         height: auto;     
@@ -134,6 +134,8 @@
     .footer-link-right {
     }
 </style>
+<link rel="stylesheet" href="<?= BASE_URL ?>css/footer.mobile.css">
+
 
 <footer class="custom-footer">
     <div class="custom-footer-container">
@@ -172,7 +174,7 @@
         
     </div>
 
-    <div class="custom-footer-shaver">
+    <div class="custom-footer-clipper">
         <img src="<?= BASE_URL ?>images/footer-clipper.png" alt="Shaver">
     </div>
 

@@ -46,6 +46,12 @@
         margin: 0 auto;
     }
 
+    @media (max-width: 768px) {
+        .product-form{
+            width: 90%;
+        }
+    }
+
 </style>
 
 <!DOCTYPE html>

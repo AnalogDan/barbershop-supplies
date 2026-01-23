@@ -222,6 +222,8 @@
     }
 
 </style>
+<link rel="stylesheet" href="css/my-profile.mobile.css">
+
 
 <!DOCTYPE html>
 <html lang="en">

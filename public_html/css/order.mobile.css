@@ -1,0 +1,43 @@
+@media (max-width: 768px) {
+    /*Make back button vanish*/
+    .go-back{
+        display: none;
+    }
+    .top-container{
+        margin-top: 2.5rem;
+        font-size: 1.9rem;
+        font-weight: 600;
+    }
+
+    /*Info padding and smaller font*/
+    .info {
+        width: 90% !important;        
+        margin: 2rem auto !important; 
+        font-size: 1rem !important;   
+        gap: 1rem !important;         
+    }
+    .products {
+        width: 100% !important;       
+        margin-bottom: 4rem !important;
+    }
+    .item-row {
+        flex-direction: row !important;
+        gap: 0.5rem !important;      
+        min-height: 4rem !important;
+    }
+    .item-row img {
+        height: 3.5rem !important;
+    }
+    .item-name {
+        width: auto !important;       
+        flex: 1;                     
+    }
+    .calc-row {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        font-size: 1rem !important;
+    }
+    .type, .money {
+        width: auto !important;
+    }
+}

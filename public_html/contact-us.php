@@ -88,7 +88,7 @@
     }
 
     /*Maps*/
-    .map{
+   .map{
         height: 100%;
         width: 70%;
         display: flex;        
@@ -120,9 +120,8 @@
         font-weight: 600;
         margin-bottom: 1.8rem;
     }
-
-
 </style>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -202,5 +201,6 @@
 
 		</script>
     </main>
+    <link rel="stylesheet" href="css/contact-us.mobile.css">
 	</body>
 </html>

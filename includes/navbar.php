@@ -78,6 +78,10 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     .offcanvas {
         background-color: #393939; /* same as bg-dark */
         color: #fff;
+        width: 60vw;
+    }
+    .offcanvas .btn-close {
+        filter: invert(1);
     }
     @media (max-width: 768px) {
     .custom-navbar .navbar-brand {
@@ -90,18 +94,13 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
 
     <div class="container">
         <a class="navbar-brand" >New Vision Barber Supplies</a>
-        <!-- Delete if collapse menu is fixed -->
-        <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button> -->
+       
         <button class="navbar-toggler" type="button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#mobileMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Delete if collapse menu is fixed -->
-        <!-- <div class="collapse navbar-collapse" id="navbarsFurni"> -->
         <div class="offcanvas offcanvas-end" id="mobileMenu">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title">Menu</h5>
