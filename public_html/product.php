@@ -462,6 +462,8 @@
 	}
 
 </style>
+<link rel="stylesheet" href="css/product.mobile.css">
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -469,15 +471,6 @@
     <?php include '../includes/navbar.php'; ?>
 	<body>
     <main>
-        <!-- <div class="breadcrumb">
-            <a href="#">Shop</a>
-            <span>&gt;</span>
-            <a href="#">Tools &amp; Electricals</a>
-            <span>&gt;</span>
-            <a href="#">Trimmers</a>
-            <span>&gt;</span>
-            <span>Andis Slimline Pro Chrome Trimmer</span>
-        </div> -->
         <div class="breadcrumb">
             <a href="<?= BASE_URL ?>shop.php">Shop</a>
             <span>&gt;</span>

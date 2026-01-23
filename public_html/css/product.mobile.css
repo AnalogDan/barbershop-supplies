@@ -1,0 +1,114 @@
+@media (max-width: 768px) {
+    main {
+        background-color: #d2d2d2ff;
+    }
+    .white-container {
+        width: 95%;
+        margin: 20px auto;
+        padding: 1rem;
+        min-height: auto;
+    }
+    .breadcrumb {
+        position: static;
+        margin: 10px auto 0 auto;
+        width: 95%;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .top-left,
+    .top-right {
+        float: none;
+        width: 100%;
+        padding: 0.5rem;
+    }
+    .product-images .main-image {
+        width: 100%;
+        max-width: 350px;
+    }
+    .product-images .gallery {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .product-images .gallery img {
+        width: 60px;
+        height: 60px;
+        flex: 0 0 auto;
+    }
+    .heart-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    .top-right {
+        gap: 15px;
+        padding: 10px 5px;
+    }
+    .product-title {
+        font-size: 1.8rem;
+    }
+    .stock-status {
+        font-size: 1rem;
+    }
+    .product-price {
+        font-size: 1.6rem;
+    }
+    .product-old-price {
+        font-size: 0.9rem;
+    }
+    .discount-badge {
+        font-size: 0.8rem;
+    }
+    .shipping-note,
+    .extra-note {
+        font-size: 0.85rem;
+    }
+    .quantity-selector {
+        margin-top: 10px;
+    }
+    #add-to-cart-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.6rem;
+    }
+    .bottom-full {
+        padding: 0.5rem;
+    }
+    .desc-toggle {
+        font-size: 1.2rem;
+    }
+    .description-box {
+        font-size: 1rem;
+        max-width: 100%;
+        padding: 0 0.5rem;
+    }
+    .lightbox .chevron {
+        background: rgba(0, 0, 0, 0.4); 
+        border: 2px solid white;     
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+    .chevron {
+        font-size: 40px;
+    }
+    .chevron-left {
+        left: -15px;
+    }
+    .chevron-right {
+        right: -15px;
+    }
+    .product-images .gallery {
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow-x: visible;
+    }
+
+    .product-images .gallery img {
+        width: 65px;
+        height: 65px;
+    }
+}

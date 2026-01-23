@@ -402,6 +402,7 @@
 		letter-spacing: 0.05em;
 		color: #333;
 		transition: all 0.3s ease;
+		text-align: center;
 	}
 	.see-all-content:hover {
 		border-color: #000;

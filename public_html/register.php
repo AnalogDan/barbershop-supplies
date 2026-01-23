@@ -37,6 +37,8 @@
 		font-size: 1.5rem;
 	}
 </style>
+<link rel="stylesheet" href="css/register.mobile.css">
+
 <html lang="en">
 	<?php include '../includes/head.php'; ?>
     <?php include '../includes/navbar.php'; ?>

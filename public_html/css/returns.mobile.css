@@ -1,0 +1,35 @@
+@media (max-width: 768px) {
+    .intro-excerpt h1 {
+        white-space: normal;
+        font-size: 1.8rem;
+        line-height: 1.2;
+    }
+    .intro-excerpt p {
+        font-size: 1rem;
+    }
+    .white-bar,
+    .gray-bar,
+    .gray-bar-tall,
+    .last-gray-bar {
+        padding: 2rem 1.2rem;
+        min-height: auto;
+        margin: 0;
+    }
+    .title {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    .single-text,
+    .two-point-text,
+    .deeper-text {
+        font-size: 1rem;
+        min-width: 100%;
+        line-height: 1.5;
+    }
+    .deeper-text {
+        margin-left: 1.2rem;
+    }
+    .last-gray-bar {
+        margin-bottom: 1.5rem;
+    }
+}

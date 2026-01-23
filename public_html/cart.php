@@ -368,7 +368,7 @@
 								<?php endif; ?>
 
 								<span class="price-final">
-									<span class="mobile-qty">1 x - </span> $<?= number_format($item['final_price'], 2) ?>
+									<span class="mobile-qty">1 x </span> $<?= number_format($item['final_price'], 2) ?>
 								</span>
 
 							</div>

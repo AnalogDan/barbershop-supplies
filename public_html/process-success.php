@@ -8,6 +8,9 @@ if (!isset($_GET['session_id'])) {
 $sessionId = $_GET['session_id'];
 ?>
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
     html, body {
         height: 100%;
@@ -75,7 +78,40 @@ $sessionId = $_GET['session_id'];
         color: #777;
         margin-top: 16px;
     }
+
+    @media (max-width: 768px) {
+        .processing-card {
+            padding: 28px 22px;
+            border-radius: 18px;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+        }
+
+        p {
+            font-size: 1.05rem;
+            margin-bottom: 22px;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border-width: 5px;
+            margin-bottom: 28px;
+        }
+
+        .note {
+            font-size: 0.95rem;
+            margin-top: 20px;
+        }
+
+        .processing-wrapper {
+            padding: 16px;
+        }
+    }
 </style>
+</head>
 
 <!DOCTYPE html>
 <html lang="en">
