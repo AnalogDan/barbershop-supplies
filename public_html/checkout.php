@@ -1,21 +1,21 @@
 <?php
-    require_once __DIR__ . '/../config.php';
-    require_once __DIR__ . '/../includes/db.php';
-    require_once __DIR__ . '/../includes/header.php';
-	$currentPage = 'cart';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/header.php';
+$currentPage = 'cart';
 
-    require_once __DIR__ . '/../includes/pricing.php';
-	$tz = new DateTimeZone('America/Los_Angeles');
-    $checkoutSteps = $_SESSION['checkout']['steps'] ?? []; 
-    
-    //Get correct cartId
-    require_once __DIR__ . '/actions/cart-resolver.php';
-    $cartId = getActiveCartId($pdo);
+require_once __DIR__ . '/../includes/pricing.php';
+$tz = new DateTimeZone('America/Los_Angeles');
+$checkoutSteps = $_SESSION['checkout']['steps'] ?? [];
 
-	//Fetch cart/product info
-	$cartItems = [];
-	if ($cartId) {
-		$stmt = $pdo->prepare("
+//Get correct cartId
+require_once __DIR__ . '/actions/cart-resolver.php';
+$cartId = getActiveCartId($pdo);
+
+//Fetch cart/product info
+$cartItems = [];
+if ($cartId) {
+    $stmt = $pdo->prepare("
 			SELECT
 				ci.product_id,
 				ci.quantity,
@@ -32,18 +32,18 @@
 			WHERE ci.cart_id = ?
             AND c.status = 'active'
 		");
-		$stmt->execute([$cartId]);
-		$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	}
+    $stmt->execute([$cartId]);
+    $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-	//Correct for stock changes
-	if (!empty($cartItems)) {
-		foreach ($cartItems as $item) {
-			$productId = (int) $item['product_id'];
-			$stock     = (int) $item['stock'];
-			$quantity  = (int) $item['quantity'];
-			if ($stock <= 0) {
-				$stmt = $pdo->prepare("
+//Correct for stock changes
+if (!empty($cartItems)) {
+    foreach ($cartItems as $item) {
+        $productId = (int) $item['product_id'];
+        $stock     = (int) $item['stock'];
+        $quantity  = (int) $item['quantity'];
+        if ($stock <= 0) {
+            $stmt = $pdo->prepare("
 					DELETE ci
                         FROM cart_items ci
                         JOIN carts c ON c.id = ci.cart_id
@@ -51,9 +51,9 @@
                         AND ci.product_id = ?
                         AND c.status = 'active'
                     ");
-				$stmt->execute([$cartId, $productId]);
-			} elseif ($quantity > $stock) {
-				$stmt = $pdo->prepare("
+            $stmt->execute([$cartId, $productId]);
+        } elseif ($quantity > $stock) {
+            $stmt = $pdo->prepare("
 					UPDATE cart_items ci
                         JOIN carts c ON c.id = ci.cart_id
                         SET ci.quantity = ?
@@ -61,10 +61,10 @@
                         AND ci.product_id = ?
                         AND c.status = 'active'
                     ");
-				$stmt->execute([$stock, $cartId, $productId]);
-			}
-		}
-		$stmt = $pdo->prepare("
+            $stmt->execute([$stock, $cartId, $productId]);
+        }
+    }
+    $stmt = $pdo->prepare("
 				SELECT
 					ci.product_id,
 					ci.quantity,
@@ -81,103 +81,105 @@
 				WHERE ci.cart_id = ?
                 AND c.status = 'active'
 			");
-			$stmt->execute([$cartId]);
-			$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	}
-      if (empty($cartItems)) {
-        header("Location: " . BASE_URL . "cart.php");
-        exit;
-    }
+    $stmt->execute([$cartId]);
+    $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+if (empty($cartItems)) {
+    header("Location: " . BASE_URL . "cart.php");
+    exit;
+}
 
-    //Derive effective sale prices and have a final items list
-    $summaryItems = [];
-    foreach ($cartItems as $item) {
-        $pricing = getProductPricing($item, $tz);
-        $unitPrice = $pricing['final_price'];
-        $quantity  = (int) $item['quantity'];
+//Derive effective sale prices and have a final items list
+$summaryItems = [];
+foreach ($cartItems as $item) {
+    $pricing = getProductPricing($item, $tz);
+    $unitPrice = $pricing['final_price'];
+    $quantity  = (int) $item['quantity'];
 
-        $summaryItems[] = [
-            'product_id'        => (int) $item['product_id'],
-            'name'              => $item['name'],
-            'cutout_image'      => $item['cutout_image'],
-            'quantity'          => $quantity,
-            'unit_price'        => $unitPrice,
-            'line_total'        => $unitPrice * $quantity,
-            'is_on_sale'        => $pricing['is_on_sale'],
-            'original_price'   => $pricing['original_price'],
-            'discount_percent' => $pricing['discount_percent'],
-        ];
-    }
-    $subtotal   = 0;
-    $itemCount = 0;
-    foreach ($summaryItems as $item) {
-        $subtotal   += $item['line_total'];
-        $itemCount += $item['quantity'];
-    }
-    $taxRate = 0.0925;
-    $taxableAmount = $subtotal;
-    $salesTax = round($taxableAmount * $taxRate, 2);
-    // Shipping will be calculated later
-    $shipping = null;
-    $total = $subtotal + $salesTax + ($shipping ?? 0);
+    $summaryItems[] = [
+        'product_id'        => (int) $item['product_id'],
+        'name'              => $item['name'],
+        'cutout_image'      => $item['cutout_image'],
+        'quantity'          => $quantity,
+        'unit_price'        => $unitPrice,
+        'line_total'        => $unitPrice * $quantity,
+        'is_on_sale'        => $pricing['is_on_sale'],
+        'original_price'   => $pricing['original_price'],
+        'discount_percent' => $pricing['discount_percent'],
+    ];
+}
+$subtotal   = 0;
+$itemCount = 0;
+foreach ($summaryItems as $item) {
+    $subtotal   += $item['line_total'];
+    $itemCount += $item['quantity'];
+}
+$taxRate = 0.0925;
+$taxableAmount = $subtotal;
+$salesTax = round($taxableAmount * $taxRate, 2);
+// Shipping will be calculated later
+$shipping = null;
+$total = $subtotal + $salesTax + ($shipping ?? 0);
 
-    //Fetch user contact data 
-    $isLoggedIn = false;
-    $userEmail = '';
-    $userPhone = '';
-    if (!empty($_SESSION['user_id'])) {
-        $isLoggedIn = true;
-        $stmt = $pdo->prepare("
+//Fetch user contact data 
+$isLoggedIn = false;
+$userEmail = '';
+$userPhone = '';
+if (!empty($_SESSION['user_id'])) {
+    $isLoggedIn = true;
+    $stmt = $pdo->prepare("
             SELECT email, phone
             FROM users
             WHERE id = ?
             LIMIT 1
         ");
-        $stmt->execute([$_SESSION['user_id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($user) {
-            $userEmail = $user['email'] ?? '';
-            $userPhone = $user['phone'] ?? '';
-        }
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user) {
+        $userEmail = $user['email'] ?? '';
+        $userPhone = $user['phone'] ?? '';
     }
+}
 
-    //Fetch user address data 
-    $address = [
-        'full_name' => '',
-        'street'    => '',
-        'city'      => '',
-        'state'     => '',
-        'zip'       => ''
-    ];
-    $country = 'United States';
-    if (!empty($_SESSION['user_id'])) {
-        $userId = $_SESSION['user_id'];
-        $stmt = $pdo->prepare("
+//Fetch user address data 
+$address = [
+    'full_name' => '',
+    'street'    => '',
+    'city'      => '',
+    'state'     => '',
+    'zip'       => ''
+];
+$country = 'United States';
+if (!empty($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("
             SELECT full_name, street, city, state, zip
             FROM user_addresses
             WHERE user_id = ? AND is_primary = 1
             LIMIT 1
         ");
-        $stmt->execute([$userId]);
-        $dbAddress = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($dbAddress) {
-            $address = array_merge($address, $dbAddress);
-        }
+    $stmt->execute([$userId]);
+    $dbAddress = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($dbAddress) {
+        $address = array_merge($address, $dbAddress);
     }
-    $step1 = $checkoutSteps[1] ?? [];
-    $step2 = $checkoutSteps[2] ?? [];
-    $email = $step1['email'] ?? $userEmail ?? '';
-    $phone = $step1['phone'] ?? $userPhone ?? '';
-    $fullName = $step2['full_name'] ?? $address['full_name'] ?? '';
-    $street   = $step2['street']    ?? $address['street']    ?? '';
-    $city     = $step2['city']      ?? $address['city']      ?? '';
-    $state    = $step2['state']     ?? $address['state']     ?? '';
-    $zip      = $step2['zip']       ?? $address['zip']       ?? '';
-    $hasAddress = !empty($fullName)
+}
+$step1 = $checkoutSteps[1] ?? [];
+$step2 = $checkoutSteps[2] ?? [];
+$step3 = $checkoutSteps[3] ?? [];
+$email = $step1['email'] ?? $userEmail ?? '';
+$phone = $step1['phone'] ?? $userPhone ?? '';
+$fullName = $step2['full_name'] ?? $address['full_name'] ?? '';
+$street   = $step2['street']    ?? $address['street']    ?? '';
+$city     = $step2['city']      ?? $address['city']      ?? '';
+$state    = $step2['state']     ?? $address['state']     ?? '';
+$zip      = $step2['zip']       ?? $address['zip']       ?? '';
+$hasAddress = !empty($fullName)
     || !empty($street)
     || !empty($city)
     || !empty($state)
     || !empty($zip);
+$selectedShippingMethod = $step3['shipping_method'] ?? '';
 ?>
 
 <style>
@@ -189,17 +191,20 @@
         width: 80%;
         margin: 3rem auto 0 auto;
     }
+
     .order-summary h3 {
         font-size: 1.4rem;
         font-weight: 600;
         color: #3b3b3bff;
         margin-bottom: 1.2rem;
     }
+
     .summary-items {
         display: flex;
         flex-direction: column;
         gap: 1rem;
     }
+
     .summary-item {
         display: flex;
         align-items: center;
@@ -207,26 +212,32 @@
         font-weight: 600;
         color: #3b3b3bff;
     }
+
     .summary-item img {
         height: 4.5rem;
         width: auto;
     }
+
     .summary-item-name {
         flex: 1;
     }
+
     .summary-totals {
         margin-top: 1.5rem;
         border-top: 1px solid #5b5b5bff;
         padding-top: 1rem;
     }
+
     .summary-line {
         display: flex;
         justify-content: space-between;
         margin-bottom: 0.6rem;
     }
+
     .summary-total {
         font-size: 1.2rem;
     }
+
     /*Image summary*/
     .summary-item-image {
         width: 60px;
@@ -237,11 +248,13 @@
         justify-content: center;
         overflow: hidden;
     }
+
     .summary-item-image img {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
     }
+
     /*Price sale */
     .price-original {
         color: #000;
@@ -250,6 +263,7 @@
         margin-right: 10px;
         white-space: nowrap;
     }
+
     /*Address summary */
     .summary-address {
         margin-top: 1.2rem;
@@ -258,6 +272,7 @@
         color: #3b3b3bff;
         font-weight: 500;
     }
+
     .summary-address-header {
         display: flex;
         justify-content: space-between;
@@ -265,11 +280,13 @@
         font-weight: 600;
         margin-bottom: 0.6rem;
     }
+
     .summary-address-header span {
         font-size: 0.95rem;
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
+
     .summary-address-content {
         font-size: 0.9rem;
         line-height: 1.4;
@@ -277,13 +294,15 @@
     }
 
     /*Main structure*/
-    .giant-container{
+    .giant-container {
         padding: 50px 10% 200px 10%;
     }
-	.section {
+
+    .section {
         border: 1px solid #5b5b5bff;
         border-bottom: 0;
     }
+
     .section-header {
         position: relative;
         color: #3b3b3bff;
@@ -293,41 +312,50 @@
         font-size: 1.3rem;
         cursor: default;
     }
-    .neutral-icon{
+
+    .neutral-icon {
         opacity: 0.6;
         margin-right: 0.6rem;
     }
+
     .fa-circle-check {
         opacity: 1;
         margin-right: 0.6rem;
     }
+
     .section-content {
         border-top: 1px solid black;
         max-height: 0;
         overflow: hidden;
         transition: max-height 0.9s ease;
         background: #ccccccff;
-        
+
         white-space: pre-line;
     }
+
     .section.open .section-content {
-        max-height: 300px;   
+        max-height: 300px;
     }
-    
+
     .section:nth-child(odd) .section-header {
-        background: #dedede;   
+        background: #dedede;
     }
+
     .section:nth-child(even) .section-header {
-        background: #cccccc;  
+        background: #cccccc;
     }
+
     .section:nth-child(odd) .section-content {
         background: #dedede;
     }
+
     .section:nth-child(even) .section-content {
         background: #cccccc;
     }
+
     .section:last-child .section-content {
-        border-bottom: 1px solid #5b5b5bff;;
+        border-bottom: 1px solid #5b5b5bff;
+        ;
     }
 
 
@@ -341,41 +369,47 @@
         transition: transform 0.25s ease;
         pointer-events: none;
     }
+
     .section.open .chevron {
         transform: translateY(-50%) rotate(90deg);
     }
 
     /*Contact info*/
     .my-btn-custom {
-    border-radius: 10px !important;
+        border-radius: 10px !important;
     }
+
     .btn {
-		border-radius: 10px !important;  
+        border-radius: 10px !important;
         margin-bottom: 15px;
-	}
+    }
 
     .contact-form {
         padding: 20px;
     }
+
     .row {
         display: flex;
         gap: 10px;
         margin-bottom: 10px;
     }
+
     .field {
         display: flex;
         flex-direction: column;
         color: #3b3b3b;
         font-weight: 600;
     }
-    .field.big { 
+
+    .field.big {
         font-size: 1rem;
-        flex: 6; 
-    }    
-    .field.small { 
+        flex: 6;
+    }
+
+    .field.small {
         font-size: 1rem;
-        flex: 4; 
-    }  
+        flex: 4;
+    }
 
     .field input {
         width: 100%;
@@ -385,6 +419,7 @@
         background: white;
         border-radius: 0;
     }
+
     .field input:focus {
         outline: none;
         border: 2px solid #000;
@@ -398,10 +433,11 @@
     }
 
     /*Delivery address*/
-    .field.huge{
+    .field.huge {
         font-size: 1rem;
         flex: 10;
     }
+
     .field select {
         width: 100%;
         padding: 10px;
@@ -410,6 +446,7 @@
         background: white;
         border-radius: 0;
     }
+
     .field select:focus {
         outline: none;
         border: 2px solid #000;
@@ -422,9 +459,11 @@
         display: flex;
         flex-direction: column;
     }
-    .option-group > :last-child {
+
+    .option-group> :last-child {
         margin-top: 20px;
     }
+
     .option {
         display: flex;
         align-items: center;
@@ -433,9 +472,11 @@
         font-weight: 600;
         color: #3b3b3b;
     }
+
     .option input {
-        display: none; 
+        display: none;
     }
+
     .circle {
         background: white;
         width: 20px;
@@ -448,44 +489,51 @@
         position: relative;
         transition: all 0.2s ease;
     }
-    .option input:checked + .circle {
+
+    .option input:checked+.circle {
         border: 6px solid #c6be6aff;
     }
+
     .price {
         margin-bottom: -26px;
-        margin-left: 40px; 
+        margin-left: 40px;
         font-weight: 600;
         color: #3b3b3b;
     }
 
     /*Payment method*/
-    .payment-method{
+    .payment-method {
         padding: 20px 0 15px 20px;
     }
+
     .three-section-bar {
         width: 80%;
-        height: 60px;          
+        height: 60px;
         display: flex;
     }
-    .sec1 { 
+
+    .sec1 {
         display: flex;
-        justify-content: center;  
+        justify-content: center;
         align-items: center;
-        flex: 0 0 10%; 
+        flex: 0 0 10%;
     }
-    .sec2 { 
+
+    .sec2 {
         display: flex;
         flex-direction: column;
-        justify-content: center; 
-        padding-left: 15px; 
-        flex: 0 0 auto; 
+        justify-content: center;
+        padding-left: 15px;
+        flex: 0 0 auto;
     }
-    .sec3 { 
+
+    .sec3 {
         display: flex;
-        justify-content: center; 
+        justify-content: center;
         align-items: center;
-        flex: 0 0 30%; 
+        flex: 0 0 30%;
     }
+
     .circle-sec1 {
         margin: 0;
     }
@@ -500,7 +548,7 @@
     .sec2-text .sub {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #777;    
+        color: #777;
     }
 
     .pay-icon {
@@ -509,16 +557,18 @@
         align-items: center;
         width: 75px;
         height: auto;
-        margin: 0; 
+        margin: 0;
     }
+
     .pay-icon-small {
         width: 40px;
         height: auto;
     }
+
     .pay-icon img {
         width: 100%;
         height: 100%;
-        object-fit: contain;  
+        object-fit: contain;
     }
 
     /*Cursor*/
@@ -526,10 +576,12 @@
     .section.completed .section-header {
         cursor: pointer;
     }
+
     .section.locked .section-header {
         cursor: default;
         opacity: 0.75;
     }
+
     /*Locked sections */
     .section.locked {
         opacity: 0.5;
@@ -540,315 +592,364 @@
 
 <!DOCTYPE html>
 <html lang="en">
-	<?php include '../includes/head.php'; ?>
-    <?php include '../includes/navbar.php'; ?>
-	<body>
-		<main>
-            <div class="hero">
-				<div class="container">
-					<div class="row justify-content-between">
-						<div class="col-lg-5">
-							<div class="intro-excerpt">
-								<h1>Checkout</h1>
-								<p class="mb-4">Securely complete your purchase in a few simple steps.</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+<?php include '../includes/head.php'; ?>
+<?php include '../includes/navbar.php'; ?>
 
-            <div class="order-summary">
-                <h3>Order summary</h3>
-                <div class="summary-items">
-                    <?php foreach ($summaryItems as $item): ?>
-                        <div class="summary-item">
-                            <div class="summary-item-qty">
-                                ×<?= (int) $item['quantity'] ?>
-                            </div>
-                            <div class="summary-item-image">
-                                <img src="<?= htmlspecialchars($item['cutout_image']) ?>" alt="">
-                            </div>
-                            <div class="summary-item-name">
-                                <?= htmlspecialchars($item['name']) ?>
-                            </div>
-                            <div class="summary-item-price">
-                                <?php if ($item['is_on_sale']): ?>
-                                    <span class="price-original">
-                                        $<?= number_format($item['original_price'] * $item['quantity'], 2) ?>
-                                    </span>
-                                    <span class="price-sale">
-                                        $<?= number_format($item['line_total'], 2) ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="price-regular">
-                                        $<?= number_format($item['line_total'], 2) ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
+<body>
+    <main>
+        <div class="hero">
+            <div class="container">
+                <div class="row justify-content-between">
+                    <div class="col-lg-5">
+                        <div class="intro-excerpt">
+                            <h1>Checkout</h1>
+                            <p class="mb-4">Securely complete your purchase in a few simple steps.</p>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <div class="summary-totals">
-                    <div class="summary-line">
-                        <span>Subtotal</span>
-                        <span>$<?= number_format($subtotal, 2) ?></span>
-                    </div>
-                    <div class="summary-line">
-                        <span>Sales tax</span>
-                        <span>$<?= number_format($salesTax, 2) ?></span>
-                    </div>
-                    <div class="summary-line">
-                        <span>Shipping</span>
-                        <span>
-                            <?= $shipping === null
-                                ? 'Calculated at next step'
-                                : '$' . number_format($shipping, 2)
-                            ?>
-                        </span>
-                    </div>
-                    <div class="summary-line summary-total">
-                        <span>Total</span>
-                        <span>$<?= number_format($total, 2) ?></span>
-                    </div>
-                </div>
-
-                <div class="summary-address">
-                    <div class="summary-address-content">
-                        <strong>Address:</strong>
-                        <span id="summary-address">
-                            <?php if ($hasAddress): ?>
-                                <?= htmlspecialchars(trim(implode(', ', array_filter([
-                                    $fullName,
-                                    $street,
-                                    $city,
-                                    $state . ($zip ? " $zip" : ''),
-                                    $country
-                                ])))) ?>
-                            <?php else: ?>
-                                No address yet
-                            <?php endif; ?>
-                        </span>
-                        <br><br>
-
-                        <strong>Contact information:</strong>
-                        <span id="summary-contact">
-                            <?= htmlspecialchars(trim(implode(', ', array_filter([
-                                $email,
-                                $phone
-                            ])))) ?>
-                        </span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="giant-container">
-                <div class="section active open" data-step="1" id="step-1">
-                    <div class="section-header">
-                        <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
-                        1 - Contact information
-                        <span class="chevron">&rsaquo;</span>
-                    </div>
-                    <div class="section-content">
-                        <div class="contact-form">
-                            <div class="row">
-                                <div class="field big">
-                                    <label>Email</label>
-                                    <input type="text"
-                                        name="email"
-                                        id="checkout-email"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[1]['email']
-                                            ?? $userEmail
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                                <div class="field small">
-                                    <label>Phone</label>
-                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
-                                        name="phone"
-                                        id="checkout-phone"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[1]['phone']
-                                            ?? $userPhone
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                            </div>
-
-                            <div class="button-row">
-                                <?php if (!$isLoggedIn): ?>
-                                    <a href="#" class="btn check-btn step-continue">Continue as guest</a>
-                                    <a href="login.php" class="btn btn-secondary me-2 my-btn-custom">Log in</a>
-                                <?php else: ?>
-                                    <a href="#" class="btn check-btn step-continue">Continue</a>
-                                <?php endif; ?>
-                            </div>
+        <div class="order-summary">
+            <h3>Order summary</h3>
+            <div class="summary-items">
+                <?php foreach ($summaryItems as $item): ?>
+                    <div class="summary-item">
+                        <div class="summary-item-qty">
+                            ×<?= (int) $item['quantity'] ?>
+                        </div>
+                        <div class="summary-item-image">
+                            <img src="<?= htmlspecialchars($item['cutout_image']) ?>" alt="">
+                        </div>
+                        <div class="summary-item-name">
+                            <?= htmlspecialchars($item['name']) ?>
+                        </div>
+                        <div class="summary-item-price">
+                            <?php if ($item['is_on_sale']): ?>
+                                <span class="price-original">
+                                    $<?= number_format($item['original_price'] * $item['quantity'], 2) ?>
+                                </span>
+                                <span class="price-sale">
+                                    $<?= number_format($item['line_total'], 2) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="price-regular">
+                                    $<?= number_format($item['line_total'], 2) ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
                     </div>
-                </div>
-                <div class="section locked" data-step="2" id="step-2">
-                    <div class="section-header">
-                        <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
-                        2 - Delivery address
-                        <span class="chevron">&rsaquo;</span>
-                    </div>
-                    <div class="section-content">
-                        <div class="contact-form">
-                            <div class="row">
-                                <div class="field huge">
-                                    <label>Full name</label>
-                                    <input type="text" name="full_name" id="checkout-fullname"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[2]['full_name']
-                                            ?? $address['full_name']
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="field huge">
-                                    <label>Street address</label>
-                                    <input type="text" name="street" id="checkout-street"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[2]['street']
-                                            ?? $address['street']
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="field big">
-                                    <label>City</label>
-                                    <input type="text" name="city" id="checkout-city"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[2]['city']
-                                            ?? $address['city']
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                                <div class="field small">
-                                    <label>Zip code</label>
-                                    <input type="text" name="zip" inputmode="numeric" pattern="[0-9]*" id="checkout-zip"
-                                        value="<?= htmlspecialchars(
-                                            $checkoutSteps[2]['zip']
-                                            ?? $address['zip']
-                                            ?? ''
-                                        ) ?>"
-                                    >
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="field huge">
-                                    <label>State</label>
-                                    <select name="state" id="checkout-state">
-                                        <option value="">Select a state</option>
-                                        <?php
-                                        $selectedState =
-                                            $checkoutSteps[2]['state']
-                                            ?? $address['state']
-                                            ?? '';
-                                        foreach ([
-                                            'AL'=>'Alabama','AK'=>'Alaska','AZ'=>'Arizona','AR'=>'Arkansas',
-                                            'CA'=>'California','CO'=>'Colorado','CT'=>'Connecticut','DE'=>'Delaware',
-                                            'FL'=>'Florida','GA'=>'Georgia','HI'=>'Hawaii','ID'=>'Idaho','IL'=>'Illinois',
-                                            'IN'=>'Indiana','IA'=>'Iowa','KS'=>'Kansas','KY'=>'Kentucky','LA'=>'Louisiana',
-                                            'ME'=>'Maine','MD'=>'Maryland','MA'=>'Massachusetts','MI'=>'Michigan',
-                                            'MN'=>'Minnesota','MS'=>'Mississippi','MO'=>'Missouri','MT'=>'Montana',
-                                            'NE'=>'Nebraska','NV'=>'Nevada','NH'=>'New Hampshire','NJ'=>'New Jersey',
-                                            'NM'=>'New Mexico','NY'=>'New York','NC'=>'North Carolina','ND'=>'North Dakota',
-                                            'OH'=>'Ohio','OK'=>'Oklahoma','OR'=>'Oregon','PA'=>'Pennsylvania',
-                                            'RI'=>'Rhode Island','SC'=>'South Carolina','SD'=>'South Dakota',
-                                            'TN'=>'Tennessee','TX'=>'Texas','UT'=>'Utah','VT'=>'Vermont',
-                                            'VA'=>'Virginia','WA'=>'Washington','WV'=>'West Virginia',
-                                            'WI'=>'Wisconsin','WY'=>'Wyoming'
-                                        ] as $code => $name):
-                                        ?>
-                                            <option value="<?= $code ?>" <?= $code === $selectedState ? 'selected' : '' ?>>
-                                                <?= $name ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
+                <?php endforeach; ?>
+            </div>
 
-                            <div class="button-row">
+            <div class="summary-totals">
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <span id="summary-subtotal">
+                        $<?= number_format($subtotal, 2) ?></span>
+                </div>
+                <div class="summary-line">
+                    <span>Sales tax</span>
+                    <span id="summary-tax">
+                        $<?= number_format($salesTax, 2) ?></span>
+                </div>
+                <div class="summary-line">
+                    <span>Shipping</span>
+                    <span id="summary-shipping">
+                        <?= $shipping === null
+                            ? 'Calculated at next step'
+                            : '$' . number_format($shipping, 2)
+                        ?>
+                    </span>
+                </div>
+                <div class="summary-line summary-total">
+                    <span>Total</span>
+                    <span id="summary-total">
+                        $<?= number_format($total, 2) ?></span>
+                </div>
+            </div>
+
+            <div class="summary-address">
+                <div class="summary-address-content">
+                    <strong>Address:</strong>
+                    <span id="summary-address">
+                        <?php if ($hasAddress): ?>
+                            <?= htmlspecialchars(trim(implode(', ', array_filter([
+                                $fullName,
+                                $street,
+                                $city,
+                                $state . ($zip ? " $zip" : ''),
+                                $country
+                            ])))) ?>
+                        <?php else: ?>
+                            No address yet
+                        <?php endif; ?>
+                    </span>
+                    <br><br>
+
+                    <strong>Contact information:</strong>
+                    <span id="summary-contact">
+                        <?= htmlspecialchars(trim(implode(', ', array_filter([
+                            $email,
+                            $phone
+                        ])))) ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="giant-container">
+            <div class="section active open" data-step="1" id="step-1">
+                <div class="section-header">
+                    <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
+                    1 - Contact information
+                    <span class="chevron">&rsaquo;</span>
+                </div>
+                <div class="section-content">
+                    <div class="contact-form">
+                        <div class="row">
+                            <div class="field big">
+                                <label>Email</label>
+                                <input type="text"
+                                    name="email"
+                                    id="checkout-email"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[1]['email']
+                                                    ?? $userEmail
+                                                    ?? ''
+                                            ) ?>">
+                            </div>
+                            <div class="field small">
+                                <label>Phone</label>
+                                <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                    name="phone"
+                                    id="checkout-phone"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[1]['phone']
+                                                    ?? $userPhone
+                                                    ?? ''
+                                            ) ?>">
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <?php if (!$isLoggedIn): ?>
+                                <a href="#" class="btn check-btn step-continue">Continue as guest</a>
+                                <a href="login.php" class="btn btn-secondary me-2 my-btn-custom">Log in</a>
+                            <?php else: ?>
                                 <a href="#" class="btn check-btn step-continue">Continue</a>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
-                <div class="section locked" data-step="3">
-                    <div class="section-header">
-                        <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
-                        3 - Shipping method
-                        <span class="chevron">&rsaquo;</span>
-                    </div>
-                    <div class="section-content">
-                        <div class="option-group">
-                            <label class="option">
-                                <input type="radio" name="2nd_day" value="option1">
-                                <span class="circle"></span>
-                                UPS 2nd Day Air
-                                <span class="price">-</span>
-                                <span class="price">$50.99</span>
-                            </label>
-
-                            <label class="option">
-                                <input type="radio" name="3_day" value="option2">
-                                <span class="circle"></span>
-                                UPS 3 Day Select
-                                <span class="price">-</span>
-                                <span class="price">$25.99</span>
-                            </label>
-
-                            <label class="option">
-                                <input type="radio" name="ground" value="option3">
-                                <span class="circle"></span>
-                                UPS Ground
-                                <span class="price">-</span>
-                                <span class="price">$15.99</span>
-                            </label>
-                            <div class="button-row">
-                                <a href="#" class="btn check-btn step-continue">Continue</a>
+            </div>
+            <div class="section locked" data-step="2" id="step-2">
+                <div class="section-header">
+                    <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
+                    2 - Delivery address
+                    <span class="chevron">&rsaquo;</span>
+                </div>
+                <div class="section-content">
+                    <div class="contact-form">
+                        <div class="row">
+                            <div class="field huge">
+                                <label>Full name</label>
+                                <input type="text" name="full_name" id="checkout-fullname"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[2]['full_name']
+                                                    ?? $address['full_name']
+                                                    ?? ''
+                                            ) ?>">
                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="field huge">
+                                <label>Street address</label>
+                                <input type="text" name="street" id="checkout-street"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[2]['street']
+                                                    ?? $address['street']
+                                                    ?? ''
+                                            ) ?>">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="field big">
+                                <label>City</label>
+                                <input type="text" name="city" id="checkout-city"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[2]['city']
+                                                    ?? $address['city']
+                                                    ?? ''
+                                            ) ?>">
+                            </div>
+                            <div class="field small">
+                                <label>Zip code</label>
+                                <input type="text" name="zip" inputmode="numeric" pattern="[0-9]*" id="checkout-zip"
+                                    value="<?= htmlspecialchars(
+                                                $checkoutSteps[2]['zip']
+                                                    ?? $address['zip']
+                                                    ?? ''
+                                            ) ?>">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="field huge">
+                                <label>State</label>
+                                <select name="state" id="checkout-state">
+                                    <option value="">Select a state</option>
+                                    <?php
+                                    $selectedState =
+                                        $checkoutSteps[2]['state']
+                                        ?? $address['state']
+                                        ?? '';
+                                    foreach (
+                                        [
+                                            'AL' => 'Alabama',
+                                            'AK' => 'Alaska',
+                                            'AZ' => 'Arizona',
+                                            'AR' => 'Arkansas',
+                                            'CA' => 'California',
+                                            'CO' => 'Colorado',
+                                            'CT' => 'Connecticut',
+                                            'DE' => 'Delaware',
+                                            'FL' => 'Florida',
+                                            'GA' => 'Georgia',
+                                            'HI' => 'Hawaii',
+                                            'ID' => 'Idaho',
+                                            'IL' => 'Illinois',
+                                            'IN' => 'Indiana',
+                                            'IA' => 'Iowa',
+                                            'KS' => 'Kansas',
+                                            'KY' => 'Kentucky',
+                                            'LA' => 'Louisiana',
+                                            'ME' => 'Maine',
+                                            'MD' => 'Maryland',
+                                            'MA' => 'Massachusetts',
+                                            'MI' => 'Michigan',
+                                            'MN' => 'Minnesota',
+                                            'MS' => 'Mississippi',
+                                            'MO' => 'Missouri',
+                                            'MT' => 'Montana',
+                                            'NE' => 'Nebraska',
+                                            'NV' => 'Nevada',
+                                            'NH' => 'New Hampshire',
+                                            'NJ' => 'New Jersey',
+                                            'NM' => 'New Mexico',
+                                            'NY' => 'New York',
+                                            'NC' => 'North Carolina',
+                                            'ND' => 'North Dakota',
+                                            'OH' => 'Ohio',
+                                            'OK' => 'Oklahoma',
+                                            'OR' => 'Oregon',
+                                            'PA' => 'Pennsylvania',
+                                            'RI' => 'Rhode Island',
+                                            'SC' => 'South Carolina',
+                                            'SD' => 'South Dakota',
+                                            'TN' => 'Tennessee',
+                                            'TX' => 'Texas',
+                                            'UT' => 'Utah',
+                                            'VT' => 'Vermont',
+                                            'VA' => 'Virginia',
+                                            'WA' => 'Washington',
+                                            'WV' => 'West Virginia',
+                                            'WI' => 'Wisconsin',
+                                            'WY' => 'Wyoming'
+                                        ] as $code => $name
+                                    ):
+                                    ?>
+                                        <option value="<?= $code ?>" <?= $code === $selectedState ? 'selected' : '' ?>>
+                                            <?= $name ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <a href="#" class="btn check-btn step-continue">Continue</a>
                         </div>
                     </div>
                 </div>
-                <div class="section locked" data-step="4">
-                    <div class="section-header">
-                        <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
-                        4 - Payment method
-                        <span class="chevron">&rsaquo;</span>
+            </div>
+            <div class="section locked" data-step="3">
+                <div class="section-header">
+                    <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
+                    3 - Shipping method
+                    <span class="chevron">&rsaquo;</span>
+                </div>
+                <div class="section-content">
+                    <div class="option-group">
+                        <label class="option">
+                            <input
+                                type="radio"
+                                name="shipping_method"
+                                value="2nd_day"
+                                <?= $selectedShippingMethod === '2nd_day' ? 'checked' : '' ?>>
+                            <span class="circle"></span>
+                            UPS 2nd Day Air
+                            <span class="price">-</span>
+                            <span class="price">$50.99</span>
+                        </label>
+
+                        <label class="option">
+                            <input
+                                type="radio"
+                                name="shipping_method"
+                                value="3_day"
+                                <?= $selectedShippingMethod === '3_day' ? 'checked' : '' ?>>
+                            <span class="circle"></span>
+                            UPS 3 Day Select
+                            <span class="price">-</span>
+                            <span class="price">$25.99</span>
+                        </label>
+
+                        <label class="option">
+                            <input
+                                type="radio"
+                                name="shipping_method"
+                                value="ground"
+                                <?= $selectedShippingMethod === 'ground' ? 'checked' : '' ?>>
+                            <span class="circle"></span>
+                            UPS Ground
+                            <span class="price">-</span>
+                            <span class="price">$15.99</span>
+                        </label>
+                        <div class="button-row">
+                            <a href="#" class="btn check-btn step-continue">Continue</a>
+                        </div>
                     </div>
-                    <div class="section-content">
-                        <div class="payment-method">
-                            <div class="three-section-bar">
-                                <!-- <div class="sec1">
+                </div>
+            </div>
+            <div class="section locked" data-step="4">
+                <div class="section-header">
+                    <i class="fa-solid fa-circle-minus neutral-icon step-icon"></i>
+                    4 - Payment method
+                    <span class="chevron">&rsaquo;</span>
+                </div>
+                <div class="section-content">
+                    <div class="payment-method">
+                        <div class="three-section-bar">
+                            <!-- <div class="sec1">
                                     <label class="option">
                                         <input type="radio" name="select1">
                                         <span class="circle circle-sec1"></span>
                                     </label>
                                 </div> -->
-                                <div class="sec2">
-                                    <div class="sec2-text">
-                                        <div class="main">Credit/Debit card</div>
-                                        <div class="sub">You'll be redirected to Stripe to complete your payment.</div>
-                                    </div>
-                                </div>
-                                <div class="sec3">
-                                    <span class="pay-icon pay-icon-small">
-                                        <img src="images/cards.png" alt="Card">
-                                    </span>
+                            <div class="sec2">
+                                <div class="sec2-text">
+                                    <div class="main">Credit/Debit card</div>
+                                    <div class="sub">You'll be redirected to Stripe to complete your payment.</div>
                                 </div>
                             </div>
-                            <!-- Paypal payment add later-->
-                            <!-- <div class="three-section-bar">
+                            <div class="sec3">
+                                <span class="pay-icon pay-icon-small">
+                                    <img src="images/cards.png" alt="Card">
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Paypal payment add later-->
+                        <!-- <div class="three-section-bar">
                                 <div class="sec1">
                                     <label class="option">
                                         <input type="radio" name="select1">
@@ -867,399 +968,454 @@
                                     </span>
                                 </div>
                             </div> -->
-                            <div class="button-row">
-                                <a href="#" class="btn check-btn step-continue" id="confirm-order-btn">Confirm and pay</a>
-                            </div>
+                        <div class="button-row">
+                            <a href="#" class="btn check-btn step-continue" id="confirm-order-btn">Confirm and pay</a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </main>
-        <?php 
-        include '../includes/footer.php';
-        include '../includes/modals.php'
-        ?>
-        <script src="https://js.stripe.com/v3/"></script>
-        <script>
-            //stripe variable
-            const stripe = Stripe('pk_test_51SnmmVJznFlGH0nYPwDArcRPi9LNClQFgBACL9ilYZdLK2nmXSOucoJ7Jui57G1Ty7mGVEvr0KY3zpVTuk0oHv7Z00r4BWSRKa');
-        
-            // showAlertModal("Test alert.", () => {});
-            // showConfirmModal(
-            //     `Test confirm`,
-            //     () => {
-            //     },
-            //     () => {
-            //     }
-            // );
-            let currentStep = 1;
+    </main>
+    <?php
+    include '../includes/footer.php';
+    include '../includes/modals.php'
+    ?>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        //stripe variable
+        const stripe = Stripe('pk_test_51SnmmVJznFlGH0nYPwDArcRPi9LNClQFgBACL9ilYZdLK2nmXSOucoJ7Jui57G1Ty7mGVEvr0KY3zpVTuk0oHv7Z00r4BWSRKa');
 
-            //Define 'totals' variables on load
-            window.checkoutSubtotal = <?= $_SESSION['checkout']['totals']['subtotal'] ?? 0 ?>;
-            window.checkoutSalesTax = <?= $_SESSION['checkout']['totals']['sales_tax'] ?? 0 ?>;
-            window.checkoutShipping = <?= $_SESSION['checkout']['totals']['shipping'] ?? 0 ?>;
-            window.checkoutTotal = <?= $_SESSION['checkout']['totals']['total'] ?? 0 ?>;
-            window.cartItems = <?= json_encode($summaryItems, JSON_UNESCAPED_UNICODE) ?>;
+        // showAlertModal("Test alert.", () => {});
+        // showConfirmModal(
+        //     `Test confirm`,
+        //     () => {
+        //     },
+        //     () => {
+        //     }
+        // );
+        let currentStep = 1;
 
-            //Functions to calculate totals
-            function calculateSubtotal() {
-                if (!Array.isArray(window.cartItems)) {
-                    return 0;
-                }
-                let subtotal = 0;
-                for (const item of window.cartItems) {
-                    subtotal += Number(item.line_total) || 0;
-                }
-                return subtotal;
-            }
-            function calculateSalesTax() {
-                const TAX_RATE = 0.0925;
-                const subtotal = calculateSubtotal();
-                const tax = subtotal * TAX_RATE;
-                return Math.round(tax * 100) / 100;
-            }
-            function calculateShipping() {
+        //Define 'totals' variables on load
+        window.checkoutSubtotal = <?= $_SESSION['checkout']['totals']['subtotal'] ?? 0 ?>;
+        window.checkoutSalesTax = <?= $_SESSION['checkout']['totals']['sales_tax'] ?? 0 ?>;
+        window.checkoutShipping = <?= $_SESSION['checkout']['totals']['shipping'] ?? 0 ?>;
+        window.checkoutTotal = <?= $_SESSION['checkout']['totals']['total'] ?? 0 ?>;
+        window.cartItems = <?= json_encode($summaryItems, JSON_UNESCAPED_UNICODE) ?>;
+
+        //Functions to calculate totals
+        function calculateSubtotal() {
+            if (!Array.isArray(window.cartItems)) {
                 return 0;
             }
-            function calculateTotal() {
-                const subtotal = calculateSubtotal();
-                const salesTax = calculateSalesTax();
-                const shipping = calculateShipping(); 
-                return subtotal + salesTax + (shipping ?? 0);
+            let subtotal = 0;
+            for (const item of window.cartItems) {
+                subtotal += Number(item.line_total) || 0;
             }
+            return subtotal;
+        }
 
-            //Function when completing a step UI changes
-            function completeStep(section, step, nextStep) {
-                const content = section.querySelector('.section-content');
-                const icon = section.querySelector('.step-icon');
-                section.classList.remove('open', 'active');
-                section.classList.add('completed');
-                icon.classList.remove('fa-circle-minus', 'neutral-icon');
-                icon.classList.add('fa-circle-check');
-                content.style.maxHeight = '0px';
+        function calculateSalesTax() {
+            const TAX_RATE = 0.0925;
+            const subtotal = calculateSubtotal();
+            const tax = subtotal * TAX_RATE;
+            return Math.round(tax * 100) / 100;
+        }
 
-                currentStep = nextStep;
-                const nextSection = document.querySelector(`.section[data-step="${nextStep}"]`);
-                if (!nextSection) return;
-                const nextContent = nextSection.querySelector('.section-content');
-                nextSection.classList.remove('locked');
-                nextSection.classList.add('open', 'active');
-                nextContent.style.maxHeight = nextContent.scrollHeight + 'px';
+        function calculateShipping() {
+            const selected = document.querySelector('input[name="shipping_method"]:checked');
+            if (!selected) {
+                return 0;
             }
+            switch (selected.value) {
+                case '2nd_day':
+                    return 50.99;
+                case '3_day':
+                    return 25.99;
+                case 'ground':
+                    return 15.99;
+                default:
+                    return 0;
+            }
+        }
 
-            //Function when editing completed step
-            function invalidateFutureSteps(fromStep) {
-                document.querySelectorAll('.section').forEach(section => {
-                    const step = parseInt(section.dataset.step, 10);
-                    if (step > fromStep) {
-                        section.classList.remove('active', 'completed');
-                        section.classList.add('locked');
-                        const icon = section.querySelector('.step-icon');
-                        if (icon) {
-                            icon.classList.remove('fa-circle-check');
-                            icon.classList.add('fa-circle-minus', 'neutral-icon');
-                        }
-                        const content = section.querySelector('.section-content');
-                        section.classList.remove('open');
-                        content.style.maxHeight = '0px';
+        function calculateTotal() {
+            const subtotal = calculateSubtotal();
+            const salesTax = calculateSalesTax();
+            const shipping = calculateShipping();
+            return subtotal + salesTax + (shipping ?? 0);
+        }
+
+        //Function when completing a step UI changes
+        function completeStep(section, step, nextStep) {
+            const content = section.querySelector('.section-content');
+            const icon = section.querySelector('.step-icon');
+            section.classList.remove('open', 'active');
+            section.classList.add('completed');
+            icon.classList.remove('fa-circle-minus', 'neutral-icon');
+            icon.classList.add('fa-circle-check');
+            content.style.maxHeight = '0px';
+
+            currentStep = nextStep;
+            const nextSection = document.querySelector(`.section[data-step="${nextStep}"]`);
+            if (!nextSection) return;
+            const nextContent = nextSection.querySelector('.section-content');
+            nextSection.classList.remove('locked');
+            nextSection.classList.add('open', 'active');
+            nextContent.style.maxHeight = nextContent.scrollHeight + 'px';
+        }
+
+        //Function when editing completed step
+        function invalidateFutureSteps(fromStep) {
+            document.querySelectorAll('.section').forEach(section => {
+                const step = parseInt(section.dataset.step, 10);
+                if (step > fromStep) {
+                    section.classList.remove('active', 'completed');
+                    section.classList.add('locked');
+                    const icon = section.querySelector('.step-icon');
+                    if (icon) {
+                        icon.classList.remove('fa-circle-check');
+                        icon.classList.add('fa-circle-minus', 'neutral-icon');
                     }
-                });
-            }
-
-            //Function to update summary contact and address
-            function updateSummary() {
-                const fullName = document.getElementById('checkout-fullname')?.value.trim() || '';
-                const street   = document.getElementById('checkout-street')?.value.trim() || '';
-                const city     = document.getElementById('checkout-city')?.value.trim() || '';
-                const state    = document.getElementById('checkout-state')?.value.trim() || '';
-                const zip      = document.getElementById('checkout-zip')?.value.trim() || '';
-                const country  = 'United States';
-                const email = document.getElementById('checkout-email')?.value.trim() || '';
-                const phone = document.getElementById('checkout-phone')?.value.trim() || '';
-
-                const addressParts = [fullName, street, city, state + (zip ? " " + zip : ''), country].filter(Boolean);
-                document.getElementById('summary-address').textContent = addressParts.length ? addressParts.join(', ') : 'No address yet';
-                const contactParts = [email, phone].filter(Boolean);
-                document.getElementById('summary-contact').textContent = contactParts.join(', ');
-            }
-
-            //Functions to validate all data before continuing
-            function isValidEmail(email) {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            }
-            function isValidPhone(phone) {
-                return /^[0-9\-\(\) ]{7,20}$/.test(phone);
-            }
-            function isNotEmpty(value) {
-                return value && value.trim() !== '';
-            }
-
-            //Listener changing summary dinamically
-            ['checkout-email','checkout-phone','checkout-fullname','checkout-street','checkout-city','checkout-state','checkout-zip'].forEach(id => {
-                const input = document.getElementById(id);
-                if (input) {
-                    input.addEventListener('input', updateSummary);
+                    const content = section.querySelector('.section-content');
+                    section.classList.remove('open');
+                    content.style.maxHeight = '0px';
                 }
             });
-            updateSummary();
-          
+        }
 
-            //Handle continue button 
-            const stepFieldMap = {
-                1: ['email', 'phone'],
-                2: ['full_name', 'street', 'city', 'zip', 'state']
-            };
-            document.querySelectorAll('.step-continue').forEach(button => {
-                button.addEventListener('click', async e => {
-                    e.preventDefault();
-                    const section = button.closest('.section');
-                    const step = parseInt(section.dataset.step, 10);
-                    const nextStep = step + 1;
-                    const LAST_STEP = 4;
-                    const fields = stepFieldMap[step] || [];
-                    const stepData = {};
-                    fields.forEach(name => {
-                        const input = section.querySelector(`[name="${name}"]`);
-                        stepData[name] = input ? input.value.trim() : null;
-                    });
-                    const payload = {
-                        step: step,
-                        data: stepData,
-                        totals: {
-                            subtotal: calculateSubtotal(),   
-                            sales_tax: calculateSalesTax(),
-                            shipping: calculateShipping(),
-                            total: calculateSubtotal() + calculateSalesTax() + calculateShipping()
-                        }
-                    };
-                    //Validate fields depending on step
-                    let invalidMessage = '';
-                    if (step === 1) {
-                        if (!isValidEmail(stepData.email)) {
-                            invalidMessage = 'Please enter a valid email address.';
-                        } else if (!isValidPhone(stepData.phone)) {
-                            invalidMessage = 'Please enter a valid phone number.';
-                        }
-                    } else if (step === 2) {
-                        //Check data isn't empty
-                        const requiredFields = ['full_name', 'street', 'city', 'state', 'zip'];
-                        for (let field of requiredFields) {
-                            if (!isNotEmpty(stepData[field])) {
-                                invalidMessage = 'Please fill in all address fields.';
-                                break;
-                            }
-                        }
+        //Function to update summary contact and address
+        function updateSummary() {
+            const phoneInput = document.getElementById('checkout-phone');
+            if (phoneInput) {
+                phoneInput.value = phoneInput.value.replace(/\D/g, '');
+            }
+            const fullName = document.getElementById('checkout-fullname')?.value.trim() || '';
+            const street = document.getElementById('checkout-street')?.value.trim() || '';
+            const city = document.getElementById('checkout-city')?.value.trim() || '';
+            const state = document.getElementById('checkout-state')?.value.trim() || '';
+            const zip = document.getElementById('checkout-zip')?.value.trim() || '';
+            const country = 'United States';
+            const email = document.getElementById('checkout-email')?.value.trim() || '';
+            const phone = document.getElementById('checkout-phone')?.value.trim() || '';
 
-                        // //Validate address with UPS
-                        // const res = await fetch('<= BASE_URL ?>actions/ups-validate-address.php', {
-                        //     method: 'POST',
-                        //     headers: { 'Content-Type': 'application/json' },
-                        //     body: JSON.stringify({
-                        //         street: stepData.street,
-                        //         city: stepData.city,
-                        //         state: stepData.state,
-                        //         zip: stepData.zip
-                        //     })
-                        // });
-                        // const upsResult = await res.json();
-                        // if (!upsResult.success) {
-                        //     showAlertModal(
-                        //         'UPS could not validate this address. Please check spelling.',
-                        //         () => {}
-                        //     );
-                        //     return;
-                        // }
-                    }
-                    if (invalidMessage) {
-                        showAlertModal(invalidMessage, () => {});
-                        return; 
-                    }
-                    // Store in session before completing the step
-                    try {
-                        const response = await fetch('<?= BASE_URL ?>actions/checkout-continue.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(payload)
-                        });
-                        const result = await response.json();
-                        if (result.session_checkout?.totals) {
-                            const totals = result.session_checkout.totals;
-                            window.checkoutSubtotal = totals.subtotal ?? 0;
-                            window.checkoutSalesTax = totals.sales_tax ?? 0;
-                            window.checkoutShipping = totals.shipping ?? 0;
-                            window.checkoutTotal = totals.total ?? 0;
-                            console.log('Updated totals from session:', totals);
-                        }
-                        console.log('Checkout continue response:', result);
-                        if (!result.success) {
-                            showAlertModal(
-                                result.message || 'Validation error',
-                                () => {}
-                            );
-                            return;
-                        }
-                        if (step < LAST_STEP) {
-                            completeStep(section, step, nextStep);
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        showAlertModal(
-                            'Network error. Please try again.',
-                            () => {}
+            const addressParts = [fullName, street, city, state + (zip ? " " + zip : ''), country].filter(Boolean);
+            document.getElementById('summary-address').textContent = addressParts.length ? addressParts.join(', ') : 'No address yet';
+            const contactParts = [email, phone].filter(Boolean);
+            document.getElementById('summary-contact').textContent = contactParts.join(', ');
+        }
+
+        //Update summary totals
+        function updateSummaryTotals() {
+            const shipping = calculateShipping();
+            const total = calculateTotal();
+            document.getElementById('summary-shipping').textContent =
+                shipping === 0 ?
+                'Calculated at next step' :
+                '$' + shipping.toFixed(2);
+            document.getElementById('summary-total').textContent =
+                '$' + total.toFixed(2);
+            window.checkoutShipping = shipping;
+            window.checkoutTotal = total;
+            console.log('Updated shipping:', shipping);
+            console.log('Updated total:', total);
+            console.log('Global shipping:', window.checkoutShipping);
+        }
+
+        //Functions to validate all data before continuing
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function isValidPhone(phone) {
+            return /^[0-9\-\(\) ]{7,20}$/.test(phone);
+        }
+
+        function isNotEmpty(value) {
+            return value && value.trim() !== '';
+        }
+
+        //Listener changing summary dinamically
+        ['checkout-email', 'checkout-phone', 'checkout-fullname', 'checkout-street', 'checkout-city', 'checkout-state', 'checkout-zip'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', updateSummary);
+            }
+        }); // Shipping method listeners
+        document.querySelectorAll('input[name="shipping_method"]').forEach(radio => {
+            radio.addEventListener('change', updateSummaryTotals);
+        });
+        updateSummary();
+        updateSummaryTotals();
+
+
+        //Handle continue button 
+        const stepFieldMap = {
+            1: ['email', 'phone'],
+            2: ['full_name', 'street', 'city', 'zip', 'state'],
+            3: ['shipping_method']
+        };
+        document.querySelectorAll('.step-continue').forEach(button => {
+            button.addEventListener('click', async e => {
+                e.preventDefault();
+                const section = button.closest('.section');
+                const step = parseInt(section.dataset.step, 10);
+                const nextStep = step + 1;
+                const LAST_STEP = 4;
+                const fields = stepFieldMap[step] || [];
+                const stepData = {};
+                fields.forEach(name => {
+                    if (name === 'shipping_method') {
+                        const checked = section.querySelector(
+                            'input[name="shipping_method"]:checked'
                         );
-                    }
-  
-                });
-            });
-            
-
-            //Clicking any open-able section 
-            document.querySelectorAll('.section-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const section = header.parentElement;
-                    const step = parseInt(section.dataset.step, 10);
-                    const wasCompleted = section.classList.contains('completed');
-                    if (step > currentStep) return;
-                    const content = section.querySelector('.section-content');
-                    if (wasCompleted) {
-                        invalidateFutureSteps(step);
-                        currentStep = step;
-                        section.classList.remove('completed', 'locked');
-                        section.classList.add('active');
-                        section.classList.add('open');
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        stepData[name] = checked ? checked.value : null;
                         return;
                     }
-                    const isOpen = section.classList.toggle('open');
-                    content.style.maxHeight = isOpen
-                        ? content.scrollHeight + 'px'
-                        : '0px';
+
+                    const input = section.querySelector(`[name="${name}"]`);
+                    stepData[name] = input ?
+                        input.value.trim() :
+                        null;
                 });
-            });
-            
-
-            /*Limit zip code and phone numeric input*/
-            document.addEventListener("DOMContentLoaded", function () {
-                const zip = document.querySelector('input[name="zip"]');
-
-                if (zip) {
-                    zip.addEventListener("input", function () {
-                        this.value = this.value.replace(/\D/g, "");
-
-                        if (this.value.length > 5) {
-                            this.value = this.value.slice(0, 5);
-                        }
-                    });
-                }
-            });
-            document.addEventListener("DOMContentLoaded", function () {
-                const phone = document.querySelector('input[name="phone"]');
-
-                if (phone) {
-                    phone.addEventListener("input", function () {
-                        this.value = this.value.replace(/\D/g, "");
-                    });
-                }
-            });
-
-            //Confirm button handler
-            document.getElementById('confirm-order-btn')?.addEventListener('click', async e => {
-                e.preventDefault();
-                const btn = e.currentTarget;
-                btn.disabled = true;
-                btn.textContent = 'Processing...';
-
                 const payload = {
-                    step1: {
-                        email: document.querySelector('[name="email"]')?.value.trim() || '',
-                        phone: document.querySelector('[name="phone"]')?.value.trim() || ''
-                    },
-                    step2: {
-                        full_name: document.querySelector('[name="full_name"]')?.value.trim() || '',
-                        street: document.querySelector('[name="street"]')?.value.trim() || '',
-                        city: document.querySelector('[name="city"]')?.value.trim() || '',
-                        state: document.querySelector('[name="state"]')?.value.trim() || '',
-                        zip: document.querySelector('[name="zip"]')?.value.trim() || ''
-                    },
-                    subtotal: window.checkoutSubtotal,
-                    sales_tax: window.checkoutSalesTax,
-                    shipping: window.checkoutShipping,
-                    total: window.checkoutTotal,
-                    cart_items: window.cartItems
+                    step: step,
+                    data: stepData,
+                    totals: {
+                        subtotal: calculateSubtotal(),
+                        sales_tax: calculateSalesTax(),
+                        shipping: calculateShipping(),
+                        total: calculateSubtotal() + calculateSalesTax() + calculateShipping()
+                    }
                 };
-                //Stripe
+                //Validate fields depending on step
+                let invalidMessage = '';
+                if (step === 1) {
+                    if (!isValidEmail(stepData.email)) {
+                        invalidMessage = 'Please enter a valid email address.';
+                    } else if (!isValidPhone(stepData.phone)) {
+                        invalidMessage = 'Please enter a valid phone number.';
+                    }
+                } else if (step === 2) {
+                    //Check data isn't empty
+                    const requiredFields = ['full_name', 'street', 'city', 'state', 'zip'];
+                    for (let field of requiredFields) {
+                        if (!isNotEmpty(stepData[field])) {
+                            invalidMessage = 'Please fill in all address fields.';
+                            break;
+                        }
+                    }
+
+                    // //Validate address with UPS
+                    // const res = await fetch('<= BASE_URL ?>actions/ups-validate-address.php', {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({
+                    //         street: stepData.street,
+                    //         city: stepData.city,
+                    //         state: stepData.state,
+                    //         zip: stepData.zip
+                    //     })
+                    // });
+                    // const upsResult = await res.json();
+                    // if (!upsResult.success) {
+                    //     showAlertModal(
+                    //         'UPS could not validate this address. Please check spelling.',
+                    //         () => {}
+                    //     );
+                    //     return;
+                    // }
+                }
+                if (invalidMessage) {
+                    showAlertModal(invalidMessage, () => {});
+                    return;
+                }
+                // Store in session before completing the step
                 try {
-                    const response = await fetch('<?= BASE_URL ?>actions/create-stripe-session.php', {
+                    const response = await fetch('<?= BASE_URL ?>actions/checkout-continue.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify(payload)
                     });
                     const result = await response.json();
-                    console.log(result);
-
+                    if (result.session_checkout?.totals) {
+                        const totals = result.session_checkout.totals;
+                        window.checkoutSubtotal = totals.subtotal ?? 0;
+                        window.checkoutSalesTax = totals.sales_tax ?? 0;
+                        window.checkoutShipping = totals.shipping ?? 0;
+                        window.checkoutTotal = totals.total ?? 0;
+                        console.log('Updated totals from session:', totals);
+                    }
+                    console.log('Checkout continue response:', result);
                     if (!result.success) {
-                        showAlertModal(result.message || 'Could not start payment.', () => {});
-                        btn.disabled = false;
-                        btn.textContent = 'Confirm and pay';
+                        showAlertModal(
+                            result.message || 'Validation error',
+                            () => {}
+                        );
                         return;
                     }
-                    window.location.href = result.stripeUrl;
-                    
+                    if (step < LAST_STEP) {
+                        completeStep(section, step, nextStep);
+                    }
                 } catch (err) {
                     console.error(err);
-                    showAlertModal('Network error. Please try again.', () => {});
-                    btn.disabled = false;
-                    btn.textContent = 'Confirm & Pay';
+                    showAlertModal(
+                        'Network error. Please try again.',
+                        () => {}
+                    );
                 }
-        
-            });
 
-            //Modal functions
-            function showConfirmModal(message, onYes, onNo) {
-                const template = document.getElementById('confirmModal');
-                const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
-                document.body.appendChild(modal);
-                modal.querySelector('p').textContent = message;
-                modal.classList.add('show');
-                const yesBtn = modal.querySelector('#confirmYes');
-                const noBtn = modal.querySelector('#confirmNo');
-                function cleanup() {
-                    yesBtn.removeEventListener('click', yesHandler);
-                    noBtn.removeEventListener('click', noHandler);
-                    modal.remove();
+            });
+        });
+
+
+        //Clicking any open-able section 
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.parentElement;
+                const step = parseInt(section.dataset.step, 10);
+                const wasCompleted = section.classList.contains('completed');
+                if (step > currentStep) return;
+                const content = section.querySelector('.section-content');
+                if (wasCompleted) {
+                    invalidateFutureSteps(step);
+                    currentStep = step;
+                    section.classList.remove('completed', 'locked');
+                    section.classList.add('active');
+                    section.classList.add('open');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    return;
                 }
-                function yesHandler() {
-                    cleanup();
-                    if (typeof onYes === 'function') onYes();
-                }
-                function noHandler() {
-                    cleanup();
-                    if (typeof onNo === 'function') onNo();
-                }
-                yesBtn.addEventListener('click', yesHandler);
-                noBtn.addEventListener('click', noHandler);
+                const isOpen = section.classList.toggle('open');
+                content.style.maxHeight = isOpen ?
+                    content.scrollHeight + 'px' :
+                    '0px';
+            });
+        });
+
+
+        /*Limit zip code and phone numeric input*/
+        document.addEventListener("DOMContentLoaded", function() {
+            const zip = document.querySelector('input[name="zip"]');
+
+            if (zip) {
+                zip.addEventListener("input", function() {
+                    this.value = this.value.replace(/\D/g, "");
+
+                    if (this.value.length > 5) {
+                        this.value = this.value.slice(0, 5);
+                    }
+                });
             }
-            function showAlertModal(message, onOk){
-                const template = document.getElementById('alertModal');
-                const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
-                document.body.appendChild(modal);
-                modal.querySelector('p').textContent = message;
-                modal.classList.add('show');
-                const okBtn = modal.querySelector('#confirmOk');
-                function cleanup() {
-                    okBtn.removeEventListener('click', okHandler);
-                    modal.remove();
+        });
+
+        //Confirm button handler
+        document.getElementById('confirm-order-btn')?.addEventListener('click', async e => {
+            e.preventDefault();
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            const payload = {
+                step1: {
+                    email: document.querySelector('[name="email"]')?.value.trim() || '',
+                    phone: document.querySelector('[name="phone"]')?.value.trim() || ''
+                },
+                step2: {
+                    full_name: document.querySelector('[name="full_name"]')?.value.trim() || '',
+                    street: document.querySelector('[name="street"]')?.value.trim() || '',
+                    city: document.querySelector('[name="city"]')?.value.trim() || '',
+                    state: document.querySelector('[name="state"]')?.value.trim() || '',
+                    zip: document.querySelector('[name="zip"]')?.value.trim() || ''
+                },
+                subtotal: window.checkoutSubtotal,
+                sales_tax: window.checkoutSalesTax,
+                shipping: window.checkoutShipping,
+                total: window.checkoutTotal,
+                cart_items: window.cartItems
+            };
+            //Stripe
+            try {
+                const response = await fetch('<?= BASE_URL ?>actions/create-stripe-session.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                console.log(result);
+
+                if (!result.success) {
+                    showAlertModal(result.message || 'Could not start payment.', () => {});
+                    btn.disabled = false;
+                    btn.textContent = 'Confirm and pay';
+                    return;
                 }
-                function okHandler(){
-                    cleanup();
-                    if (typeof onOk === 'function'){ onOk()}
-                    else{};
-                }
-                okBtn.addEventListener('click', okHandler);
+                window.location.href = result.stripeUrl;
+
+            } catch (err) {
+                console.error(err);
+                showAlertModal('Network error. Please try again.', () => {});
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Pay';
             }
-		</script>
-    </body>
+
+        });
+
+        //Modal functions
+        function showConfirmModal(message, onYes, onNo) {
+            const template = document.getElementById('confirmModal');
+            const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+            document.body.appendChild(modal);
+            modal.querySelector('p').textContent = message;
+            modal.classList.add('show');
+            const yesBtn = modal.querySelector('#confirmYes');
+            const noBtn = modal.querySelector('#confirmNo');
+
+            function cleanup() {
+                yesBtn.removeEventListener('click', yesHandler);
+                noBtn.removeEventListener('click', noHandler);
+                modal.remove();
+            }
+
+            function yesHandler() {
+                cleanup();
+                if (typeof onYes === 'function') onYes();
+            }
+
+            function noHandler() {
+                cleanup();
+                if (typeof onNo === 'function') onNo();
+            }
+            yesBtn.addEventListener('click', yesHandler);
+            noBtn.addEventListener('click', noHandler);
+        }
+
+        function showAlertModal(message, onOk) {
+            const template = document.getElementById('alertModal');
+            const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+            document.body.appendChild(modal);
+            modal.querySelector('p').textContent = message;
+            modal.classList.add('show');
+            const okBtn = modal.querySelector('#confirmOk');
+
+            function cleanup() {
+                okBtn.removeEventListener('click', okHandler);
+                modal.remove();
+            }
+
+            function okHandler() {
+                cleanup();
+                if (typeof onOk === 'function') {
+                    onOk()
+                } else {};
+            }
+            okBtn.addEventListener('click', okHandler);
+        }
+    </script>
+</body>
+
 </html>

@@ -95,7 +95,7 @@ foreach ($cartItems as $item) {  //Protection for last minute stock changes
 $summaryItems = [];
 $subtotal = 0;
 foreach ($cartItems as $item) {
-    $pricing = getProductPricing($item, $tz); 
+    $pricing = getProductPricing($item, $tz);
     $unitPrice = $pricing['final_price'];
     $quantity  = (int) $item['quantity'];
     $lineTotal = $unitPrice * $quantity;
@@ -110,11 +110,13 @@ foreach ($cartItems as $item) {
 }
 $TAX_RATE = 0.0925;
 $salesTax = round($subtotal * $TAX_RATE, 2);
-$shipping = 0; // API later
+$shipping = isset($payload['shipping'])
+    ? (float) $payload['shipping']
+    : 0;
 $total    = $subtotal + $salesTax + $shipping;
 
 //Create order snapshot the webhook can rely on 
-require_once __DIR__ . '/../../vendor/autoload.php'; 
+require_once __DIR__ . '/../../vendor/autoload.php';
 $stripeConfig = require __DIR__ . '/../../config/stripe.php';
 \Stripe\Stripe::setApiKey($stripeConfig['secret_key']);
 $now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
@@ -135,10 +137,10 @@ try {
         $shipping,
         $total,
         'pending',
-        null,      
-        $expiresAt, 
-        $now,      
-        $now        
+        null,
+        $expiresAt,
+        $now,
+        $now
     ]);
     $checkoutSessionId = $pdo->lastInsertId();
 
@@ -169,18 +171,17 @@ try {
         WHERE id = ?
     ");
     $stmt->execute([
-    $stripeSession->id,
-    $checkoutSessionId
+        $stripeSession->id,
+        $checkoutSessionId
     ]);
 
     echo json_encode([
         'success' => true,
-        'publicKey' => $stripeConfig['publishable_key'], 
+        'publicKey' => $stripeConfig['publishable_key'],
         'stripeSessionId' => $stripeSession->id,
         'stripeUrl' => $stripeSession->url
     ]);
     exit;
-
 } catch (\Stripe\Exception\ApiErrorException $e) {
     echo json_encode([
         'success' => false,
@@ -194,4 +195,3 @@ try {
     ]);
     exit;
 }
-
