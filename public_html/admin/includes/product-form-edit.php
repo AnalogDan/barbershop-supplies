@@ -1,25 +1,25 @@
 <?php
-    require_once __DIR__ . '/../../../config.php';
-    require_once BASE_PATH . 'includes/db.php';
-    if (!isset($_GET['id']) || !is_numeric($_GET['id'])){
-        die('Invalid product ID');
-    }
-    $productId = (int) $_GET['id'];
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
-    $stmt->execute([$productId]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$product){
-        die('Product not found.');
-    }
-    $thumbnailUrl = !empty($product['cutout_image']) ? $product['cutout_image'] : '';
-    $mainImgUrl = !empty($product['main_image']) ? $product['main_image'] : '';
-    $stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
-    $stmt->execute([$product['id']]);
-    $galleryImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-?>  
+require_once __DIR__ . '/../../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die('Invalid product ID');
+}
+$productId = (int) $_GET['id'];
+$stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+$stmt->execute([$productId]);
+$product = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$product) {
+    die('Product not found.');
+}
+$thumbnailUrl = !empty($product['cutout_image']) ? $product['cutout_image'] : '';
+$mainImgUrl = !empty($product['main_image']) ? $product['main_image'] : '';
+$stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
+$stmt->execute([$product['id']]);
+$galleryImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
 
 <style>
-    .product-form{
+    .product-form {
         max-width: 500px;
         width: 100%;
         margin: 40px auto;
@@ -27,32 +27,37 @@
         flex-direction: column;
         gap: 20px;
     }
-    .product-form label{
+
+    .product-form label {
         font-size: 20px;
         font-weight: bold;
         color: black;
         margin-bottom: 5px;
         display: block;
     }
+
     .product-form input,
     .product-form select,
-    .product-form textarea{
+    .product-form textarea {
         width: 100%;
         height: 45px;
         padding: 10px;
         border: 0.5px solid #000;
         background-color: #e2e2e2;
     }
-    .product-form textarea{
+
+    .product-form textarea {
         text-align: center;
         text-align: justify;
     }
+
     .product-form input:focus,
-    .product-form textarea:focus{
+    .product-form textarea:focus {
         outline: none;
         box-shadow: 0 0 0 1px #7f7f7f;
     }
-    .upload-circle{
+
+    .upload-circle {
         width: 40px;
         height: 40px;
         background-color: #e2e2e2;
@@ -67,24 +72,27 @@
         padding-bottom: 3px;
         border: 0.5px solid #000;
     }
+
     .gallery-strip .upload-circle {
-        margin-top: 15px; 
+        margin-top: 15px;
     }
 
-    .image-input{
+    .image-input {
         position: relative;
         width: 70px;
         height: 70px;
         overflow: hidden;
         margin-bottom: 20px;
     }
-    .image-input img{
+
+    .image-input img {
         width: 100%;
         height: 100%;
         object-fit: contain;
         display: block;
     }
-    .image-input .overlay{
+
+    .image-input .overlay {
         position: absolute;
         top: 0;
         left: 0;
@@ -97,9 +105,11 @@
         align-items: center;
         transition: opacity 0.3s ease;
     }
+
     .image-input:hover .overlay {
         opacity: 1;
     }
+
     .edit-icon-btn {
         font-size: 20px;
         color: #333;
@@ -108,7 +118,7 @@
         cursor: pointer;
     }
 
-    .gallery-strip{
+    .gallery-strip {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
@@ -121,8 +131,8 @@
     <input type="text" id="name" name="name" placeholder="Product name..." value="<?= htmlspecialchars($product['name']) ?>" required>
     <label for="category">Category</label>
     <?php
-        $stmt = $pdo->query("SELECT id, name FROM categories ORDER BY name");
-        $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->query("SELECT id, name FROM categories ORDER BY name");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <select id="category" name="category" required>
         <option value="">Select a category</option>
@@ -138,7 +148,19 @@
     <input type="number" id="stock" name="stock" min="0" step="1" placeholder="0" value="<?= htmlspecialchars($product['stock']) ?>" required>
     <label for="description">Description</label>
     <textarea id="description" name="description" rows="5" placeholder="Enter product description here..."><?= htmlspecialchars($product['description']) ?></textarea>
-    
+    <label for="weight">Weight (lb)</label>
+    <input type="number" id="weight" name="weight" min="0" step="0.01"
+        placeholder="0.00" value="<?= htmlspecialchars($product['weight']) ?>" required>
+    <label for="length">Length (in)</label>
+    <input type="number" id="length" name="length" min="0" step="0.01"
+        placeholder="0.00" value="<?= htmlspecialchars($product['length']) ?>" required>
+    <label for="width">Width (in)</label>
+    <input type="number" id="width" name="width" min="0" step="0.01"
+        placeholder="0.00" value="<?= htmlspecialchars($product['width']) ?>" required>
+    <label for="height">Height (in)</label>
+    <input type="number" id="height" name="height" min="0" step="0.01"
+        placeholder="0.00" value="<?= htmlspecialchars($product['height']) ?>" required>
+
     <label for="thumbnail">Thumbnail cutout</label>
     <div class="image-input" id="thumbnailPreview">
         <img src="<?= BASE_URL . $thumbnailUrl ?>" alt="Preview">
@@ -168,7 +190,7 @@
 
     <label for="gallery">Gallery</label>
     <div class="gallery-strip" id="galleryStrip">
-        <?php if(!empty($galleryImages)): ?>
+        <?php if (!empty($galleryImages)): ?>
             <?php foreach ($galleryImages as $image): ?>
                 <div class="image-input existing-image" data-filename="<?= htmlspecialchars($image['image_path']) ?>">
                     <img src="<?= BASE_URL . $image['image_path'] ?>" alt="Gallery image">
@@ -200,7 +222,7 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e){
+        reader.onload = function(e) {
             const preview = document.getElementById('thumbnailPreview');
             preview.querySelector('img').src = e.target.result;
             preview.style.display = 'block';
@@ -219,7 +241,7 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e){
+        reader.onload = function(e) {
             const preview = document.getElementById('mainImgPreview');
             preview.querySelector('img').src = e.target.result;
             preview.style.display = 'block';
@@ -234,19 +256,22 @@
     let galleryFiles = [];
     document.querySelectorAll('.existing-image').forEach(div => {
         const filename = div.dataset.filename;
-        galleryFiles.push({existing: true, filename: filename});
+        galleryFiles.push({
+            existing: true,
+            filename: filename
+        });
         const btn = div.querySelector('.edit-icon-btn');
         btn.addEventListener('click', () => {
             showConfirmModal(
                 "Delete image?",
                 () => {
                     const index = galleryFiles.findIndex(f => f.existing && f.filename === filename);
-                    if (index !== -1){
+                    if (index !== -1) {
                         galleryFiles.splice(index, 1);
                     }
                     div.remove();
                 },
-                () => {}     
+                () => {}
             );
         });
     });
@@ -257,11 +282,11 @@
         const files = event.target.files;
         const strip = document.getElementById('galleryStrip');
         const addCircle = document.getElementById('galleryCircle');
-        for(let i = 0; i < files.length; i++){
+        for (let i = 0; i < files.length; i++) {
             const file = files[i];
             galleryFiles.push(file);
             const reader = new FileReader();
-            reader.onload = function(e){
+            reader.onload = function(e) {
                 const imageContainer = document.createElement('div');
                 imageContainer.classList.add('image-input');
                 const img = document.createElement('img');
@@ -278,12 +303,12 @@
                         () => {
                             const allImages = Array.from(strip.querySelectorAll('.image-input'));
                             const index = allImages.indexOf(imageContainer);
-                            if(index !== -1){
+                            if (index !== -1) {
                                 galleryFiles.splice(index, 1);
                             }
                             imageContainer.remove();
                         },
-                        () => {}     
+                        () => {}
                     );
                 });
                 overlay.appendChild(btn);
@@ -296,14 +321,28 @@
         event.target.value = '';
     });
 
-    document.querySelector('.product-form').addEventListener('submit', function (e) {
+    document.querySelector('.product-form').addEventListener('submit', function(e) {
         e.preventDefault();
+        const weight = parseFloat(document.getElementById('weight').value);
+        const length = parseFloat(document.getElementById('length').value);
+        const width = parseFloat(document.getElementById('width').value);
+        const height = parseFloat(document.getElementById('height').value);
+        if (
+            isNaN(weight) || weight <= 0 ||
+            isNaN(length) || length <= 0 ||
+            isNaN(width) || width <= 0 ||
+            isNaN(height) || height <= 0
+        ) {
+            showAlertModal("Weight and dimensions must be greater than 0.");
+            return;
+        }
         showConfirmModal(
             "Are you sure?",
             () => sendFormData(this),
-            () => {}     
+            () => {}
         );
     })
+
     function showConfirmModal(message, onYes, onNo) {
         const template = document.getElementById('confirmModal');
         const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
@@ -312,15 +351,18 @@
         modal.classList.add('show');
         const yesBtn = modal.querySelector('#confirmYes');
         const noBtn = modal.querySelector('#confirmNo');
+
         function cleanup() {
             yesBtn.removeEventListener('click', yesHandler);
             noBtn.removeEventListener('click', noHandler);
             modal.remove();
         }
+
         function yesHandler() {
             cleanup();
             if (typeof onYes === 'function') onYes();
         }
+
         function noHandler() {
             cleanup();
             if (typeof onNo === 'function') onNo();
@@ -329,57 +371,60 @@
         noBtn.addEventListener('click', noHandler);
     }
 
-    function showAlertModal(message, onOk){
+    function showAlertModal(message, onOk) {
         const template = document.getElementById('alertModal');
         const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
         document.body.appendChild(modal);
         modal.querySelector('p').textContent = message;
         modal.classList.add('show');
         const okBtn = modal.querySelector('#confirmOk');
+
         function cleanup() {
             okBtn.removeEventListener('click', okHandler);
             modal.remove();
         }
-        function okHandler(){
+
+        function okHandler() {
             cleanup();
-            if (typeof onOk === 'function'){ onOk()}
-            else{};
+            if (typeof onOk === 'function') {
+                onOk()
+            } else {};
         }
         okBtn.addEventListener('click', okHandler);
     }
 
-    function sendFormData(form){
+    function sendFormData(form) {
         const formData = new FormData(form);
         galleryFiles.forEach(file => {
-            if (file instanceof File){
+            if (file instanceof File) {
                 formData.append('gallery[]', file);
-            }else if (file.existing) {
+            } else if (file.existing) {
                 formData.append('existingGallery[]', file.filename);
             }
         });
         const galleryInput = document.getElementById('gallery');
         galleryInput.parentNode.removeChild(galleryInput);
         fetch('<?= BASE_URL ?>admin/includes/products-edit-handler.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success){
-                showAlertModal("Product updated successfully!", 
-                    () => reload()
-                );
-            }else{
-                alert('Failed to add product: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error: ', error);
-            showAlertModal("Something went wrong");
-        })
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertModal("Product updated successfully!",
+                        () => reload()
+                    );
+                } else {
+                    alert('Failed to add product: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error: ', error);
+                showAlertModal("Something went wrong");
+            })
     }
 
-    function reload(){
+    function reload() {
         // window.location.reload();
         // window.location.href = `products-edit.php?id=${productId}`;
         const urlParams = new URLSearchParams(window.location.search);

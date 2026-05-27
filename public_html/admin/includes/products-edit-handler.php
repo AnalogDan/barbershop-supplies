@@ -1,109 +1,117 @@
-<?php 
-    require_once __DIR__ . '/../../../config.php';
-    require_once BASE_PATH . 'includes/db.php';
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
-        http_response_code(405);
-        echo 'Method Not Allowed';
-        exit;
-    }
-    $product_id = intval($_POST['id'] ?? 0);
-    if ($product_id === 0){
-        http_response_code(400);
-        echo 'Invalid product ID.';
-        exit;
-    }
-    $name = trim($_POST['name'] ?? '');
-    $category_id = intval($_POST['category'] ?? 0);
-    $price = floatval($_POST['price'] ?? 0);
-    $stock = intval($_POST['stock'] ?? 0);
-    $description = trim($_POST['description'] ?? '');
-    $errors = [];
-    if ($name === '') $errors[] = 'Product name is required.';
-    if ($category_id === 0) $errors[] = 'Category is required.';
-    if ($price <= 0) $errors[] = 'Price must be greater than 0.';
-    if ($stock < 0) $errors[] = 'Stock cannot be negative.';
-    if ($description === '') $errors[] = 'Description is required.';
-    if (!empty($errors)) {
-        http_response_code(400);
-        echo implode("\n", $errors);
-        exit;
-    }
+<?php
+require_once __DIR__ . '/../../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo 'Method Not Allowed';
+    exit;
+}
+$product_id = intval($_POST['id'] ?? 0);
+if ($product_id === 0) {
+    http_response_code(400);
+    echo 'Invalid product ID.';
+    exit;
+}
+$name = trim($_POST['name'] ?? '');
+$category_id = intval($_POST['category'] ?? 0);
+$price = floatval($_POST['price'] ?? 0);
+$stock = intval($_POST['stock'] ?? 0);
+$description = trim($_POST['description'] ?? '');
+$weight = floatval($_POST['weight'] ?? 0);
+$length = floatval($_POST['length'] ?? 0);
+$width = floatval($_POST['width'] ?? 0);
+$height = floatval($_POST['height'] ?? 0);
+$errors = [];
+if ($name === '') $errors[] = 'Product name is required.';
+if ($category_id === 0) $errors[] = 'Category is required.';
+if ($price <= 0) $errors[] = 'Price must be greater than 0.';
+if ($stock < 0) $errors[] = 'Stock cannot be negative.';
+if ($description === '') $errors[] = 'Description is required.';
+if ($weight <= 0) $errors[] = 'Weight must be greater than 0.';
+if ($length <= 0) $errors[] = 'Length must be greater than 0.';
+if ($width <= 0) $errors[] = 'Width must be greater than 0.';
+if ($height <= 0) $errors[] = 'Height must be greater than 0.';
+if (!empty($errors)) {
+    http_response_code(400);
+    echo implode("\n", $errors);
+    exit;
+}
 
-    $uploadDir = PUBLIC_PATH . 'images/products/';
-    $rawThumbnail = $_POST['existingThumbnail'] ?? '';
-    $rawMainImg = $_POST['existingMainImg'] ?? '';
-    $thumbnailPath = str_replace('<?= BASE_URL ?>', '', $rawThumbnail);
-    $oldThumbPath = PUBLIC_PATH . $thumbnailPath;
-    $mainImagePath = str_replace('<?= BASE_URL ?>', '', $rawMainImg);
-    $oldMainPath = PUBLIC_PATH . $mainImagePath;
-    if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION);
-        $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-        $dest = $uploadDir . $newName;
-        if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $dest)) {
-            if (!empty($thumbnailPath) && file_exists($oldThumbPath)) {
-                unlink($oldThumbPath);
-            }
-            $thumbnailPath = 'images/products/' . $newName;
-        } else {
-            http_response_code(500);
-            echo 'Failed to upload thumbnail.';
-            exit;
+$uploadDir = PUBLIC_PATH . 'images/products/';
+$rawThumbnail = $_POST['existingThumbnail'] ?? '';
+$rawMainImg = $_POST['existingMainImg'] ?? '';
+$thumbnailPath = str_replace('<?= BASE_URL ?>', '', $rawThumbnail);
+$oldThumbPath = PUBLIC_PATH . $thumbnailPath;
+$mainImagePath = str_replace('<?= BASE_URL ?>', '', $rawMainImg);
+$oldMainPath = PUBLIC_PATH . $mainImagePath;
+if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
+    $ext = pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION);
+    $newName = 'thumb_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $dest = $uploadDir . $newName;
+    if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $dest)) {
+        if (!empty($thumbnailPath) && file_exists($oldThumbPath)) {
+            unlink($oldThumbPath);
         }
+        $thumbnailPath = 'images/products/' . $newName;
+    } else {
+        http_response_code(500);
+        echo 'Failed to upload thumbnail.';
+        exit;
     }
-    if (isset($_FILES['mainImg']) && $_FILES['mainImg']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['mainImg']['name'], PATHINFO_EXTENSION);
-        $newName = 'main_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-        $dest = $uploadDir . $newName;
-        if (move_uploaded_file($_FILES['mainImg']['tmp_name'], $dest)) {
-            if (!empty($mainImagePath) && file_exists($oldMainPath)) {
-                unlink($oldMainPath);
-            }
-            $mainImagePath = 'images/products/' . $newName;
-        } else {
-            http_response_code(500);
-            echo 'Failed to upload main image.';
-            exit;
+}
+if (isset($_FILES['mainImg']) && $_FILES['mainImg']['error'] === UPLOAD_ERR_OK) {
+    $ext = pathinfo($_FILES['mainImg']['name'], PATHINFO_EXTENSION);
+    $newName = 'main_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $dest = $uploadDir . $newName;
+    if (move_uploaded_file($_FILES['mainImg']['tmp_name'], $dest)) {
+        if (!empty($mainImagePath) && file_exists($oldMainPath)) {
+            unlink($oldMainPath);
         }
+        $mainImagePath = 'images/products/' . $newName;
+    } else {
+        http_response_code(500);
+        echo 'Failed to upload main image.';
+        exit;
     }
-   
-    $existingGallery = $_POST['existingGallery'] ?? [];
-    if(!is_array($existingGallery)){
-        $existingGallery = [$existingGallery];
-    }
-    $stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
-    $stmt->execute([$product_id]);
-    $currentGallery = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    foreach ($currentGallery as $imagePath){
-        if (!in_array($imagePath, $existingGallery, true)){
-            $delStmt = $pdo->prepare("DELETE FROM product_gallery_images WHERE product_id = ? AND image_path = ?");
-            $delStmt->execute([$product_id, $imagePath]);
-            $fileToDelete = PUBLIC_PATH . $imagePath;
-            if(file_exists($fileToDelete)){
-                unlink($fileToDelete);
-            }
-        }
-    }
-    $galleryPaths = [];
-    if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'][1])) {
-        foreach ($_FILES['gallery']['tmp_name'] as $key => $tmpName) {
-            if ($_FILES['gallery']['error'][$key] === UPLOAD_ERR_OK) {
-                $ext = pathinfo($_FILES['gallery']['name'][$key], PATHINFO_EXTENSION);
-                $newName = 'gallery_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                $dest = $uploadDir . $newName;
-                if (move_uploaded_file($tmpName, $dest)) {
-                    $galleryPaths[] = 'images/products/' . $newName;
-                } else {
-                    http_response_code(500);
-                    echo 'Failed to upload one of the gallery images.';
-                    exit;
-                }
-            }
-        }
-    }
+}
 
-    try{
-        $stmt = $pdo->prepare("
+$existingGallery = $_POST['existingGallery'] ?? [];
+if (!is_array($existingGallery)) {
+    $existingGallery = [$existingGallery];
+}
+$stmt = $pdo->prepare("SELECT image_path FROM product_gallery_images WHERE product_id = ?");
+$stmt->execute([$product_id]);
+$currentGallery = $stmt->fetchAll(PDO::FETCH_COLUMN);
+foreach ($currentGallery as $imagePath) {
+    if (!in_array($imagePath, $existingGallery, true)) {
+        $delStmt = $pdo->prepare("DELETE FROM product_gallery_images WHERE product_id = ? AND image_path = ?");
+        $delStmt->execute([$product_id, $imagePath]);
+        $fileToDelete = PUBLIC_PATH . $imagePath;
+        if (file_exists($fileToDelete)) {
+            unlink($fileToDelete);
+        }
+    }
+}
+$galleryPaths = [];
+if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'][1])) {
+    foreach ($_FILES['gallery']['tmp_name'] as $key => $tmpName) {
+        if ($_FILES['gallery']['error'][$key] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['gallery']['name'][$key], PATHINFO_EXTENSION);
+            $newName = 'gallery_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $dest = $uploadDir . $newName;
+            if (move_uploaded_file($tmpName, $dest)) {
+                $galleryPaths[] = 'images/products/' . $newName;
+            } else {
+                http_response_code(500);
+                echo 'Failed to upload one of the gallery images.';
+                exit;
+            }
+        }
+    }
+}
+
+try {
+    $stmt = $pdo->prepare("
             UPDATE products 
             SET category_id = :category_id,
                 name = :name,
@@ -111,38 +119,45 @@
                 price = :price,
                 stock = :stock,
                 main_image = :main_image,
-                cutout_image = :cutout_image
+                cutout_image = :cutout_image,
+                weight = :weight,
+                length = :length,
+                width = :width,
+                height = :height
             WHERE id = :product_id
             
         ");
-        $stmt->execute([
-            ':category_id' => $category_id,
-            ':name' => $name,
-            ':description' => $description,
-            ':price' => $price,
-            ':stock' => $stock,
-            ':main_image' => $mainImagePath,
-            ':cutout_image' => $thumbnailPath,
-            ':product_id' => $product_id
-        ]);
-    }catch(PDOException $e){
-        http_response_code(500);
-        echo 'Database error: ' . $e->getMessage();
-        exit;
-    }
-    if(!empty($galleryPaths)){
-        $stmt = $pdo->prepare("
+    $stmt->execute([
+        ':category_id' => $category_id,
+        ':name' => $name,
+        ':description' => $description,
+        ':price' => $price,
+        ':stock' => $stock,
+        ':main_image' => $mainImagePath,
+        ':cutout_image' => $thumbnailPath,
+        ':product_id' => $product_id,
+        ':weight' => $weight,
+        ':length' => $length,
+        ':width' => $width,
+        ':height' => $height,
+    ]);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo 'Database error: ' . $e->getMessage();
+    exit;
+}
+if (!empty($galleryPaths)) {
+    $stmt = $pdo->prepare("
             INSERT INTO product_gallery_images (product_id, image_path)
             VALUES (:product_id, :image_path)
         ");
-        foreach($galleryPaths as $path){
-            $stmt->execute([
-                ':product_id' => $product_id,
-                ':image_path' => $path
-            ]);
-        }
+    foreach ($galleryPaths as $path) {
+        $stmt->execute([
+            ':product_id' => $product_id,
+            ':image_path' => $path
+        ]);
     }
-    header('Content-Type: application/json');
-    echo json_encode(['success' => true]);
-    exit;
-?>
+}
+header('Content-Type: application/json');
+echo json_encode(['success' => true]);
+exit;
