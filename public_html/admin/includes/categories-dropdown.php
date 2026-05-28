@@ -1,18 +1,18 @@
 <?php
-    require_once __DIR__ . '/../../../config.php';
-    require_once BASE_PATH . 'includes/db.php';
-    $mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
-    $mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
+require_once __DIR__ . '/../../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+$mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
+$mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
     @font-face {
         font-family: 'Old London';
-        src: url('<?= BASE_URL ?>fonts/OldLondon.ttf') format('truetype'); 
+        src: url('<?= BASE_URL ?>fonts/OldLondon.ttf') format('truetype');
     }
 
-    .upper-container{
-        position:relative;
+    .upper-container {
+        position: relative;
     }
 
     .categories-dropdown {
@@ -50,9 +50,10 @@
         color: black;
         text-align: center;
     }
+
     .main-category-link {
-        color: inherit;           
-        text-decoration: none;    
+        color: inherit;
+        text-decoration: none;
         cursor: pointer;
     }
 
@@ -66,9 +67,11 @@
         gap: 20px;
         justify-content: center;
     }
+
     .subcategories-list a:hover {
         color: #555;
     }
+
     .subcategories-list a {
         text-decoration: none;
     }
@@ -86,7 +89,6 @@
     .subcategory:hover {
         background-color: transparent;
     }
-
 </style>
 
 
@@ -109,6 +111,13 @@
                     </div>
                 </div>
             <?php endforeach; ?>
+            <div class="main-category-block">
+                <div class="subcategories-list">
+                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'query' => null, 'out_of_stock' => null, 'on_sale' => null, 'main_page' => 1]) ?>">
+                        All
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -126,7 +135,7 @@
             dropdown.classList.remove('open');
         } else {
             dropdown.classList.add('open');
-            dropdown.style.height = dropdown.scrollHeight + 'px'; 
+            dropdown.style.height = dropdown.scrollHeight + 'px';
         }
         chevron.classList.toggle('down', !isOpen);
     });

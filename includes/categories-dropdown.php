@@ -1,8 +1,8 @@
 <?php
-    require_once __DIR__ . '/../config.php';
-    require_once BASE_PATH . 'includes/db.php';
-    $mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
-    $mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
+require_once __DIR__ . '/../config.php';
+require_once BASE_PATH . 'includes/db.php';
+$mainCategoriesQuery = $pdo->query("SELECT id, name FROM main_categories ORDER BY id ASC");
+$mainCategories = $mainCategoriesQuery->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -11,8 +11,8 @@
         src: url('<?= BASE_URL ?>fonts/OldLondon.ttf') format('truetype');
     }
 
-    .upper-container{
-        position:relative;
+    .upper-container {
+        position: relative;
     }
 
     .categories-dropdown {
@@ -51,15 +51,16 @@
         color: black;
         text-align: center;
     }
+
     .main-category-link {
-        color: inherit;           
-        text-decoration: none;    
+        color: inherit;
+        text-decoration: none;
         cursor: pointer;
     }
 
     .main-category-link:hover {
         color: #000000ff;
-        text-decoration: underline; 
+        text-decoration: underline;
     }
 
     .subcategories-list {
@@ -71,18 +72,20 @@
         justify-content: center;
 
     }
+
     .subcategories-list a {
         color: #5e5e5eff;
         text-decoration: none;
     }
+
     .subcategories-list a:hover {
         color: #050505ff;
-        text-decoration: underline; 
+        text-decoration: underline;
     }
-  
+
 
     .subcategory {
-        font-weight: 600; 
+        font-weight: 600;
         padding: 6px 10px;
         background-color: transparent;
         text-decoration: none;
@@ -98,24 +101,24 @@
     /* Yellow boxes for the hardcoded links */
     .categories-dropdown .main-category-block:last-child .subcategories-list a {
         display: block;
-        background: #dfd898; 
+        background: #dfd898;
         color: #444444ff;
         padding: 6px 10px;
         border-radius: 0px;
         font-weight: 600;
         text-decoration: none;
     }
+
     .categories-dropdown .main-category-block:last-child .subcategories-list a:hover {
         color: #000000ff;
         background: #ece6afff;
     }
-
 </style>
 
 <div id="categoriesDropdown" class="categories-dropdown">
     <div class="categories-inner">
         <div class="categories-dropdown-content">
-           <?php foreach ($mainCategories as $main): ?>
+            <?php foreach ($mainCategories as $main): ?>
                 <div class="main-category-block">
                     <h2 class="main-category-title">
                         <a href="<?= buildLinkWithParams(['main' => $main['id'], 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null, 'sale' => null]) ?>" class="main-category-link"><?= htmlspecialchars($main['name']) ?></a>
@@ -130,11 +133,11 @@
                         <?php endforeach; ?>
                     </div>
                 </div>
-            <?php endforeach; ?> 
+            <?php endforeach; ?>
             <!-- Qiuck links -->
             <div class="main-category-block">
                 <div class="subcategories-list">
-                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null,    'favorites' => 1, 'sale' => null]) ?>">My Favorites</a>  
+                    <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null,    'favorites' => 1, 'sale' => null]) ?>">My Favorites</a>
                     <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null, 'sale' => null]) ?>">All</a>
                     <a href="<?= buildLinkWithParams(['main' => null, 'subcategory' => null, 'page' => 1, 'query' => null, 'sort' => null, 'favorites' => null,    'sale' => 1]) ?>">Sales</a>
                 </div>
@@ -156,7 +159,7 @@
             dropdown.classList.remove('open');
         } else {
             dropdown.classList.add('open');
-            dropdown.style.height = dropdown.scrollHeight + 'px'; 
+            dropdown.style.height = dropdown.scrollHeight + 'px';
         }
         chevron.classList.toggle('down', !isOpen);
     });
@@ -166,7 +169,10 @@
         if (!shouldOpen) return;
         sessionStorage.removeItem('openCategoriesDropdown');
         // Scroll to the toggle
-        toggle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        toggle.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
         // Open only if closed
         if (!dropdown.classList.contains('open')) {
             toggle.click();

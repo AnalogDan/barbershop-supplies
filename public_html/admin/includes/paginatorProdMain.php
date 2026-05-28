@@ -1,18 +1,20 @@
 <style>
-    .pagination{
+    .pagination {
         font-weight: bold;
         display: flex;
-        gap 10px;
+        gap: 10px;
         margin-top: 20px;
         margin-bottom: 60px;
         justify-content: center;
         align-items: center;
     }
+
     .pagination a.page,
     .pagination a.next {
         text-decoration: none;
     }
-    .page{
+
+    .page {
         color: gray;
         cursor: pointer;
         width: 36px;
@@ -23,8 +25,9 @@
         border-radius: 50%;
         font-size: 14px;
     }
+
     .prev,
-    .next{
+    .next {
         color: gray;
         cursor: pointer;
         width: 58px;
@@ -36,10 +39,13 @@
         font-size: 18px;
         text-decoration: none;
     }
-    .page:hover, .next:hover{
+
+    .page:hover,
+    .next:hover {
         color: black;
     }
-    .page.current{
+
+    .page.current {
         background-color: #ddd;
         color: black;
     }
@@ -51,6 +57,8 @@ $baseParams = [];
 if (!empty($searchQuery)) $baseParams['query'] = $searchQuery;
 if (!empty($mainCategoryId)) $baseParams['main'] = $mainCategoryId;
 if (!empty($subCategoryId)) $baseParams['subcategory'] = $subCategoryId;
+if (!empty($outOfStock)) $baseParams['out_of_stock'] = 1;
+if (!empty($onSale)) $baseParams['on_sale'] = 1;
 ?>
 
 <div class="pagination">

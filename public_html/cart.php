@@ -40,7 +40,7 @@ if ($cartId) {
 			FROM cart_items ci
 			JOIN carts c ON c.id = ci.cart_id
 			JOIN products p ON p.id = ci.product_id
-			WHERE ci.cart_id = ? and c.status = ?
+			WHERE ci.cart_id = ? and c.status = ? AND p.hidden = 0
 		");
 	$stmt->execute([$cartId, 'active']);
 	$cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -59,6 +59,7 @@ if (!empty($cartItems)) {
 					JOIN carts c ON c.id = ci.cart_id
 					WHERE ci.cart_id = ?
 					AND ci.product_id = ?
+					AND p.hidden = 1
 					AND c.status = 'active';
 				");
 			$stmt->execute([$cartId, $productId]);
@@ -89,6 +90,7 @@ if (!empty($cartItems)) {
 				JOIN carts c ON c.id = ci.cart_id
 				JOIN products p ON p.id = ci.product_id
 				WHERE ci.cart_id = ?
+				AND p.hidden = 0
 				AND c.status = 'active';
 			");
 	$stmt->execute([$cartId]);

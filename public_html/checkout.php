@@ -31,10 +31,21 @@ if ($cartId) {
 			JOIN products p ON p.id = ci.product_id
 			WHERE ci.cart_id = ?
             AND c.status = 'active'
+            AND p.hidden = 0
 		");
     $stmt->execute([$cartId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+//Clean hidden products from cart
+$cleanStmt = $pdo->prepare("
+    DELETE ci
+    FROM cart_items ci
+    JOIN products p ON p.id = ci.product_id
+    WHERE ci.cart_id = ?
+    AND p.hidden = 1
+");
+$cleanStmt->execute([$cartId]);
 
 //Correct for stock changes
 if (!empty($cartItems)) {
@@ -80,6 +91,7 @@ if (!empty($cartItems)) {
 				JOIN products p ON p.id = ci.product_id
 				WHERE ci.cart_id = ?
                 AND c.status = 'active'
+                AND p.hidden = 0
 			");
     $stmt->execute([$cartId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -120,6 +132,7 @@ $salesTax = round($taxableAmount * $taxRate, 2);
 // Shipping will be calculated later
 $shipping = null;
 $total = $subtotal + $salesTax + ($shipping ?? 0);
+$deliveryEstimate = null;
 
 //Fetch user contact data 
 $isLoggedIn = false;
@@ -662,6 +675,15 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                         ?>
                     </span>
                 </div>
+                <div class="summary-line">
+                    <span>Delivery</span>
+                    <span id="summary-delivery">
+                        <?= $deliveryEstimate === null
+                            ? 'Calculated at next step'
+                            : htmlspecialchars($deliveryEstimate)
+                        ?>
+                    </span>
+                </div>
                 <div class="summary-line summary-total">
                     <span>Total</span>
                     <span id="summary-total">
@@ -1000,6 +1022,7 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
         window.checkoutSubtotal = <?= $_SESSION['checkout']['totals']['subtotal'] ?? 0 ?>;
         window.checkoutSalesTax = <?= $_SESSION['checkout']['totals']['sales_tax'] ?? 0 ?>;
         window.checkoutShipping = <?= $_SESSION['checkout']['totals']['shipping'] ?? 0 ?>;
+        window.checkoutDelivery = <?= json_encode($_SESSION['checkout']['totals']['delivery'] ?? null) ?>;
         window.checkoutTotal = <?= $_SESSION['checkout']['totals']['total'] ?? 0 ?>;
         window.cartItems = <?= json_encode($summaryItems, JSON_UNESCAPED_UNICODE) ?>;
 
@@ -1036,6 +1059,24 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                     return 15.99;
                 default:
                     return 0;
+            }
+        }
+
+
+        function calculateDeliveryEstimate() {
+            const selected = document.querySelector('input[name="shipping_method"]:checked');
+            if (!selected) {
+                return null;
+            }
+            switch (selected.value) {
+                case '2nd_day':
+                    return '2 business days';
+                case '3_day':
+                    return '3 business days';
+                case 'ground':
+                    return '3–5 business days';
+                default:
+                    return null;
             }
         }
 
@@ -1108,16 +1149,23 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
         //Update summary totals
         function updateSummaryTotals() {
             const shipping = calculateShipping();
+            const delivery = calculateDeliveryEstimate();
             const total = calculateTotal();
             document.getElementById('summary-shipping').textContent =
                 shipping === 0 ?
                 'Calculated at next step' :
                 '$' + shipping.toFixed(2);
+            document.getElementById('summary-delivery').textContent =
+                delivery === null ?
+                'Calculated at next step' :
+                delivery;
             document.getElementById('summary-total').textContent =
                 '$' + total.toFixed(2);
             window.checkoutShipping = shipping;
+            window.checkoutDelivery = delivery;
             window.checkoutTotal = total;
             console.log('Updated shipping:', shipping);
+            console.log('Updated delivery:', delivery);
             console.log('Updated total:', total);
             console.log('Global shipping:', window.checkoutShipping);
         }
@@ -1245,6 +1293,7 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                         window.checkoutSubtotal = totals.subtotal ?? 0;
                         window.checkoutSalesTax = totals.sales_tax ?? 0;
                         window.checkoutShipping = totals.shipping ?? 0;
+                        window.checkoutDelivery = totals.delivery ?? null;
                         window.checkoutTotal = totals.total ?? 0;
                         console.log('Updated totals from session:', totals);
                     }
@@ -1333,6 +1382,7 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                 subtotal: window.checkoutSubtotal,
                 sales_tax: window.checkoutSalesTax,
                 shipping: window.checkoutShipping,
+                delivery: window.checkoutDelivery,
                 total: window.checkoutTotal,
                 cart_items: window.cartItems
             };

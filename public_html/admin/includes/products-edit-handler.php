@@ -21,6 +21,7 @@ $weight = floatval($_POST['weight'] ?? 0);
 $length = floatval($_POST['length'] ?? 0);
 $width = floatval($_POST['width'] ?? 0);
 $height = floatval($_POST['height'] ?? 0);
+$hidden = isset($_POST['hidden']) ? 1 : 0;
 $errors = [];
 if ($name === '') $errors[] = 'Product name is required.';
 if ($category_id === 0) $errors[] = 'Category is required.';
@@ -123,7 +124,8 @@ try {
                 weight = :weight,
                 length = :length,
                 width = :width,
-                height = :height
+                height = :height,
+                hidden = :hidden
             WHERE id = :product_id
             
         ");
@@ -140,6 +142,7 @@ try {
         ':length' => $length,
         ':width' => $width,
         ':height' => $height,
+        ':hidden' => $hidden,
     ]);
 } catch (PDOException $e) {
     http_response_code(500);

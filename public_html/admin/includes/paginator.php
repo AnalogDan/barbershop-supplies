@@ -1,18 +1,20 @@
 <style>
-    .pagination{
+    .pagination {
         font-weight: bold;
         display: flex;
-        gap 10px;
+        gap: 10px;
         margin-top: 20px;
         margin-bottom: 60px;
         justify-content: center;
         align-items: center;
     }
+
     .pagination a.page,
     .pagination a.next {
         text-decoration: none;
     }
-    .page{
+
+    .page {
         color: gray;
         cursor: pointer;
         width: 36px;
@@ -23,8 +25,9 @@
         border-radius: 50%;
         font-size: 14px;
     }
+
     .prev,
-    .next{
+    .next {
         color: gray;
         cursor: pointer;
         width: 58px;
@@ -36,18 +39,35 @@
         font-size: 18px;
         text-decoration: none;
     }
-    .page:hover, .next:hover{
+
+    .page:hover,
+    .next:hover {
         color: black;
     }
-    .page.current{
+
+    .page.current {
         background-color: #ddd;
         color: black;
     }
 </style>
 
+<?php
+// Build a base query string to keep current filters
+$baseParams = [];
+if (!empty($searchQuery)) $baseParams['query'] = $searchQuery;
+if (!empty($mainCategoryId)) $baseParams['main'] = $mainCategoryId;
+if (!empty($subCategoryId)) $baseParams['subcategory'] = $subCategoryId;
+if (!empty($outOfStock)) $baseParams['out_of_stock'] = 1;
+if (!empty($onSale)) $baseParams['on_sale'] = 1;
+?>
+
 <div class="pagination">
+
     <?php if ($currentPage > 1): ?>
-        <a class="prev" href="?main_page=<?= $currentPage - 1 ?><?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">&lt; Prev</a>
+        <a class="prev"
+            href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage - 1])) ?>">
+            &lt; Prev
+        </a>
     <?php endif; ?>
 
     <?php
@@ -57,25 +77,45 @@
     $end   = min($totalPages, $currentPage + $window);
 
     if ($start > 1) {
-        echo '<a class="page" href="?main_page=1' . ($searchQuery ? '&query=' . urlencode($searchQuery) : '') . '">1</a>';
-        if ($start > 2) echo '<span class="dots">…</span>';
+        echo '<a class="page" href="?' .
+            http_build_query(array_merge($baseParams, ['main_page' => 1])) .
+            '">1</a>';
+
+        if ($start > 2) {
+            echo '<span class="dots">…</span>';
+        }
     }
 
     for ($i = $start; $i <= $end; $i++) {
+
         if ($i == $currentPage) {
+
             echo '<span class="page current">' . $i . '</span>';
         } else {
-            echo '<a class="page" href="?main_page=' . $i . ($searchQuery ? '&query=' . urlencode($searchQuery) : '') . '">' . $i . '</a>';
+
+            echo '<a class="page" href="?' .
+                http_build_query(array_merge($baseParams, ['main_page' => $i])) .
+                '">' . $i . '</a>';
         }
     }
 
     if ($end < $totalPages) {
-        if ($end < $totalPages - 1) echo '<span class="dots">…</span>';
-        echo '<a class="page" href="?main_page=' . $totalPages . ($searchQuery ? '&query=' . urlencode($searchQuery) : '') . '">' . $totalPages . '</a>';
+
+        if ($end < $totalPages - 1) {
+            echo '<span class="dots">…</span>';
+        }
+
+        echo '<a class="page" href="?' .
+            http_build_query(array_merge($baseParams, ['main_page' => $totalPages])) .
+            '">' . $totalPages . '</a>';
     }
     ?>
 
     <?php if ($currentPage < $totalPages): ?>
-        <a class="next" href="?main_page=<?= $currentPage + 1 ?><?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">Next &gt;</a>
+        <a class="next"
+            href="?<?= http_build_query(array_merge($baseParams, ['main_page' => $currentPage + 1])) ?>">
+            Next &gt;
+        </a>
     <?php endif; ?>
+
 </div>

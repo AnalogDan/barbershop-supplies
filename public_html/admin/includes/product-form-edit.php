@@ -124,9 +124,36 @@ $galleryImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
         gap: 10px;
         margin-top: 10px;
     }
+
+    #hidden {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 1px solid black;
+        background: white;
+        display: block;
+        margin: 10px 0 0 0;
+        cursor: pointer;
+        position: relative;
+    }
+
+    #hidden:checked::after {
+        content: '✓';
+        color: black;
+        font-size: 14px;
+        font-weight: bold;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 </style>
 
 <form class="product-form" id="productForm" method="POST" enctype="multipart/form-data">
+    <label for="hidden">Hide product</label>
+    <input type="checkbox" id="hidden" name="hidden" value="1" <?= !empty($product['hidden']) ? 'checked' : '' ?>>
+
     <label for="name">Name</label>
     <input type="text" id="name" name="name" placeholder="Product name..." value="<?= htmlspecialchars($product['name']) ?>" required>
     <label for="category">Category</label>

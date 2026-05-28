@@ -1,16 +1,16 @@
 <?php
-    require_once __DIR__ . '/../config.php';
-    require_once __DIR__ . '/../includes/db.php';
-    require_once __DIR__ . '/../includes/header.php';
-    require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../config.php';
 
-    //Fetch all the thingies you need
-    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-    if ($id <= 0) {
-        http_response_code(404);
-        die('Invalid product');
-    }
-    $sql = "
+//Fetch all the thingies you need
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($id <= 0) {
+    http_response_code(404);
+    die('Invalid product');
+}
+$sql = "
         SELECT 
             p.id,
             p.category_id AS subcategory_id,
@@ -36,292 +36,322 @@
             ON p.category_id = c.id
         JOIN main_categories mc 
             ON c.main_category_id = mc.id
-        WHERE p.id = ?
+        WHERE p.id = ? AND p.hidden = 0
         LIMIT 1
     ";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$id]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$product) {
-        http_response_code(404);
-        die('Product not found');
-    }
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$id]);
+$product = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$product) {
+    http_response_code(404);
+    die('Product not found');
+}
 
-    //Fetch gallery
-    $galleryStmt = $pdo->prepare("
+//Fetch gallery
+$galleryStmt = $pdo->prepare("
         SELECT image_path
         FROM product_gallery_images
         WHERE product_id = ?
         ORDER BY id ASC
     ");
-    $galleryStmt->execute([$product['id']]);
-    $galleryImages = $galleryStmt->fetchAll(PDO::FETCH_COLUMN);
+$galleryStmt->execute([$product['id']]);
+$galleryImages = $galleryStmt->fetchAll(PDO::FETCH_COLUMN);
 
-    //Sales logic
-    require_once __DIR__ . '/../includes/pricing.php';
-    $tz = new DateTimeZone('America/Los_Angeles');
-    $pricing = getProductPricing($product, $tz);
+//Sales logic
+require_once __DIR__ . '/../includes/pricing.php';
+$tz = new DateTimeZone('America/Los_Angeles');
+$pricing = getProductPricing($product, $tz);
 
-    //Check if already favorited 
-    $isFavorite = false;
-    if (isset($_SESSION['user_id'])) {
-        $stmt = $pdo->prepare("
+//Check if already favorited 
+$isFavorite = false;
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("
             SELECT 1
             FROM favorites
             WHERE user_id = ? AND product_id = ?
             LIMIT 1
         ");
-        $stmt->execute([$_SESSION['user_id'], $product['id']]);
-        $isFavorite = (bool) $stmt->fetchColumn();
-    }
+    $stmt->execute([$_SESSION['user_id'], $product['id']]);
+    $isFavorite = (bool) $stmt->fetchColumn();
+}
 ?>
 
 <style>
     main {
         background-color: #d2d2d2ff;
     }
+
     .white-container {
-        background-color: white;     
-        width: 90%;                 
-        margin: 70px auto 0 auto;              
-        min-height: 100vh;           
-        padding: 2rem;     
-        box-shadow: 5px 10px 12px rgba(0,0,0,0.2); 
-        border-radius: 8px;       
-    }
-    .top-left,
-    .top-right {
-    width: 50%;              
-    float: left;           
-    padding: 1rem;          
-    box-sizing: border-box;  
-    }
-    .top-left {
-    /* background: lightblue; */
-    }
-    .top-right {
+        background-color: white;
+        width: 90%;
+        margin: 70px auto 0 auto;
+        min-height: 100vh;
+        padding: 2rem;
+        box-shadow: 5px 10px 12px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
     }
 
+    .top-left,
+    .top-right {
+        width: 50%;
+        float: left;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+
+    .top-left {
+        /* background: lightblue; */
+    }
+
+    .top-right {}
+
     .breadcrumb {
-    font-weight: 600;
-    color: gray;               
-    font-size: 1.2rem;
-    position: relative; 
-    top: 70px;
-    left: 5%;          
+        font-weight: 600;
+        color: gray;
+        font-size: 1.2rem;
+        position: relative;
+        top: 70px;
+        left: 5%;
     }
+
     .breadcrumb a {
-    text-decoration: none;      
-    color: gray;                
+        text-decoration: none;
+        color: gray;
     }
+
     .breadcrumb a:hover {
-    text-decoration: underline; 
+        text-decoration: underline;
     }
+
     .breadcrumb span {
-    margin: 0 0.25rem;          
+        margin: 0 0.25rem;
     }
 
     .product-images {
-    display: flex;
-    flex-direction: column;   
-    gap: 1rem;                
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
+
     .product-images .main-image {
-    position: relative;
-    margin: 0 auto;
-    border: 1px solid black;
-    width: 80%;
-    aspect-ratio: 1/1;
+        position: relative;
+        margin: 0 auto;
+        border: 1px solid black;
+        width: 80%;
+        aspect-ratio: 1/1;
     }
+
     .product-images .main-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
+
     .product-images .gallery {
-    margin: 0 auto;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;           
+        margin: 0 auto;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
+
     .product-images .gallery img {
-    border: 1px solid black;
-    width: 70px;               
-    height: 70px;
-    object-fit: contain;        
-    cursor: pointer;
-    transition: border-color 0.2s;
+        border: 1px solid black;
+        width: 70px;
+        height: 70px;
+        object-fit: contain;
+        cursor: pointer;
+        transition: border-color 0.2s;
     }
+
     .gallery img.selected {
-    border: 5px solid #2b2b2bff;
-    border-radius: 5%; 
+        border: 5px solid #2b2b2bff;
+        border-radius: 5%;
     }
-    .product-images .gallery img:hover {
-          
-    }
+
+    .product-images .gallery img:hover {}
 
     .zoom-lens {
         position: absolute;
-        border: 2px solid #000;     
-        border-radius: 20%;             
+        border: 2px solid #000;
+        border-radius: 20%;
         background-repeat: no-repeat;
         background-position: 0 0;
-        background-color: rgba(255, 255, 255, 0.1); 
+        background-color: rgba(255, 255, 255, 0.1);
         display: none;
-        cursor: none;                  
-        pointer-events: none;          
-        box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+        cursor: none;
+        pointer-events: none;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         transition: opacity 0.2s ease;
-        z-index: 10;                     
+        z-index: 10;
     }
+
     .main-image:hover .zoom-lens {
-    opacity: 1;
+        opacity: 1;
     }
 
     /* lighbox styles */
     .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0,0,0,0.85);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
     }
+
     .lightbox.show {
-    display: flex;
+        display: flex;
     }
+
     .lightbox-content {
-    position: relative;
-    max-width: 90%;
-    max-height: 90%;
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
     }
+
     #lightbox-image {
-    width: 100%;
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        width: 100%;
+        height: auto;
+        border-radius: 6px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
     }
+
     .close {
-    position: fixed;
-    top: 20px;
-    right: 30px;
-    font-size: 40px;
-    color: #fff;
-    cursor: pointer;
+        position: fixed;
+        top: 20px;
+        right: 30px;
+        font-size: 40px;
+        color: #fff;
+        cursor: pointer;
     }
+
     .chevron {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    font-size: 60px;
-    color: white;
-    cursor: pointer;
-    padding: 10px;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 60px;
+        color: white;
+        cursor: pointer;
+        padding: 10px;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
     }
+
     .chevron:hover {
-    opacity: 1;
+        opacity: 1;
     }
+
     .chevron-left {
-    left: -80px;
+        left: -80px;
     }
+
     .chevron-right {
-    right: -80px;
+        right: -80px;
     }
+
     #lightbox-image {
-    max-width: 90vw;          
-    max-height: 90vh;         
-    width: auto;              
-    height: auto;             
-    object-fit: contain;      
-    border-radius: 6px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-    display: block;
-    margin: 0 auto;
+        max-width: 90vw;
+        max-height: 90vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 6px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        display: block;
+        margin: 0 auto;
     }
 
     /*Top-right quadrant */
     .top-right {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 30px;
-    padding: 20px 30px;
-    color: #222;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 30px;
+        padding: 20px 30px;
+        color: #222;
     }
+
     .product-title {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 10px;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
     }
+
     .stock-status {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
     }
+
     .product-price {
-    font-size: 2rem;
-    font-weight: 480;
-    margin-bottom: 10px;
+        font-size: 2rem;
+        font-weight: 480;
+        margin-bottom: 10px;
     }
+
     .product-old-price {
-    font-size: 1rem;
-    font-weight: 480;
-    margin-bottom: 10px;
-    text-decoration: line-through;
-    color: rgba(0, 0, 0, 0.5);
-    align-items: flex-end;
+        font-size: 1rem;
+        font-weight: 480;
+        margin-bottom: 10px;
+        text-decoration: line-through;
+        color: rgba(0, 0, 0, 0.5);
+        align-items: flex-end;
     }
+
     .shipping-note {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
     }
+
     .extra-note {
-    font-size: 0.9rem;
-    color: #888;
+        font-size: 0.9rem;
+        color: #888;
     }
 
     /*Quantity selector*/
     .quantity-selector {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    overflow: hidden;
-    width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        overflow: hidden;
+        width: fit-content;
     }
+
     .qty-btn {
-    background: #f0f0f0;
-    border: none;
-    padding: 8px 12px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: background 0.2s;
+        background: #f0f0f0;
+        border: none;
+        padding: 8px 12px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background 0.2s;
     }
+
     .qty-btn:hover {
-    background: #e0e0e0;
+        background: #e0e0e0;
     }
+
     #qty-input {
-    width: 50px;
-    text-align: center;
-    border: none;
-    font-size: 16px;
-    outline: none;
-    background: white;
+        width: 50px;
+        text-align: center;
+        border: none;
+        font-size: 16px;
+        outline: none;
+        background: white;
     }
 
     /*Add to cart tweaks*/
     .my-btn-custom {
-    border-radius: 10px !important;
-    margin-top: 20px;
-    margin-left: -5px;
-    outline: none !important;
-    box-shadow: none !important;
+        border-radius: 10px !important;
+        margin-top: 20px;
+        margin-left: -5px;
+        outline: none !important;
+        box-shadow: none !important;
     }
+
     #add-to-cart-btn {
         position: relative;
     }
@@ -333,12 +363,14 @@
         padding: 1rem;
         box-sizing: border-box;
         display: flex;
-        flex-direction: column;     
+        flex-direction: column;
         align-items: center;
     }
-    .bottom-full > * {
-        margin: 0; 
+
+    .bottom-full>* {
+        margin: 0;
     }
+
     .desc-toggle {
         margin-top: 40px;
         background: none;
@@ -348,20 +380,24 @@
         font-size: 1.5rem;
         cursor: pointer;
         display: inline-flex;
-        gap: 0.4rem; 
+        gap: 0.4rem;
         transition: color 0.3s ease;
     }
+
     .desc-toggle:hover {
         color: #7f7f7fff;
     }
-    .chevron2{
+
+    .chevron2 {
         font-size: 2rem;
         display: inline-block;
         transition: transform 0.3s ease;
     }
+
     .chevron2.down {
-        transform: rotate(90deg); 
+        transform: rotate(90deg);
     }
+
     .description-box {
         font-size: 1.2rem;
         white-space: pre-wrap;
@@ -374,19 +410,20 @@
         position: relative;
         max-width: 80%;
     }
+
     .description-box::after {
         content: "";
         position: absolute;
         left: 0;
         right: 0;
         bottom: 0;
-        height: 60px; 
-        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, white 100%);
+        height: 60px;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, white 100%);
         pointer-events: none;
     }
-    .description-box.open {
-        
-    }
+
+    .description-box.open {}
+
     .description-box.open::after {
         display: none;
     }
@@ -404,7 +441,8 @@
         display: inline-flex;
         align-items: center;
     }
-    .price-wrapper{
+
+    .price-wrapper {
         display: flex;
         gap: 1rem;
         align-items: baseline;
@@ -412,13 +450,15 @@
 
     /*Heart overlay*/
     .heart-wrapper {
-        position: absolute; /* relative to main-image */
+        position: absolute;
+        /* relative to main-image */
         top: 10px;
         right: 10px;
         width: 50px;
         height: 50px;
         z-index: 10;
     }
+
     .heart-wrapper .heart-icon {
         width: 100%;
         height: 100%;
@@ -430,46 +470,48 @@
         cursor: pointer;
         border-radius: 50%;
         border: 1px solid black;
-        background-color: #ffffffff; 
-        transition: background-color 0.3s ease; 
+        background-color: #ffffffff;
+        transition: background-color 0.3s ease;
     }
+
     .heart-wrapper .heart-icon:hover {
-        background-color: #d8d8d8ff; 
+        background-color: #d8d8d8ff;
     }
 
     /*Favorite message*/
     .added-message {
-	position: absolute;
-	top: 130%;
-    left: 50%;
-	transform: translateX(-50%);
-	font-weight: 600;
-	background: #dfd898;
-	color: #000000ff;
-	padding: 5px 10px;
-	border-radius: 5px;
-	font-size: 0.85rem;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.5s ease, transform 0.5s ease;
-	z-index: 10;
-	white-space: nowrap;
-	text-align: center;  
-	}
-	.added-message.show {
-	opacity: 1;
-	transform: translateX(-50%) translateY(-10px);
-	}
+        position: absolute;
+        top: 130%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 600;
+        background: #dfd898;
+        color: #000000ff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        z-index: 10;
+        white-space: nowrap;
+        text-align: center;
+    }
 
+    .added-message.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-10px);
+    }
 </style>
 <link rel="stylesheet" href="css/product.mobile.css">
 
 
 <!DOCTYPE html>
 <html lang="en">
-	<?php include '../includes/head.php'; ?>
-    <?php include '../includes/navbar.php'; ?>
-	<body>
+<?php include '../includes/head.php'; ?>
+<?php include '../includes/navbar.php'; ?>
+
+<body>
     <main>
         <div class="breadcrumb">
             <a href="<?= BASE_URL ?>shop.php">Shop</a>
@@ -487,7 +529,7 @@
 
             <span><?= htmlspecialchars($product['name']) ?></span>
         </div>
-        
+
         <div class="white-container">
             <div class="top-left">
                 <div class="product-images">
@@ -496,14 +538,12 @@
                             <img
                                 id="main-image"
                                 src="<?= htmlspecialchars($product['main_image']) ?>"
-                                alt="<?= htmlspecialchars($product['name']) ?>"
-                            >
+                                alt="<?= htmlspecialchars($product['name']) ?>">
                         </a>
                         <div class="heart-wrapper">
                             <i
                                 class="heart-icon fa-heart <?= $isFavorite ? 'fa-solid' : 'fa-regular' ?>"
-                                data-product-id="<?= $product['id'] ?>"
-                            ></i>
+                                data-product-id="<?= $product['id'] ?>"></i>
                         </div>
                         <div class="zoom-lens"></div>
                     </div>
@@ -511,15 +551,13 @@
                         <img
                             class="selected"
                             src="<?= htmlspecialchars($product['main_image']) ?>"
-                            alt="<?= htmlspecialchars($product['name']) ?>"
-                        >
+                            alt="<?= htmlspecialchars($product['name']) ?>">
 
                         <!-- Gallery images -->
                         <?php foreach ($galleryImages as $img): ?>
                             <img
                                 src="<?= htmlspecialchars($img) ?>"
-                                alt="<?= htmlspecialchars($product['name']) ?>"
-                            >
+                                alt="<?= htmlspecialchars($product['name']) ?>">
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -552,7 +590,7 @@
                     <button class="qty-btn" id="qty-plus">+</button>
                 </div>
                 <p><button class="btn btn-secondary me-2 my-btn-custom" id="add-to-cart-btn" data-product-id="<?= (int)$product['id'] ?>">
-                    Add to cart</button>
+                        Add to cart</button>
             </div>
 
             <div class="bottom-full">
@@ -564,8 +602,8 @@
                 </div>
             </div>
         </div>
-        
-        <?php 
+
+        <?php
         include '../includes/footer2.php'
         ?>
 
@@ -586,26 +624,28 @@
                 const quantity = parseInt(qtyInput.value, 10);
 
                 fetch('<?= BASE_URL ?>actions/cart-add.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        product_id: productId,
-                        quantity: quantity
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            quantity: quantity
+                        })
                     })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        console.error(data.message);
-                        return;
-                    }
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) {
+                            console.error(data.message);
+                            return;
+                        }
 
-                    console.log(`Product ID: ${data.product_id}`);
-                    console.log(`Quantity in cart: ${data.quantity}`);
-                    console.log(`Action to the cart: ${data.message}`);
-                    showMessage2(addToCartBtn, 'Added to cart!');
-                })
-                .catch(err => console.error('Fetch error:', err));
+                        console.log(`Product ID: ${data.product_id}`);
+                        console.log(`Quantity in cart: ${data.quantity}`);
+                        console.log(`Action to the cart: ${data.message}`);
+                        showMessage2(addToCartBtn, 'Added to cart!');
+                    })
+                    .catch(err => console.error('Fetch error:', err));
             });
 
             //Magnifying glass effect
@@ -615,14 +655,15 @@
             mainImg.addEventListener('mousemove', moveLens);
             mainImg.addEventListener('mouseenter', () => lens.style.display = 'block');
             mainImg.addEventListener('mouseleave', () => lens.style.display = 'none');
+
             function moveLens(e) {
                 const rect = mainImg.getBoundingClientRect();
                 const lensSize = lens.offsetWidth;
 
-                let minZoom = 1;  
-                let maxZoom = 1.5;    
+                let minZoom = 1;
+                let maxZoom = 1.5;
                 const imageArea = rect.width * rect.height;
-                const referenceArea = 200 * 200; 
+                const referenceArea = 200 * 200;
                 let zoom = Math.min(maxZoom, Math.max(minZoom, minZoom + (referenceArea - imageArea) / (referenceArea * 0.5)));
 
                 let x = e.clientX - rect.left - lensSize / 2;
@@ -647,10 +688,11 @@
 
                 lens.style.backgroundPosition = `-${bgX}px -${bgY}px`;
             }
+
             function updateLensSize() {
                 const rect = mainImg.getBoundingClientRect();
 
-                const lensWidth = Math.min(Math.max(rect.width * 0.45, 100), 700); 
+                const lensWidth = Math.min(Math.max(rect.width * 0.45, 100), 700);
                 const lensHeight = Math.min(Math.max(rect.height * 0.45, 100), 700);
 
                 lens.style.width = lensWidth + 'px';
@@ -658,7 +700,7 @@
             }
             updateLensSize();
             window.addEventListener('resize', updateLensSize);
-            
+
 
             // Switch big image 
             const galleryImages = document.querySelectorAll('.gallery img');
@@ -682,40 +724,40 @@
             let currentIndex = 0;
 
             document.getElementById('main-image-link').addEventListener('click', e => {
-            e.preventDefault();
-            const currentSrc = document.getElementById('main-image').src;
-            currentIndex = galleryList.findIndex(img => img.src === currentSrc);
-            if (currentIndex === -1) currentIndex = 0;
-            showLightbox(currentIndex);
+                e.preventDefault();
+                const currentSrc = document.getElementById('main-image').src;
+                currentIndex = galleryList.findIndex(img => img.src === currentSrc);
+                if (currentIndex === -1) currentIndex = 0;
+                showLightbox(currentIndex);
             });
 
             prevBtn.addEventListener('click', () => changeImage(-1));
             nextBtn.addEventListener('click', () => changeImage(1));
             closeBtn.addEventListener('click', closeLightbox);
             lightbox.addEventListener('click', e => {
-            if (e.target === lightbox) closeLightbox();
+                if (e.target === lightbox) closeLightbox();
             });
             document.addEventListener('keydown', e => {
-            if (!lightbox.classList.contains('show')) return;
-            if (e.key === 'ArrowLeft') changeImage(-1);
-            if (e.key === 'ArrowRight') changeImage(1);
-            if (e.key === 'Escape') closeLightbox();
+                if (!lightbox.classList.contains('show')) return;
+                if (e.key === 'ArrowLeft') changeImage(-1);
+                if (e.key === 'ArrowRight') changeImage(1);
+                if (e.key === 'Escape') closeLightbox();
             });
 
             function showLightbox(index) {
-            lightboxImage.src = galleryList[index].src;
-            lightbox.classList.add('show');
+                lightboxImage.src = galleryList[index].src;
+                lightbox.classList.add('show');
             }
 
             function closeLightbox() {
-            lightbox.classList.remove('show');
+                lightbox.classList.remove('show');
             }
 
             function changeImage(direction) {
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = galleryList.length - 1;
-            if (currentIndex >= galleryList.length) currentIndex = 0;
-            lightboxImage.src = galleryList[currentIndex].src;
+                currentIndex += direction;
+                if (currentIndex < 0) currentIndex = galleryList.length - 1;
+                if (currentIndex >= galleryList.length) currentIndex = 0;
+                lightboxImage.src = galleryList[currentIndex].src;
             }
 
             //Quantity selector
@@ -773,42 +815,44 @@
             //Heart behavior
             const heart = document.querySelector('.heart-icon');
             heart.addEventListener('click', (event) => {
-                event.stopPropagation(); 
+                event.stopPropagation();
                 const isAdding = heart.classList.contains('fa-regular');
                 const productId = heart.dataset.productId;
 
                 fetch('<?= BASE_URL ?>actions/favorite.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        product_id: productId,
-                        action: isAdding ? 'add' : 'remove'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            action: isAdding ? 'add' : 'remove'
+                        })
                     })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                        return;
-                    }
-                    if (!data.success) {
-                        console.error(data.message);
-                        return;
-                    }
-                    heart.classList.toggle('fa-regular');
-                    heart.classList.toggle('fa-solid');
-                    console.log(data.message);
-                    showFavoriteMessage(heart, isAdding);
-                })
-                .catch(err => console.error('Fetch error:', err));
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                            return;
+                        }
+                        if (!data.success) {
+                            console.error(data.message);
+                            return;
+                        }
+                        heart.classList.toggle('fa-regular');
+                        heart.classList.toggle('fa-solid');
+                        console.log(data.message);
+                        showFavoriteMessage(heart, isAdding);
+                    })
+                    .catch(err => console.error('Fetch error:', err));
             });
 
             function showFavoriteMessage(heart, isAdding) {
                 const message = document.createElement('span');
                 message.className = 'added-message';
-                message.textContent = isAdding
-                    ? 'Added to favorites!'
-                    : 'Removed from favorites!';
+                message.textContent = isAdding ?
+                    'Added to favorites!' :
+                    'Removed from favorites!';
                 heart.parentElement.appendChild(message);
                 void message.offsetWidth;
                 message.classList.add('show');
@@ -819,6 +863,7 @@
                     }, 500);
                 }, 2000);
             }
+
             function showMessage2(targetElement, messageText) {
                 const message = document.createElement('span');
                 message.className = 'added-message';
@@ -836,7 +881,8 @@
                     }, 500);
                 }, 2000);
             }
-		</script>
+        </script>
     </main>
-	</body>
+</body>
+
 </html>

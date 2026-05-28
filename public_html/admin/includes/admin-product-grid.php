@@ -5,9 +5,9 @@ $countSql = "SELECT COUNT(*) FROM products p
             JOIN main_categories m ON c.main_category_id = m.id
             WHERE 1=1";
 $countParams = [];
-if ($searchQuery !== ''){
+if ($searchQuery !== '') {
     $countSql .= " AND p.name LIKE :search";
-    $countParams[':search'] = '%' .$searchQuery . '%';
+    $countParams[':search'] = '%' . $searchQuery . '%';
 }
 if ($mainCategoryId !== null) {
     $countSql .= " AND m.id = :main";
@@ -19,6 +19,9 @@ if ($subCategoryId !== null) {
 }
 if ($outOfStock !== null) {
     $countSql .= " AND p.stock = 0";
+}
+if ($onSale !== null) {
+    $countSql .= " AND p.sale_price IS NOT NULL";
 }
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($countParams);
@@ -50,13 +53,17 @@ if ($outOfStock !== null) {
     $sql .= " AND p.stock = 0";
 }
 
+if ($onSale !== null) {
+    $sql .= " AND p.sale_price IS NOT NULL";
+}
+
 $currentPage = isset($_GET['main_page']) ? max(1, intval($_GET['main_page'])) : 1;
 $offset = ($currentPage - 1) * $perPage;
 $sql .= " ORDER BY p.name ASC LIMIT :limit OFFSET :offset";
 $params[':limit'] = $perPage;
 $params[':offset'] = $offset;
 $stmt = $pdo->prepare($sql);
-foreach($params as $key => $value){
+foreach ($params as $key => $value) {
     $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
     $stmt->bindValue($key, $value, $paramType);
 }
@@ -84,7 +91,7 @@ if (isset($_GET['subcategory'])) {
 ?>
 
 <style>
-    .product-grid{
+    .product-grid {
         display: grid;
         grid-template-columns: 200px 1fr 100px 200px;
         gap: 10px;
@@ -92,23 +99,27 @@ if (isset($_GET['subcategory'])) {
         margin: 40px 60px 40px 60px;
         text-align: center;
     }
-    .header{
+
+    .header {
         font-weight: bold;
         padding: 8px;
         border-bottom: 1px solid black;
         color: black;
         text-align: center;
     }
-    .stock.1{
+
+    .stock.1 {
         outline: 0.5px solid black;
         background: #eeeeeeff;
         transition: outline 0.3s ease;
     }
+
     .stock {
         outline: 0.5px solid black;
         background: #eeeeeeff;
         transition: outline 0.3s ease;
     }
+
     .stock:focus {
         outline: 0.5px solid black;
         background: #dfdfdfff;
@@ -120,7 +131,7 @@ if (isset($_GET['subcategory'])) {
 </style>
 
 <div class="categ-admin-grid">
-	<h3><?= $selectedCategoryLabel ?></h3>
+    <h3><?= $selectedCategoryLabel ?></h3>
 </div>
 <div class="product-grid">
     <div class="header thumbnail">Thumbnail</div>
@@ -132,7 +143,7 @@ if (isset($_GET['subcategory'])) {
         <?php foreach ($products as $product): ?>
             <div class="product-row" data-product-id="<?= $product['id'] ?>">
                 <div class="thumbnail">
-                    <img src="<?= BASE_URL ?><?= htmlspecialchars($product['cutout_image']) ?>" 
+                    <img src="<?= BASE_URL ?><?= htmlspecialchars($product['cutout_image']) ?>"
                         alt="Product Thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
                 </div>
                 <div class="name"><?= htmlspecialchars($product['name']) ?></div>
@@ -145,7 +156,7 @@ if (isset($_GET['subcategory'])) {
                         <i class="fas fa-trash" style="color: black;"></i>
                     </span>
                 </div>
-            </div>  
+            </div>
         <?php endforeach; ?>
     <?php else: ?>
         <div class="no-orders" style="grid-column: 1 / -1; text-align: center; padding: 1rem;">
@@ -157,58 +168,64 @@ if (isset($_GET['subcategory'])) {
 
 <script>
     document.querySelectorAll('.stock[contenteditable="true"]').forEach(div => {
-        div.addEventListener('blur', function () {
+        div.addEventListener('blur', function() {
             const productId = this.dataset.productId;
             const newStock = this.textContent.trim();
 
             fetch('<?= BASE_URL ?>admin/includes/update-stock.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    product_id: productId,
-                    new_stock: newStock
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        new_stock: newStock
+                    })
                 })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Stock updated!');
-                } else {
-                    console.error('Error updating stock:', data.message);
-                    alert('Failed to update stock.');
-                }
-            })
-            .catch(err => {
-                console.error('Fetch error:', err);
-                alert('Network error.');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Stock updated!');
+                    } else {
+                        console.error('Error updating stock:', data.message);
+                        alert('Failed to update stock.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    alert('Network error.');
+                });
         });
     });
 
-    
+
     document.querySelectorAll('.delete-icon').forEach(icon => {
         icon.addEventListener('click', () => {
             showConfirmModal(
                 "Delete product?",
                 () => {
-                        const productRow = icon.closest('.product-row');
-                        const productId = productRow.dataset.productId;
-                        fetch('<?= BASE_URL ?>admin/includes/products-delete-handler.php', {
+                    const productRow = icon.closest('.product-row');
+                    const productId = productRow.dataset.productId;
+                    fetch('<?= BASE_URL ?>admin/includes/products-delete-handler.php', {
                             method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ id: productId })
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: productId
+                            })
                         })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.success){
+                            if (data.success) {
                                 productRow.remove();
                             } else {
                                 alert('Failed to delete product: ' + data.message);
                             }
                         })
                         .catch(() => alert('Something went wrong.'));
-                    },
-                () => {}     
+                },
+                () => {}
             );
         });
     });
@@ -221,15 +238,18 @@ if (isset($_GET['subcategory'])) {
         modal.classList.add('show');
         const yesBtn = modal.querySelector('#confirmYes');
         const noBtn = modal.querySelector('#confirmNo');
+
         function cleanup() {
             yesBtn.removeEventListener('click', yesHandler);
             noBtn.removeEventListener('click', noHandler);
             modal.remove();
         }
+
         function yesHandler() {
             cleanup();
             if (typeof onYes === 'function') onYes();
         }
+
         function noHandler() {
             cleanup();
             if (typeof onNo === 'function') onNo();

@@ -69,7 +69,7 @@ $stmt = $pdo->prepare("
         p.sale_end
     FROM cart_items ci
     JOIN products p ON p.id = ci.product_id
-    WHERE ci.cart_id = ?
+    WHERE ci.cart_id = ? AND p.hidden = 0
 ");
 $stmt->execute([$cartId]);
 $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -80,6 +80,26 @@ if (empty($cartItems)) {
     ]);
     exit;
 }
+
+//Protection for last minute hidden products
+$hasInvalidItems = false;
+foreach ($cartItems as $item) {
+    if (!isset($item['hidden'])) {
+        continue;
+    }
+    if ((int)$item['hidden'] === 1) {
+        $hasInvalidItems = true;
+        break;
+    }
+}
+if ($hasInvalidItems) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Some items are no longer available. Please review your cart.'
+    ]);
+    exit;
+}
+
 foreach ($cartItems as $item) {  //Protection for last minute stock changes
     $stock    = (int) $item['stock'];
     $quantity = (int) $item['quantity'];
