@@ -23,6 +23,9 @@ if ($outOfStock !== null) {
 if ($onSale !== null) {
     $countSql .= " AND p.sale_price IS NOT NULL";
 }
+if ($hidden !== null) {
+    $countSql .= " AND p.hidden = 1";
+}
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($countParams);
 $totalProducts = $countStmt->fetchColumn();
@@ -55,6 +58,10 @@ if ($outOfStock !== null) {
 
 if ($onSale !== null) {
     $sql .= " AND p.sale_price IS NOT NULL";
+}
+
+if ($hidden !== null) {
+    $sql .= " AND p.hidden = 1";
 }
 
 $currentPage = isset($_GET['main_page']) ? max(1, intval($_GET['main_page'])) : 1;

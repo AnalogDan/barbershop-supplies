@@ -52,6 +52,9 @@ function buildLinkWithParams(array $overrides = [])
                 <?php if (isset($_GET['on_sale'])): ?>
                     <input type="hidden" name="on_sale" value="1">
                 <?php endif; ?>
+                <?php if (isset($_GET['hidden'])): ?>
+                    <input type="hidden" name="hidden" value="1">
+                <?php endif; ?>
             </form>
         </div>
         <?php include 'includes/categories-dropdown.php'; ?>
@@ -74,6 +77,15 @@ function buildLinkWithParams(array $overrides = [])
             </span>
             On sale
         </label>
+        <label class="checkbox-wrapper">
+            <input type="checkbox" name="hidden" id="hidden" <?= isset($_GET['hidden']) ? 'checked' : '' ?> />
+            <span class="custom-checkbox">
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="12" height="12">
+                    <path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-12.497-12.497-12.497-32.758 0-45.255l45.255-45.255c12.497-12.497 32.758-12.497 45.255 0L192 312.69 432.702 72.988c12.497-12.497 32.758-12.497 45.255 0l45.255 45.255c12.497 12.497 12.497 32.758 0 45.255l-294.4 294.4c-12.497 12.497-32.758 12.497-45.255 0z"> </path>
+                </svg>
+            </span>
+            Hidden
+        </label>
         <a href="products-add.php" class="btn btn-third">Add product</a>
         <?php
         $searchQuery = $_GET['query'] ?? '';
@@ -81,6 +93,7 @@ function buildLinkWithParams(array $overrides = [])
         $subCategoryId = $_GET['subcategory'] ?? null;
         $outOfStock = $_GET['out_of_stock'] ?? null;
         $onSale = $_GET['on_sale'] ?? null;
+        $hidden = $_GET['hidden'] ?? null;
         include 'includes/admin-product-grid.php';
 
         //Select paginator 
@@ -112,6 +125,16 @@ function buildLinkWithParams(array $overrides = [])
                 url.searchParams.set('on_sale', '1');
             } else {
                 url.searchParams.delete('on_sale');
+            }
+            url.searchParams.set('main_page', '1');
+            window.location = url.toString();
+        });
+        document.getElementById('hidden').addEventListener('change', function() {
+            const url = new URL(window.location);
+            if (this.checked) {
+                url.searchParams.set('hidden', '1');
+            } else {
+                url.searchParams.delete('hidden');
             }
             url.searchParams.set('main_page', '1');
             window.location = url.toString();

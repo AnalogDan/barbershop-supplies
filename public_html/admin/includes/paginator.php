@@ -59,6 +59,7 @@ if (!empty($mainCategoryId)) $baseParams['main'] = $mainCategoryId;
 if (!empty($subCategoryId)) $baseParams['subcategory'] = $subCategoryId;
 if (!empty($outOfStock)) $baseParams['out_of_stock'] = 1;
 if (!empty($onSale)) $baseParams['on_sale'] = 1;
+if (!empty($hidden)) $baseParams['hidden'] = 1;
 ?>
 
 <div class="pagination">
