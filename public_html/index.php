@@ -1,11 +1,10 @@
 <?php
-  session_start();
+session_start();
 
-  if (isset($_SESSION['user_id'])) {
-      header("Location: home.php");
-      exit();
-  }
-
-  header("Location: login.php");
+if (isset($_SESSION['user_id'])) {
+  header("Location: home.php");
   exit();
-?>
+}
+
+header("Location: home.php");
+exit();

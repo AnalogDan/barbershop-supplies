@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 require_once BASE_PATH . 'includes/db.php';
-session_start();
+require_once __DIR__ . '/includes/admin-auth.php';
 
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+if (empty($_SESSION['admin_logged_in'])) {
     header("Location: login.php");
     exit;
 }

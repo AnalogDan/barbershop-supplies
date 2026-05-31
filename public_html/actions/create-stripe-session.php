@@ -130,9 +130,22 @@ foreach ($cartItems as $item) {
 }
 $TAX_RATE = 0.0925;
 $salesTax = round($subtotal * $TAX_RATE, 2);
-$shipping = isset($payload['shipping'])
-    ? (float) $payload['shipping']
-    : 0;
+
+//Re-set shipping data based on shipping quote and method 
+$shippingMethod = $payload['shipping_method'] ?? '';
+$quote = $_SESSION['shipping_quote'] ?? [];
+if (!isset($quote[$shippingMethod])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Invalid shipping method.'
+    ]);
+    exit;
+}
+$shipping = $quote[$shippingMethod]['price'];
+$deliveryEta = $quote[$shippingMethod]['eta'];
+$serviceName = $quote[$shippingMethod]['service_name'];
+
+
 $total    = $subtotal + $salesTax + $shipping;
 
 //Create order snapshot the webhook can rely on 
@@ -144,9 +157,10 @@ $expiresAt = (new DateTime('now', $tz))->modify('+1 hour')->format('Y-m-d H:i:s'
 try {
     $stmt = $pdo->prepare("
         INSERT INTO checkout_sessions 
-        (cart_id, user_id, email, subtotal, sales_tax, shipping_cost, 
+        (cart_id, user_id, email, subtotal, sales_tax, shipping_cost,
+        shipping_method, shipping_service_name, delivery_eta,
         total, status, order_id, expires_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->execute([
         $cartId,
@@ -155,6 +169,9 @@ try {
         $subtotal,
         $salesTax,
         $shipping,
+        $shippingMethod,
+        $serviceName,
+        $deliveryEta,
         $total,
         'pending',
         null,

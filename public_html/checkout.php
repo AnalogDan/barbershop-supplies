@@ -193,6 +193,24 @@ $hasAddress = !empty($fullName)
     || !empty($state)
     || !empty($zip);
 $selectedShippingMethod = $step3['shipping_method'] ?? '';
+
+//To call shipping API
+$destination = [
+    'full_name' => $fullName,
+    'street'    => $street,
+    'city'      => $city,
+    'state'     => $state,
+    'zip'       => $zip,
+    'country'   => $country
+];
+
+if (!$hasAddress) {
+    $shippingQuote = null;
+} else {
+    require_once BASE_PATH . 'includes/shipping.php';
+    $shippingData = getShippingQuote($cartItems, $destination);
+    $_SESSION['shipping_quote'] = $shippingData['rates'];
+}
 ?>
 
 <style>
@@ -909,9 +927,11 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                                 value="2nd_day"
                                 <?= $selectedShippingMethod === '2nd_day' ? 'checked' : '' ?>>
                             <span class="circle"></span>
-                            UPS 2nd Day Air
+                            <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['service_name'] ?? '') ?>
                             <span class="price">-</span>
-                            <span class="price">$50.99</span>
+                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['2nd_day']['price'] ?? 0, 2) ?></span>
+                            <span class="price">-</span>
+                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['eta'] ?? '') ?></span>
                         </label>
 
                         <label class="option">
@@ -921,9 +941,11 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                                 value="3_day"
                                 <?= $selectedShippingMethod === '3_day' ? 'checked' : '' ?>>
                             <span class="circle"></span>
-                            UPS 3 Day Select
+                            <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['service_name'] ?? '') ?>
                             <span class="price">-</span>
-                            <span class="price">$25.99</span>
+                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['3_day']['price'] ?? 0, 2) ?></span>
+                            <span class="price">-</span>
+                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['eta'] ?? '') ?></span>
                         </label>
 
                         <label class="option">
@@ -933,9 +955,11 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                                 value="ground"
                                 <?= $selectedShippingMethod === 'ground' ? 'checked' : '' ?>>
                             <span class="circle"></span>
-                            UPS Ground
+                            <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['service_name'] ?? '') ?>
                             <span class="price">-</span>
-                            <span class="price">$15.99</span>
+                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['ground']['price'] ?? 0, 2) ?></span>
+                            <span class="price">-</span>
+                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['ground']['eta'] ?? '') ?></span>
                         </label>
                         <div class="button-row">
                             <a href="#" class="btn check-btn step-continue">Continue</a>
@@ -1005,9 +1029,6 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
     ?>
     <script src="https://js.stripe.com/v3/"></script>
     <script>
-        //stripe variable
-        const stripe = Stripe('pk_test_51SnmmVJznFlGH0nYPwDArcRPi9LNClQFgBACL9ilYZdLK2nmXSOucoJ7Jui57G1Ty7mGVEvr0KY3zpVTuk0oHv7Z00r4BWSRKa');
-
         // showAlertModal("Test alert.", () => {});
         // showConfirmModal(
         //     `Test confirm`,
@@ -1025,6 +1046,7 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
         window.checkoutDelivery = <?= json_encode($_SESSION['checkout']['totals']['delivery'] ?? null) ?>;
         window.checkoutTotal = <?= $_SESSION['checkout']['totals']['total'] ?? 0 ?>;
         window.cartItems = <?= json_encode($summaryItems, JSON_UNESCAPED_UNICODE) ?>;
+        window.shippingQuote = <?= json_encode($_SESSION['shipping_quote'] ?? []) ?>;
 
         //Functions to calculate totals
         function calculateSubtotal() {
@@ -1050,16 +1072,8 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
             if (!selected) {
                 return 0;
             }
-            switch (selected.value) {
-                case '2nd_day':
-                    return 50.99;
-                case '3_day':
-                    return 25.99;
-                case 'ground':
-                    return 15.99;
-                default:
-                    return 0;
-            }
+            const method = selected.value;
+            return window.shippingQuote?.[method]?.price ?? 0;
         }
 
 
@@ -1068,16 +1082,8 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
             if (!selected) {
                 return null;
             }
-            switch (selected.value) {
-                case '2nd_day':
-                    return '2 business days';
-                case '3_day':
-                    return '3 business days';
-                case 'ground':
-                    return '3–5 business days';
-                default:
-                    return null;
-            }
+            const method = selected.value;
+            return window.shippingQuote?.[method]?.eta ?? null;
         }
 
         function calculateTotal() {
@@ -1379,10 +1385,9 @@ $selectedShippingMethod = $step3['shipping_method'] ?? '';
                     state: document.querySelector('[name="state"]')?.value.trim() || '',
                     zip: document.querySelector('[name="zip"]')?.value.trim() || ''
                 },
+                shipping_method: document.querySelector('input[name="shipping_method"]:checked')?.value || '',
                 subtotal: window.checkoutSubtotal,
                 sales_tax: window.checkoutSalesTax,
-                shipping: window.checkoutShipping,
-                delivery: window.checkoutDelivery,
                 total: window.checkoutTotal,
                 cart_items: window.cartItems
             };

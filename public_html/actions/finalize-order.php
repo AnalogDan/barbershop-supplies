@@ -31,7 +31,7 @@ try {
     // Prevent duplicate orders
     if ($checkout['order_id']) {
         $pdo->commit();
-        return; 
+        return;
     }
 
     // Create order
@@ -39,8 +39,10 @@ try {
     $placedAt = $now;
     $stmt = $pdo->prepare("
         INSERT INTO orders
-        (user_id, address_id, number, subtotal, sales_tax, shipping_cost, total, payment_method, status, placed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'processing', ?)
+        (user_id, address_id, number, subtotal, sales_tax, shipping_cost,
+        shipping_method, shipping_service_name, delivery_eta,
+        total, payment_method, status, placed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'processing', ?)
     ");
     $addressId = 17;
     $stmt->execute([
@@ -50,6 +52,9 @@ try {
         $checkout['subtotal'],
         $checkout['sales_tax'],
         $checkout['shipping_cost'],
+        $checkout['shipping_method'],
+        $checkout['shipping_service_name'],
+        $checkout['delivery_eta'],
         $checkout['total'],
         'stripe',
         $placedAt

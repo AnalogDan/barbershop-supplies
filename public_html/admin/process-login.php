@@ -1,39 +1,62 @@
 <?php
-    session_start();
-    require_once __DIR__ . '/../../config.php';
-    require_once BASE_PATH . 'includes/db.php';
-    if($_SERVER['REQUEST_METHOD'] === 'POST'){
-        $username = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        if($username === '' || $password === ''){
-            die('Please fill in both fields');
-        }
-
-        try {
-            $stmt = $pdo->prepare("SELECT id, username, password FROM admins WHERE username = ?");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user) {
-                if (password_verify($password, $user['password'])) {
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_username'] = $user['username'];
-                    $_SESSION['admin_id'] = $user['id'];
-                    header("Location: home.php");
-                    exit;
-                } else {
-                    $_SESSION['login_error'] = "Invalid password.";
-                }
-            } else {
-                $_SESSION['login_error'] = "Invalid username.";
-            }
-        } catch (PDOException $e) {
-            $_SESSION['login_error'] = "Database error.";
-        }
-    } else {
-        $_SESSION['login_error'] = "Request failed.";
+session_start();
+require_once __DIR__ . '/../../config.php';
+require_once BASE_PATH . 'includes/db.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    if ($username === '' || $password === '') {
+        die('Please fill in both fields');
     }
+
+    try {
+        $stmt = $pdo->prepare("SELECT id, username, password FROM admins WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_username'] = $user['username'];
+                $_SESSION['admin_id'] = $user['id'];
+                $token = bin2hex(random_bytes(32));
+                $tokenHash = password_hash($token, PASSWORD_DEFAULT);
+                $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
+                $stmt = $pdo->prepare("
+                        UPDATE admins
+                        SET remember_token_hash = ?,
+                            remember_token_expires = ?
+                        WHERE id = ?
+                    ");
+                $stmt->execute([
+                    $tokenHash,
+                    $expires,
+                    $user['id']
+                ]);
+                setcookie(
+                    'admin_remember',
+                    $token,
+                    [
+                        'expires' => time() + (60 * 60 * 24 * 30),
+                        'path' => '/',
+                        'httponly' => true,
+                        'samesite' => 'Lax'
+                    ]
+                );
+                header("Location: home.php");
+                exit;
+            } else {
+                $_SESSION['login_error'] = "Invalid password.";
+            }
+        } else {
+            $_SESSION['login_error'] = "Invalid username.";
+        }
+    } catch (PDOException $e) {
+        $_SESSION['login_error'] = "Database error.";
+    }
+} else {
+    $_SESSION['login_error'] = "Request failed.";
+}
 
 header("Location: login.php");
 exit;
-?>

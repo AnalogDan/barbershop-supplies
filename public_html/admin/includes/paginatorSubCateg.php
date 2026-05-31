@@ -50,45 +50,46 @@
 </style>
 
 <div class="pagination">
-    <?php if ($currentPage > 1): ?>
-        <a class="next" href="?main_page=<?= $currentPage - 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">
+    <?php if ($currentPage2 > 1): ?>
+        <a class="next" href="?sub_page=<?= $currentPage2 - 1 ?>&grid=sub<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">
             &lt; Prev
         </a>
     <?php endif; ?>
     <?php
     $window = 2;
-    $start = max(1, $currentPage - $window);
-    $end   = min($totalPages, $currentPage + $window);
+    $start = max(1, $currentPage2 - $window);
+    $end   = min($totalPages2, $currentPage2 + $window);
     if ($start > 1) {
-        echo '<a class="page" href="?main_page=1&grid=main' .
+        echo '<a class="page" href="?sub_page=1&grid=sub' .
             ($searchQuery ? '&query=' . urlencode($searchQuery) : '') .
             '">1</a>';
+
         if ($start > 2) {
             echo '<span class="dots">...</span>';
         }
     }
     for ($i = $start; $i <= $end; $i++) {
-        if ($i == $currentPage) {
+        if ($i == $currentPage2) {
             echo '<span class="page current">' . $i . '</span>';
         } else {
-            echo '<a class="page" href="?main_page=' . $i .
-                '&grid=main' .
+            echo '<a class="page" href="?sub_page=' . $i .
+                '&grid=sub' .
                 ($searchQuery ? '&query=' . urlencode($searchQuery) : '') .
                 '">' . $i . '</a>';
         }
     }
-    if ($end < $totalPages) {
-        if ($end < $totalPages - 1) {
+    if ($end < $totalPages2) {
+        if ($end < $totalPages2 - 1) {
             echo '<span class="dots">...</span>';
         }
-        echo '<a class="page" href="?main_page=' . $totalPages .
-            '&grid=main' .
+        echo '<a class="page" href="?sub_page=' . $totalPages2 .
+            '&grid=sub' .
             ($searchQuery ? '&query=' . urlencode($searchQuery) : '') .
-            '">' . $totalPages . '</a>';
+            '">' . $totalPages2 . '</a>';
     }
     ?>
-    <?php if ($currentPage < $totalPages): ?>
-        <a class="next" href="?main_page=<?= $currentPage + 1 ?>&grid=main<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">
+    <?php if ($currentPage2 < $totalPages2): ?>
+        <a class="next" href="?sub_page=<?= $currentPage2 + 1 ?>&grid=sub<?= $searchQuery ? '&query=' . urlencode($searchQuery) : '' ?>">
             Next &gt;
         </a>
     <?php endif; ?>

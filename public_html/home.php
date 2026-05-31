@@ -500,7 +500,7 @@ $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 					<div class="col-md-6 col-lg-3 mb-5 mb-lg-0 popular-intro">
 						<h2 class="popular-title">Popular products</h2>
-						<p class="popular-subtitle">The bestsellers</p>
+						<p class="popular-subtitle">Bestsellers</p>
 						<p><a href="shop.php" class="btn">Explore</a></p>
 					</div>
 
@@ -514,8 +514,13 @@ $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 											class="img-fluid product-thumbnail"
 											alt="<?= htmlspecialchars($product['name']) ?>">
 										<?php if (!empty($product['sale_price'])): ?>
+											<?php
+											$discountPercent = round(
+												(($product['price'] - $product['sale_price']) / $product['price']) * 100
+											);
+											?>
 											<div class="discount-badge">
-												$<?= number_format($product['price'] - $product['sale_price'], 2) ?> Off
+												<?= $discountPercent ?>% Off
 											</div>
 										<?php endif; ?>
 									</div>
@@ -579,8 +584,13 @@ $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 													class="img-fluid product-thumbnail"
 													alt="<?= htmlspecialchars($product['name']) ?>">
 
+												<?php
+												$discountPercent = round(
+													(($product['price'] - $product['sale_price']) / $product['price']) * 100
+												);
+												?>
 												<div class="discount-badge">
-													$<?= number_format($discount, 2) ?> Off
+													<?= $discountPercent ?>% Off
 												</div>
 											</div>
 
