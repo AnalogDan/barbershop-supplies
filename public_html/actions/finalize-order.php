@@ -15,7 +15,7 @@ if (!$checkoutSessionId) {
 
 try {
     $pdo->beginTransaction();
-    // Fetch correct checkout_session row and meke sure it's paid
+    // Fetch correct checkout_session row and meke sure it's paid, and address exists
     $stmt = $pdo->prepare("
         SELECT *
         FROM checkout_sessions
@@ -27,12 +27,38 @@ try {
     if (!$checkout || $checkout['status'] !== 'paid') {
         throw new Exception('Checkout session not found or not paid.');
     }
+    if (
+        empty($checkout['full_name']) ||
+        empty($checkout['street']) ||
+        empty($checkout['city']) ||
+        empty($checkout['zip']) ||
+        empty($checkout['state'])
+    ) {
+        throw new Exception('Missing address data in checkout session.');
+    }
 
     // Prevent duplicate orders
     if ($checkout['order_id']) {
         $pdo->commit();
         return;
     }
+
+    //Create address
+    $addressStmt = $pdo->prepare("
+        INSERT INTO addresses
+        (full_name, street, city, zip, state, email, phone)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    $addressStmt->execute([
+        $checkout['full_name'],
+        $checkout['street'],
+        $checkout['city'],
+        $checkout['zip'],
+        $checkout['state'],
+        $checkout['email'],
+        $checkout['phone']
+    ]);
+    $addressId = $pdo->lastInsertId();
 
     // Create order
     $orderNumber = strtoupper(bin2hex(random_bytes(4)));
@@ -44,7 +70,6 @@ try {
         total, payment_method, status, placed_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'processing', ?)
     ");
-    $addressId = 17;
     $stmt->execute([
         $checkout['user_id'],
         $addressId,

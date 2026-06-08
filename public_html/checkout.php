@@ -188,13 +188,13 @@ $city     = $step2['city']      ?? $address['city']      ?? '';
 $state    = $step2['state']     ?? $address['state']     ?? '';
 $zip      = $step2['zip']       ?? $address['zip']       ?? '';
 $hasAddress = !empty($fullName)
-    || !empty($street)
-    || !empty($city)
-    || !empty($state)
-    || !empty($zip);
+    && !empty($street)
+    && !empty($city)
+    && !empty($state)
+    && !empty($zip);
 $selectedShippingMethod = $step3['shipping_method'] ?? '';
 
-//To call shipping API
+//To call shipping quote creation
 $destination = [
     'full_name' => $fullName,
     'street'    => $street,
@@ -204,7 +204,23 @@ $destination = [
     'country'   => $country
 ];
 
-if (!$hasAddress) {
+$isValidZipState = false;
+if ($hasAddress) {
+    $stmt = $pdo->prepare("
+        SELECT 1
+        FROM zip_codes
+        WHERE zip_code = ?
+          AND state = ?
+        LIMIT 1
+    ");
+    $stmt->execute([
+        $zip,
+        $state
+    ]);
+    $isValidZipState = (bool) $stmt->fetchColumn();
+}
+
+if (!$hasAddress || !$isValidZipState) {
     $shippingQuote = null;
 } else {
     require_once BASE_PATH . 'includes/shipping.php';
@@ -919,52 +935,75 @@ if (!$hasAddress) {
                     <span class="chevron">&rsaquo;</span>
                 </div>
                 <div class="section-content">
+
                     <div class="option-group">
-                        <label class="option">
+                        <label class="option" id="shipping-2nd-day">
                             <input
                                 type="radio"
                                 name="shipping_method"
                                 value="2nd_day"
                                 <?= $selectedShippingMethod === '2nd_day' ? 'checked' : '' ?>>
+
                             <span class="circle"></span>
-                            <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['service_name'] ?? '') ?>
-                            <span class="price">-</span>
-                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['2nd_day']['price'] ?? 0, 2) ?></span>
-                            <span class="price">-</span>
-                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['eta'] ?? '') ?></span>
+                            <span class="service-name">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['service_name'] ?? '') ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-price">
+                                $<?= number_format($_SESSION['shipping_quote']['2nd_day']['price'] ?? 0, 2) ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-eta">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['eta'] ?? '') ?>
+                            </span>
                         </label>
 
-                        <label class="option">
+                        <label class="option" id="shipping-3-day">
                             <input
                                 type="radio"
                                 name="shipping_method"
                                 value="3_day"
                                 <?= $selectedShippingMethod === '3_day' ? 'checked' : '' ?>>
                             <span class="circle"></span>
-                            <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['service_name'] ?? '') ?>
-                            <span class="price">-</span>
-                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['3_day']['price'] ?? 0, 2) ?></span>
-                            <span class="price">-</span>
-                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['eta'] ?? '') ?></span>
+                            <span class="service-name">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['service_name'] ?? '') ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-price">
+                                $<?= number_format($_SESSION['shipping_quote']['3_day']['price'] ?? 0, 2) ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-eta">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['eta'] ?? '') ?>
+                            </span>
                         </label>
 
-                        <label class="option">
+                        <label class="option" id="shipping-ground">
                             <input
                                 type="radio"
                                 name="shipping_method"
                                 value="ground"
                                 <?= $selectedShippingMethod === 'ground' ? 'checked' : '' ?>>
                             <span class="circle"></span>
-                            <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['service_name'] ?? '') ?>
-                            <span class="price">-</span>
-                            <span class="price">$<?= number_format($_SESSION['shipping_quote']['ground']['price'] ?? 0, 2) ?></span>
-                            <span class="price">-</span>
-                            <span class="price"><?= htmlspecialchars($_SESSION['shipping_quote']['ground']['eta'] ?? '') ?></span>
+                            <span class="service-name">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['service_name'] ?? '') ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-price">
+                                $<?= number_format($_SESSION['shipping_quote']['ground']['price'] ?? 0, 2) ?>
+                            </span>
+                            <span class="price"></span>
+                            <span class="shipping-eta">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['eta'] ?? '') ?>
+                            </span>
                         </label>
+
                         <div class="button-row">
                             <a href="#" class="btn check-btn step-continue">Continue</a>
                         </div>
+
                     </div>
+
                 </div>
             </div>
             <div class="section locked" data-step="4">
@@ -1176,6 +1215,27 @@ if (!$hasAddress) {
             console.log('Global shipping:', window.checkoutShipping);
         }
 
+        //Update step 3 
+        function populateShippingOptions(quote) {
+            const mappings = {
+                '2nd_day': 'shipping-2nd-day',
+                '3_day': 'shipping-3-day',
+                'ground': 'shipping-ground'
+            };
+            Object.entries(mappings).forEach(([serviceKey, elementId]) => {
+                const option = document.getElementById(elementId);
+                if (!option || !quote[serviceKey]) {
+                    return;
+                }
+                option.querySelector('.service-name').textContent =
+                    quote[serviceKey].service_name;
+                option.querySelector('.shipping-price').textContent =
+                    '$' + Number(quote[serviceKey].price).toFixed(2);
+                option.querySelector('.shipping-eta').textContent =
+                    quote[serviceKey].eta;
+            });
+        }
+
         //Functions to validate all data before continuing
         function isValidEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -1259,26 +1319,23 @@ if (!$hasAddress) {
                             break;
                         }
                     }
-
-                    // //Validate address with UPS
-                    // const res = await fetch('<= BASE_URL ?>actions/ups-validate-address.php', {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify({
-                    //         street: stepData.street,
-                    //         city: stepData.city,
-                    //         state: stepData.state,
-                    //         zip: stepData.zip
-                    //     })
-                    // });
-                    // const upsResult = await res.json();
-                    // if (!upsResult.success) {
-                    //     showAlertModal(
-                    //         'UPS could not validate this address. Please check spelling.',
-                    //         () => {}
-                    //     );
-                    //     return;
-                    // }
+                    if (!invalidMessage) {
+                        const formData = new FormData();
+                        formData.append('zip', stepData.zip);
+                        formData.append('state', stepData.state);
+                        const validationResponse = await fetch(
+                            '<?= BASE_URL ?>actions/validate-zip.php', {
+                                method: 'POST',
+                                body: formData
+                            }
+                        );
+                        const validationResult = await validationResponse.json();
+                        if (!validationResult.success) {
+                            invalidMessage =
+                                validationResult.message ||
+                                'The ZIP code does not match the selected state.';
+                        }
+                    }
                 }
                 if (invalidMessage) {
                     showAlertModal(invalidMessage, () => {});
@@ -1294,6 +1351,8 @@ if (!$hasAddress) {
                         body: JSON.stringify(payload)
                     });
                     const result = await response.json();
+                    //Get shipping quote if step 2 completed 
+                    console.log('Shipping quote:', result.shipping_quote);
                     if (result.session_checkout?.totals) {
                         const totals = result.session_checkout.totals;
                         window.checkoutSubtotal = totals.subtotal ?? 0;
@@ -1310,6 +1369,11 @@ if (!$hasAddress) {
                             () => {}
                         );
                         return;
+                    }
+                    //populate step 3
+                    if (step === 2 && result.shipping_quote) {
+                        window.shippingQuote = result.shipping_quote;
+                        populateShippingOptions(result.shipping_quote);
                     }
                     if (step < LAST_STEP) {
                         completeStep(section, step, nextStep);
@@ -1391,6 +1455,28 @@ if (!$hasAddress) {
                 total: window.checkoutTotal,
                 cart_items: window.cartItems
             };
+            //Prevent devtools change in address 
+            const zipValidationData = new FormData();
+            zipValidationData.append('zip', payload.step2.zip);
+            zipValidationData.append('state', payload.step2.state);
+            const zipValidationResponse = await fetch(
+                '<?= BASE_URL ?>actions/validate-zip.php', {
+                    method: 'POST',
+                    body: zipValidationData
+                }
+            );
+            const zipValidationResult =
+                await zipValidationResponse.json();
+            if (!zipValidationResult.success) {
+                showAlertModal(
+                    zipValidationResult.message ||
+                    'The ZIP code does not match the selected state.',
+                    () => {}
+                );
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Pay';
+                return;
+            }
             //Stripe
             try {
                 const response = await fetch('<?= BASE_URL ?>actions/create-stripe-session.php', {

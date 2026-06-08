@@ -36,6 +36,13 @@ if (!$payload) {
 }
 $step1 = $payload['step1'] ?? null;
 $step2 = $payload['step2'] ?? null;
+$email    = $step1['email'] ?? null;
+$phone    = $step1['phone'] ?? null;
+$fullName = $step2['full_name'] ?? null;
+$street   = $step2['street'] ?? null;
+$city     = $step2['city'] ?? null;
+$state    = $step2['state'] ?? null;
+$zip      = $step2['zip'] ?? null;
 if (!$step1 || !$step2) {
     echo json_encode([
         'success' => false,
@@ -52,6 +59,25 @@ foreach ($requiredStep2Fields as $field) {
         ]);
         exit;
     }
+} //validate address zip and state 
+$stmt = $pdo->prepare("
+    SELECT 1
+    FROM zip_codes
+    WHERE zip_code = ?
+      AND state = ?
+    LIMIT 1
+");
+$stmt->execute([
+    $step2['zip'],
+    $step2['state']
+]);
+$isValidZipState = (bool) $stmt->fetchColumn();
+if (!$isValidZipState) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Invalid ZIP code for selected state.'
+    ]);
+    exit;
 }
 
 //Rebuild and recalculate cart items
@@ -157,15 +183,23 @@ $expiresAt = (new DateTime('now', $tz))->modify('+1 hour')->format('Y-m-d H:i:s'
 try {
     $stmt = $pdo->prepare("
         INSERT INTO checkout_sessions 
-        (cart_id, user_id, email, subtotal, sales_tax, shipping_cost,
+        (cart_id, user_id, email, full_name, phone,
+        street, city, zip, state,
+        subtotal, sales_tax, shipping_cost,
         shipping_method, shipping_service_name, delivery_eta,
         total, status, order_id, expires_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->execute([
         $cartId,
         $userId ?? null,
-        $step1['email'],
+        $email,
+        $fullName,
+        $phone,
+        $street,
+        $city,
+        $zip,
+        $state,
         $subtotal,
         $salesTax,
         $shipping,

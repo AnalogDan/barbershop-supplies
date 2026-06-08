@@ -12,12 +12,15 @@ $orderNumber = $_GET['order'];
 $sql = "SELECT
             o.id, 
             o.number,
+            TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS user_name,
+            o.user_id,
             a.full_name,
             a.street,
             a.city,
             a.state, 
             a.zip,
-            u.phone,
+            a.email,
+            a.phone,
             o.placed_at,
             o.shipping_method,
             o.shipping_service_name,
@@ -28,10 +31,10 @@ $sql = "SELECT
             o.shipping_cost,
             o.total,
             o.status
-            FROM orders o
-            LEFT JOIN addresses a ON o.address_id = a.id
-            LEFT JOIN users u ON o.user_id = u.id
-            WHERE o.number = :orderNumber";
+        FROM orders o
+        LEFT JOIN addresses a ON o.address_id = a.id
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE o.number = :orderNumber";
 $stmt = $pdo->prepare($sql);
 $stmt->execute(['orderNumber' => $orderNumber]);
 $order = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -154,6 +157,18 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
             <div class="info-row">
                 <span class="label">Shipping name: </span>
                 <span class="value"><?= htmlspecialchars($order['full_name']) ?></span>
+            </div>
+            <div class="info-row">
+                <span class="label">User name: </span>
+                <span class="value">
+                    <?= !empty($order['user_id'])
+                        ? htmlspecialchars($order['user_name'])
+                        : 'Guest checkout' ?>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="label">Email: </span>
+                <span class="value"><?= htmlspecialchars($order['email'] ?? '—') ?></span>
             </div>
             <div class="info-row">
                 <span class="label">Shipping address: </span>
