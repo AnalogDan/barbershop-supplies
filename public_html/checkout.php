@@ -502,9 +502,10 @@ if (!$hasAddress || !$isValidZipState) {
 
     /*Shipping method */
     .option-group {
-        padding: 0 20px 20px 20px;
+        padding: 20px 20px 20px 20px;
         display: flex;
         flex-direction: column;
+        gap: 18px;
     }
 
     .option-group> :last-child {
@@ -518,6 +519,7 @@ if (!$hasAddress || !$isValidZipState) {
         font-size: 1rem;
         font-weight: 600;
         color: #3b3b3b;
+        gap: 30px;
     }
 
     .option input {
@@ -530,11 +532,9 @@ if (!$hasAddress || !$isValidZipState) {
         height: 20px;
         border: 1px solid #333;
         border-radius: 50%;
-        margin-right: 20px;
-        margin-left: 10px;
-        margin-bottom: -26px;
         position: relative;
         transition: all 0.2s ease;
+        flex-shrink: 0;
     }
 
     .option input:checked+.circle {
@@ -542,10 +542,8 @@ if (!$hasAddress || !$isValidZipState) {
     }
 
     .price {
-        margin-bottom: -26px;
-        margin-left: 40px;
-        font-weight: 600;
         color: #3b3b3b;
+        font-weight: 600;
     }
 
     /*Payment method*/
@@ -937,24 +935,22 @@ if (!$hasAddress || !$isValidZipState) {
                 <div class="section-content">
 
                     <div class="option-group">
-                        <label class="option" id="shipping-2nd-day">
+
+                        <label class="option" id="shipping-ground">
                             <input
                                 type="radio"
                                 name="shipping_method"
-                                value="2nd_day"
-                                <?= $selectedShippingMethod === '2nd_day' ? 'checked' : '' ?>>
-
+                                value="ground"
+                                <?= $selectedShippingMethod === 'ground' ? 'checked' : '' ?>>
                             <span class="circle"></span>
                             <span class="service-name">
-                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['service_name'] ?? '') ?>
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['service_name'] ?? '') ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-price">
-                                $<?= number_format($_SESSION['shipping_quote']['2nd_day']['price'] ?? 0, 2) ?>
+                            <span class="price shipping-price">
+                                $<?= number_format($_SESSION['shipping_quote']['ground']['price'] ?? 0, 2) ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-eta">
-                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['eta'] ?? '') ?>
+                            <span class="price shipping-eta">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['eta'] ?? '') ?>
                             </span>
                         </label>
 
@@ -968,33 +964,29 @@ if (!$hasAddress || !$isValidZipState) {
                             <span class="service-name">
                                 <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['service_name'] ?? '') ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-price">
+                            <span class="price shipping-price">
                                 $<?= number_format($_SESSION['shipping_quote']['3_day']['price'] ?? 0, 2) ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-eta">
+                            <span class="price shipping-eta">
                                 <?= htmlspecialchars($_SESSION['shipping_quote']['3_day']['eta'] ?? '') ?>
                             </span>
                         </label>
 
-                        <label class="option" id="shipping-ground">
+                        <label class="option" id="shipping-2nd-day">
                             <input
                                 type="radio"
                                 name="shipping_method"
-                                value="ground"
-                                <?= $selectedShippingMethod === 'ground' ? 'checked' : '' ?>>
+                                value="2nd_day"
+                                <?= $selectedShippingMethod === '2nd_day' ? 'checked' : '' ?>>
                             <span class="circle"></span>
                             <span class="service-name">
-                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['service_name'] ?? '') ?>
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['service_name'] ?? '') ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-price">
-                                $<?= number_format($_SESSION['shipping_quote']['ground']['price'] ?? 0, 2) ?>
+                            <span class="price shipping-price">
+                                $<?= number_format($_SESSION['shipping_quote']['2nd_day']['price'] ?? 0, 2) ?>
                             </span>
-                            <span class="price"></span>
-                            <span class="shipping-eta">
-                                <?= htmlspecialchars($_SESSION['shipping_quote']['ground']['eta'] ?? '') ?>
+                            <span class="price shipping-eta">
+                                <?= htmlspecialchars($_SESSION['shipping_quote']['2nd_day']['eta'] ?? '') ?>
                             </span>
                         </label>
 
@@ -1222,19 +1214,83 @@ if (!$hasAddress || !$isValidZipState) {
                 '3_day': 'shipping-3-day',
                 'ground': 'shipping-ground'
             };
+            let cheapestKey = null;
+            let cheapestPrice = Infinity;
+
             Object.entries(mappings).forEach(([serviceKey, elementId]) => {
                 const option = document.getElementById(elementId);
                 if (!option || !quote[serviceKey]) {
                     return;
                 }
-                option.querySelector('.service-name').textContent =
-                    quote[serviceKey].service_name;
-                option.querySelector('.shipping-price').textContent =
-                    '$' + Number(quote[serviceKey].price).toFixed(2);
-                option.querySelector('.shipping-eta').textContent =
-                    quote[serviceKey].eta;
+                const data = quote[serviceKey];
+                option.querySelector('.service-name').textContent = quote[serviceKey].service_name;
+                option.querySelector('.shipping-price').textContent = '$' + Number(quote[serviceKey].price).toFixed(2);
+                option.querySelector('.shipping-eta').textContent = quote[serviceKey].eta;
+                // track cheapest
+                if (data.price < cheapestPrice) {
+                    cheapestPrice = data.price;
+                    cheapestKey = serviceKey;
+                }
+                if (cheapestKey) {
+                    const cheapestOption = document.querySelector(
+                        `input[name="shipping_method"][value="${cheapestKey}"]`
+                    );
+                    if (cheapestOption) {
+                        cheapestOption.checked = true;
+                        cheapestOption.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                }
             });
         }
+
+        //Get shipping quote on page load if address already entered
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasAddress =
+                document.getElementById('checkout-street')?.value ||
+                document.getElementById('checkout-zip')?.value;
+            if (!hasAddress) return;
+            const step = 2; // simulate step 2 context
+            const payload = {
+                step: 2,
+                data: {
+                    full_name: document.getElementById('checkout-fullname')?.value || '',
+                    street: document.getElementById('checkout-street')?.value || '',
+                    city: document.getElementById('checkout-city')?.value || '',
+                    state: document.getElementById('checkout-state')?.value || '',
+                    zip: document.getElementById('checkout-zip')?.value || ''
+                },
+                totals: {
+                    subtotal: calculateSubtotal(),
+                    sales_tax: calculateSalesTax(),
+                    shipping: calculateShipping(),
+                    total: calculateSubtotal() + calculateSalesTax() + calculateShipping()
+                }
+            };
+            fetch('<?= BASE_URL ?>actions/checkout-continue.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (!result.success) return;
+                    if (result.shipping_quote) {
+                        populateShippingOptions(result.shipping_quote);
+
+                        // auto-trigger cheapest selection logic indirectly
+                        const checked = document.querySelector('input[name="shipping_method"]:checked');
+                        if (checked) {
+                            checked.dispatchEvent(new Event('change', {
+                                bubbles: true
+                            }));
+                        }
+                    }
+                });
+        });
 
         //Functions to validate all data before continuing
         function isValidEmail(email) {
@@ -1256,8 +1312,10 @@ if (!$hasAddress || !$isValidZipState) {
                 input.addEventListener('input', updateSummary);
             }
         }); // Shipping method listeners
-        document.querySelectorAll('input[name="shipping_method"]').forEach(radio => {
-            radio.addEventListener('change', updateSummaryTotals);
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.name === 'shipping_method') {
+                updateSummaryTotals();
+            }
         });
         updateSummary();
         updateSummaryTotals();
@@ -1352,7 +1410,6 @@ if (!$hasAddress || !$isValidZipState) {
                     });
                     const result = await response.json();
                     //Get shipping quote if step 2 completed 
-                    console.log('Shipping quote:', result.shipping_quote);
                     if (result.session_checkout?.totals) {
                         const totals = result.session_checkout.totals;
                         window.checkoutSubtotal = totals.subtotal ?? 0;
