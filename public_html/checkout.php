@@ -17,15 +17,19 @@ $cartItems = [];
 if ($cartId) {
     $stmt = $pdo->prepare("
 			SELECT
-				ci.product_id,
-				ci.quantity,
-				p.name,
-				p.price,
-				p.stock,
-				p.cutout_image,
-				p.sale_price,
-				p.sale_start,
-				p.sale_end
+                ci.product_id,
+                ci.quantity,
+                p.name,
+                p.price,
+                p.stock,
+                p.cutout_image,
+                p.sale_price,
+                p.sale_start,
+                p.sale_end,
+                p.weight,
+                p.length,
+                p.width,
+                p.height
 			FROM cart_items ci
             JOIN carts c ON c.id = ci.cart_id
 			JOIN products p ON p.id = ci.product_id
@@ -77,15 +81,19 @@ if (!empty($cartItems)) {
     }
     $stmt = $pdo->prepare("
 				SELECT
-					ci.product_id,
-					ci.quantity,
-					p.name,
-					p.price,
-					p.stock,
-					p.cutout_image,
-					p.sale_price,
-					p.sale_start,
-					p.sale_end
+                    ci.product_id,
+                    ci.quantity,
+                    p.name,
+                    p.price,
+                    p.stock,
+                    p.cutout_image,
+                    p.sale_price,
+                    p.sale_start,
+                    p.sale_end,
+                    p.weight,
+                    p.length,
+                    p.width,
+                    p.height
 				FROM cart_items ci
                 JOIN carts c ON c.id = ci.cart_id
 				JOIN products p ON p.id = ci.product_id

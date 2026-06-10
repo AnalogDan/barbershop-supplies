@@ -1,12 +1,16 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 require_once BASE_PATH . 'includes/db.php';
+require_once BASE_PATH . 'includes/mailer.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
 require BASE_PATH . 'phpmailer/vendor/autoload.php';
 header('Content-Type: application/json');
 
-function respond($success, $message) {
+function respond($success, $message)
+{
     echo json_encode(['success' => $success, 'message' => $message]);
     exit;
 }
@@ -50,26 +54,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$first, $last, $email, $hashed, $created_at, $is_active, $token]);
 
 // 7. Send activation email
-//Google app pasword (phpmailer-newvisionbarbersupplies@gmail.com) is: ybnc jweo jjje hlde
-$activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
-$mail = new PHPMailer(exceptions: true);
-$mail->isSMTP();
-$mail->Host = 'smtp.gmail.com';
-$mail->SMTPAuth = true;
-$mail->Username = 'newvisionbarbersupplies@gmail.com';
-$mail->Password = 'ybncjweojjjehlde';             
-$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-$mail->Port = 587;
-$mail->setFrom('newvisionbarbersupplies@gmail.com', 'New Vision Barber Supplies'); 
-$mail->addAddress($email);  
-$mail->isHTML(true);
-$mail->Subject = "Activate your account";
-$mail->Body = "
-Please click the link to activate your account:  
-<a href='$activation_link'>$activation_link</a>
-";
-$mail->AltBody = "Activation link: $activation_link";
-$mail->send();
+sendActivationEmail($email, $token);
 
 respond(true, "Account created! Please check your email to activate.");
-?>

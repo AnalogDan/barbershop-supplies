@@ -4,6 +4,7 @@ require_once BASE_PATH . 'includes/db.php';
 require_once BASE_PATH . 'includes/pricing.php';
 $tz = new DateTimeZone('America/Los_Angeles');
 $now = (new DateTime('now', $tz))->format('Y-m-d H:i:s');
+error_log("FINALIZE ORDER START - session: " . print_r($checkoutSessionId ?? 'NO_SESSION', true));
 
 if (!isset($checkoutSessionId)) {
     // fallback for testing in browser
@@ -59,7 +60,8 @@ try {
         $checkout['phone']
     ]);
     $addressId = $pdo->lastInsertId();
-
+    error_log("CHECKOUT LOADED: " . json_encode($checkout));
+    error_log("CREATING ORDER...");
     // Create order
     $orderNumber = strtoupper(bin2hex(random_bytes(4)));
     $placedAt = $now;
@@ -85,6 +87,7 @@ try {
         $placedAt
     ]);
     $orderId = $pdo->lastInsertId();
+    error_log("ORDER CREATED ID: " . $orderId);
 
     //Fetch cart items
     $stmt = $pdo->prepare("
@@ -100,9 +103,10 @@ try {
     if (!$items) {
         throw new Exception('Cart is empty.');
     }
+    error_log("ITEMS COUNT: " . count($items));
 
     // Check stock for race, and compute sale price
-    foreach ($items as &$item) {
+    foreach ($items as $key => $item) {
         $stmtCheck = $pdo->prepare("SELECT stock FROM products WHERE id = ? FOR UPDATE");
         $stmtCheck->execute([$item['product_id']]);
         $product = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -113,7 +117,7 @@ try {
             throw new Exception('Out of stock: ' . $item['name']);
         }
         $pricing = getProductPricing($item, $tz);
-        $item['final_price'] = $pricing['final_price'];
+        $items[$key]['final_price'] = $pricing['final_price'];
     }
 
     // Decrement stock
@@ -122,6 +126,10 @@ try {
         $stmtUpdateStock->execute([$item['quantity'], $item['product_id']]);
     }
 
+    error_log("FINAL ITEMS:");
+    foreach ($items as $i) {
+        error_log(json_encode($i));
+    }
     // Insert order_items
     $stmtInsertItems = $pdo->prepare("
         INSERT INTO order_items
@@ -154,10 +162,23 @@ try {
         WHERE id = ?
     ");
     $stmt->execute([$orderId, $successToken, $now, $checkoutSessionId]);
-
+    error_log("ABOUT TO COMMIT ORDER");
     $pdo->commit();
+    error_log("COMMIT SUCCESS");
+    //Send emails
+    require_once BASE_PATH . 'includes/mailer.php';
+    try {
+        error_log("SENDING EMAIL");
+        sendOrderConfirmationEmail($orderId);
+        sendNewOrderNotificationEmail($orderId);
+    } catch (Exception $e) {
+        error_log("Order email failed: " . $e->getMessage());
+    }
 } catch (Exception $e) {
     $pdo->rollBack();
-    error_log('Finalize order failed: ' . $e->getMessage());
-    throw $e; // webhook can handle 500
+    error_log("FINALIZE ORDER FAILED");
+    error_log("MESSAGE: " . $e->getMessage());
+    error_log("TRACE: " . $e->getTraceAsString());
+    $pdo->rollBack();
+    throw $e;
 }

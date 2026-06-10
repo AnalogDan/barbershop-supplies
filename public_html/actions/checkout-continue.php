@@ -42,9 +42,15 @@ if ($step === 2) {
             ci.quantity,
             p.name,
             p.price,
+            p.stock,
+            p.cutout_image,
             p.sale_price,
             p.sale_start,
-            p.sale_end
+            p.sale_end,
+            p.weight,
+            p.length,
+            p.width,
+            p.height
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
         WHERE ci.cart_id = ?
@@ -61,7 +67,6 @@ if ($step === 2) {
     ];
     $shippingData = getShippingQuote($cartItems, $destination);
     $_SESSION['shipping_quote'] = $shippingData['rates'];
-    error_log(print_r($_SESSION['shipping_quote'], true));
 }
 
 if (isset($input['totals']) && is_array($input['totals'])) {
