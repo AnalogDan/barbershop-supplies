@@ -22,13 +22,18 @@ function createMailer()
         SMTP_FROM_EMAIL,
         SMTP_FROM_NAME
     );
+    $mail->addReplyTo(
+        'newvisionbsadm@gmail.com',
+        'New Vision Barber Supplies'
+    );
     $mail->isHTML(true);
     return $mail;
 }
 
 function sendActivationEmail($email, $token)
 {
-    $activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
+    //$activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
+    $activation_link = "http://newvision-barbersupplies.com/actions/activate.php?token=" . $token;
     $mail = createMailer();
     $mail->addAddress($email);
     $mail->Subject = "Activate your account";
@@ -224,4 +229,72 @@ function sendNewOrderNotificationEmail($orderId)
     return true;
 }
 
-function sendTrackingEmail($orderId) {}
+function sendTrackingEmail($orderId)
+{
+    //fetch info, if not tracking info, skip
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT
+            o.*,
+            a.full_name,
+            a.email
+        FROM orders o
+        JOIN addresses a ON o.address_id = a.id
+        WHERE o.id = ?
+    ");
+    $stmt->execute([$orderId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$order) {
+        return false;
+    }
+    if (empty($order['tracking_number'])) {
+        return false;
+    }
+    $trackingNumber = $order['tracking_number'] ?? '';
+    $trackingUrl = '';
+    if (!empty($trackingNumber)) {
+        $trackingUrl =
+            'https://www.ups.com/track?tracknum=' .
+            urlencode($trackingNumber);
+    }
+
+    //Build email body
+    $body = "
+    <h2>Your order has shipped!</h2>
+    <p>
+    Good news, {$order['full_name']}!
+    </p>
+    <p>
+    Your order <strong>{$order['number']}</strong> has been shipped.
+    </p>
+    ";
+    if (!empty($trackingNumber)) {
+        $body .= "
+        <p>
+            <strong>Tracking Number:</strong><br>
+            {$trackingNumber}
+        </p>
+        ";
+    }
+    if (!empty($trackingUrl)) {
+        $body .= "
+        <p>
+            <strong>Track your package:</strong><br>
+            <a href='{$trackingUrl}'>{$trackingUrl}</a>
+        </p>
+        ";
+    }
+    $body .= "
+    <p>
+    Thank you for shopping with New Vision Barber Supplies.
+    </p>
+    ";
+
+    //send email
+    $mail = createMailer();
+    $mail->addAddress($order['email']);
+    $mail->Subject = "Your Order Has Shipped - Order #" . $order['number'];
+    $mail->Body = $body;
+    $mail->send();
+    return true;
+}

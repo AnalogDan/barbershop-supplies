@@ -225,7 +225,31 @@ $orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div>Email: <?= htmlspecialchars($order['email']) ?></div>
             <div>Phone: <?= htmlspecialchars($order['phone']) ?></div>
-            <div>Tracking number: 1234567</div> <!-- Dummy for now -->
+            <div>
+                Tracking number:
+                <?= !empty($order['tracking_number'])
+                    ? htmlspecialchars($order['tracking_number'])
+                    : 'Not available yet' ?>
+            </div>
+            <?php
+            $trackingUrl = '';
+            if (!empty($order['tracking_number'])) {
+                $trackingUrl =
+                    'https://www.ups.com/track?tracknum=' .
+                    urlencode($order['tracking_number']);
+            }
+            ?>
+            <div>
+                Tracking link:
+                <?php if ($trackingUrl): ?>
+                    <a href="<?= htmlspecialchars($trackingUrl) ?>"
+                        target="_blank">
+                        Track package
+                    </a>
+                <?php else: ?>
+                    Not available yet
+                <?php endif; ?>
+            </div>
             <div>Products ordered:</div>
             <div class="products">
                 <?php foreach ($orderItems as $item): ?>

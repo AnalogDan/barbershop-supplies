@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# ---------------------------------------
+# 0. Never touch these folders
+# ---------------------------------------
+RewriteRule ^(actions|api|webhooks|admin)/ - [L]
+
+# ---------------------------------------
+# 1. Redirect .php → clean (pages only)
+# ---------------------------------------
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?]
+RewriteRule ^ %1 [R=301,L]
+
+# ---------------------------------------
+# 2. Internally serve clean URLs
+# ---------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]

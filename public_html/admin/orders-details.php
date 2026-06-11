@@ -30,7 +30,8 @@ $sql = "SELECT
             o.sales_tax,
             o.shipping_cost,
             o.total,
-            o.status
+            o.status,
+            o.tracking_number
         FROM orders o
         LEFT JOIN addresses a ON o.address_id = a.id
         LEFT JOIN users u ON o.user_id = u.id
@@ -228,6 +229,26 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                 </select>
             </div>
+            <div class="info-row" id="tracking-row" style="display:none;">
+                <span class="label">Tracking number:</span>
+                <input
+                    type="text"
+                    id="tracking-number"
+                    value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>"
+                    style="
+                        width: 300px;
+                        padding: 8px;
+                        border: 1px solid #000000;
+                    ">
+            </div>
+            <div class="info-row" id="tracking-url-row" style="display:none;">
+                <span class="label">Tracking URL:</span>
+                <span class="value">
+                    <a id="tracking-url"
+                        href=""
+                        target="_blank"></a>
+                </span>
+            </div>
             <div class="info-row">
                 <span class="label">List of products: </span>
             </div>
@@ -254,15 +275,62 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const saveButton = document.getElementById('save-changes');
+
+            //show tracking field if in-transit is selected
             const statusSelect = document.getElementById('status');
+            const trackingRow = document.getElementById('tracking-row');
+            const trackingInput = document.getElementById('tracking-number');
+            const trackingUrlRow = document.getElementById('tracking-url-row');
+            const trackingUrlLink = document.getElementById('tracking-url');
+
+            function updateTrackingVisibility() {
+                trackingRow.style.display =
+                    statusSelect.value === 'in-transit' ?
+                    'flex' :
+                    'none';
+            }
+            updateTrackingVisibility();
+            statusSelect.addEventListener('change', updateTrackingVisibility);
+
+            //show url of tracking number
+            function updateTrackingUrl() {
+                const trackingNumber = trackingInput.value.trim();
+                if (!trackingNumber) {
+                    trackingUrlRow.style.display = 'none';
+                    return;
+                }
+                const url =
+                    'https://www.ups.com/track?tracknum=' +
+                    encodeURIComponent(trackingNumber);
+                trackingUrlLink.href = url;
+                trackingUrlLink.textContent = url;
+                trackingUrlRow.style.display = 'flex';
+            }
+            updateTrackingUrl();
+            trackingInput.addEventListener('input', updateTrackingUrl);
+
             const currentStatus = statusSelect.value;
+            const originalTrackingNumber = document.getElementById('tracking-number').value.trim();
             const orderNumber = "<?= htmlspecialchars($order['number']) ?>";
 
             saveButton.addEventListener('click', () => {
+                saveButton.disabled = true;
+                saveButton.textContent = 'Saving...';
                 const newStatus = statusSelect.value;
 
-                if (newStatus === currentStatus) {
+                //prevent saving if tracking n. is empty
+                const trackingNumber = document.getElementById('tracking-number').value.trim();
+                if (newStatus === 'in-transit' && trackingNumber === '') {
+                    showAlertModal('Please enter a tracking number.');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save changes';
+                    return;
+                }
+
+                if (newStatus === currentStatus && trackingNumber === originalTrackingNumber) {
                     showAlertModal("No changes detected");
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save changes';
                     return;
                 }
 
@@ -273,13 +341,19 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         },
                         body: JSON.stringify({
                             order_number: orderNumber,
-                            status: newStatus
+                            status: newStatus,
+                            tracking_number: trackingNumber
                         })
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            showAlertModal("Product updated successfully!",
+                            let message = 'Order updated successfully!';
+                            if (data.tracking_email_sent) {
+                                message = 'Order updated successfully. Tracking email sent to customer.';
+                            }
+                            showAlertModal(
+                                message,
                                 () => location.reload()
                             );
                         } else {
@@ -287,6 +361,8 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         }
                     })
                     .catch(error => {
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Save changes';
                         console.error('Error:', error);
                         showAlertModal('An error occurred while updating the status.');
                     });
