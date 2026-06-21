@@ -32,8 +32,8 @@ function createMailer()
 
 function sendActivationEmail($email, $token)
 {
-    //$activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
-    $activation_link = "http://newvision-barbersupplies.com/actions/activate.php?token=" . $token;
+    $activation_link = "http://localhost/public_html/actions/activate.php?token=" . $token;
+    //$activation_link = "http://newvision-barbersupplies.com/actions/activate.php?token=" . $token;
     $mail = createMailer();
     $mail->addAddress($email);
     $mail->Subject = "Activate your account";

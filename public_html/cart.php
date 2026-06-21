@@ -534,6 +534,7 @@ if (!empty($cartItems)) {
 				.then(res => res.json())
 				.then(data => {
 					if (data.success && data.quantity !== undefined) {
+						updateCartBadge();
 						input.value = data.quantity;
 					}
 				});
@@ -610,6 +611,7 @@ if (!empty($cartItems)) {
 						if (!data.success) return;
 						row.remove();
 						updateCartTotals();
+						updateCartBadge();
 						if (!document.querySelector('.cart-row')) {
 							document.querySelector('.grid').innerHTML = `
 								<div class="item" style="grid-column: 1 / -1; text-align:center;">

@@ -320,7 +320,6 @@ a.more {
 
 .custom-navbar .navbar-brand {
   user-select: none;
-  pointer-events: none;
   font-family: 'OldLondon', serif;
   font-size: 32px;
   font-weight: normal;

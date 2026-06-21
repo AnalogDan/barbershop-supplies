@@ -1,0 +1,26 @@
+CMD command to test stripe locally:
+stripe listen --forward-to http://localhost/public_html/actions/stripe-webhook.php
+
+If you will modify hostinger version, just replace the new file in the hostinger file explorer. If you replace everything dumbly, things will get messed up and you'll be sad.
+
+If you MUST reupload from 0, you will need to change the following files from local to live:
+db.php - Change database commented credentials 
+stipe.php - Change commented keys
+create-stripe-session.php - Change commented success and cancel urls
+mailer.php - Change commented activation link
+webhook - unsure what to change. Where is the webhook destination defined, in stripe dashboard?
+emails - Maybe emails will be sent to Andy if testing payments locally. Be sure to modify that or tell him if testing payments. But, why would I need to test that?
+htaccess - should stay the same
+
+
+
+
+
+Possible improvements After release
+Putting only a space in admin add products descriptxions causes the form to not be sent
+Allow change name and email from my-profile
+Ability to store many addresses, edit them from my-profile, and choose or add from checkout
+Add a few clickable favorites in my-profile.php
+Add pay-pal
+Add forgot password in login.php
+Add gift cards

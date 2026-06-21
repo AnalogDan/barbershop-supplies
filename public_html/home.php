@@ -861,7 +861,7 @@ $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 						console.error(data.message);
 						return;
 					}
-
+					updateCartBadge();
 					if (typeof onSuccess === 'function') {
 						onSuccess(data);
 					}

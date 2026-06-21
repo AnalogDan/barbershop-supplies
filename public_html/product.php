@@ -639,7 +639,7 @@ if (isset($_SESSION['user_id'])) {
                             console.error(data.message);
                             return;
                         }
-
+                        updateCartBadge();
                         console.log(`Product ID: ${data.product_id}`);
                         console.log(`Quantity in cart: ${data.quantity}`);
                         console.log(`Action to the cart: ${data.message}`);

@@ -232,10 +232,10 @@ try {
             ],
             'quantity' => 1,
         ]],
-        // 'success_url' => 'http://localhost/public_html/process-success.php?session_id={CHECKOUT_SESSION_ID}',
-        // 'cancel_url'  => 'http://localhost/public_html/checkout.php'
-        'success_url' => 'https://newvision-barbersupplies.com/process-success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => 'https://newvision-barbersupplies.com/checkout.php'
+        'success_url' => 'http://localhost/public_html/process-success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => 'http://localhost/public_html/checkout.php'
+        // 'success_url' => 'https://newvision-barbersupplies.com/process-success.php?session_id={CHECKOUT_SESSION_ID}',
+        // 'cancel_url'  => 'https://newvision-barbersupplies.com/checkout.php'
     ]);
     http_response_code(303);
     $stmt = $pdo->prepare("
