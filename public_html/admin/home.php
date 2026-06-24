@@ -12,6 +12,23 @@ if (empty($_SESSION['admin_logged_in'])) {
 <html lang="en">
 <?php include 'includes/admin_head.php'; ?>
 
+<style>
+    @media (max-width: 768px) {
+
+        .container-home {
+            padding: 0 15px;
+        }
+
+        .container-home h1 {
+            font-size: 2rem;
+        }
+
+        .container-home .lead {
+            font-size: 1rem;
+        }
+    }
+</style>
+
 <body>
     <?php $currentPage = 'home'; ?>
     <?php include 'includes/admin_navbar.php'; ?>

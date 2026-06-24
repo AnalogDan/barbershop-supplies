@@ -54,6 +54,7 @@ if (empty($_SESSION['admin_logged_in'])) {
 
 <html lang="en">
 <?php include 'includes/admin_head.php'; ?>
+<link rel="stylesheet" href="css/categories-add-main.mobile.css">
 
 <body>
     <?php $currentPage = 'categories'; ?>

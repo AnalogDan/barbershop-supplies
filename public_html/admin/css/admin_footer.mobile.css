@@ -1,0 +1,21 @@
+@media (max-width: 768px) {
+
+    .footer-section {
+        padding-top: 10px;
+        padding-bottom: 0;
+    }
+
+    .footer-section .footer-logo-wrap {
+        margin-bottom: 0 !important;
+    }
+
+    .footer-section .footer-logo-wrap .footer-logo {
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .footer-ornament {
+        height: 40px;
+    }
+
+}

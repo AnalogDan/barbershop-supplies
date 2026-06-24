@@ -49,6 +49,34 @@
         background-color: #ddd;
         color: black;
     }
+
+    @media (max-width: 768px) {
+
+        .pagination {
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .page {
+            width: 32px;
+            height: 32px;
+            font-size: 13px;
+        }
+
+        .prev,
+        .next {
+            width: auto;
+            min-width: 50px;
+            padding: 0 6px;
+            font-size: 14px;
+        }
+
+        .dots {
+            font-size: 14px;
+        }
+    }
 </style>
 
 <?php

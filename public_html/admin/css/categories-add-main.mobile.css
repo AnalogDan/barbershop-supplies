@@ -1,0 +1,18 @@
+@media (max-width: 768px) {
+    .product-form {
+        width: calc(100% - 50px);
+        margin-top: 30px;
+        margin-bottom: 80px;
+    }
+
+    .button-row {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .button-row .btn {
+        width: 100%;
+        text-align: center;
+    }
+}

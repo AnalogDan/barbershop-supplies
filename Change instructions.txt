@@ -17,7 +17,6 @@ htaccess - should stay the same
 
 
 Possible improvements After release
-Putting only a space in admin add products descriptxions causes the form to not be sent
 Allow change name and email from my-profile
 Ability to store many addresses, edit them from my-profile, and choose or add from checkout
 Add a few clickable favorites in my-profile.php

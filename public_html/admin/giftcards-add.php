@@ -10,12 +10,9 @@ if (empty($_SESSION['admin_logged_in'])) {
 <!DOCTYPE html>
 <style>
     .product-form {
-        max-width: 500px;
-        width: 100%;
-        margin: 40px auto 140px auto;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        width: auto;
+        max-width: none;
+        margin: 20px 15px 80px 15px;
     }
 
     .product-form label {
@@ -45,7 +42,7 @@ if (empty($_SESSION['admin_logged_in'])) {
         gap: 60px;
         justify-content: center;
         width: fit-content;
-        margin: 0 auto;
+        margin: 30px auto;
     }
 
     .side-by-side {
@@ -59,6 +56,50 @@ if (empty($_SESSION['admin_logged_in'])) {
 
     .side-by-side input:last-child {
         flex: 3;
+    }
+
+    @media (max-width: 768px) {
+
+        .product-form {
+            max-width: 100%;
+            margin: 20px 15px 80px 15px;
+        }
+
+        .product-form label {
+            font-size: 18px;
+        }
+
+        .product-form input,
+        .product-form select {
+            box-sizing: border-box;
+        }
+
+        .side-by-side {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .side-by-side input:first-child,
+        .side-by-side input:last-child {
+            flex: unset;
+        }
+
+        .button-row {
+            width: 100%;
+            gap: 12px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .button-row .btn {
+            width: 100%;
+            max-width: 250px;
+            text-align: center;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
     }
 </style>
 <html lang="en">

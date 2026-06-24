@@ -1,12 +1,11 @@
-<nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
-
+<link rel="stylesheet" href="css/admin_navbar.mobile.css">
+<nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
     <div class="container">
-        <a class="navbar-brand" >New Vision Admin Panel</a>
+        <a class="navbar-brand">New Vision Admin Panel</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarsFurni">
             <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
                 <li class="nav-item <?= ($currentPage === 'home') ? 'active' : '' ?>">
@@ -30,6 +29,5 @@
             </ul>
         </div>
     </div>
-        
 </nav>
 <script src="<?= BASE_URL ?>js/bootstrap.bundle.min.js"></script>

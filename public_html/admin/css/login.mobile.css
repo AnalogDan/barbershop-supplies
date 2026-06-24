@@ -1,0 +1,85 @@
+@media (max-width: 768px) {
+
+    /* Make sure page has breathing room */
+    main {
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    /* Login form container */
+    .admin-login-form {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 40px auto;
+        padding: 0 15px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Inputs */
+    .admin-login-form input[type="email"],
+    .admin-login-form input[type="password"],
+    .admin-login-form input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+
+    /* Labels */
+    .admin-login-form label {
+        font-size: 18px;
+    }
+
+    /* Button */
+    .admin-login-form button {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Password wrapper fixes */
+    .password-wrapper {
+        width: 100%;
+    }
+
+    .input-with-icon {
+        width: 100%;
+    }
+
+    /* Alert */
+    .alert-container {
+        width: 90%;
+        max-width: 400px;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 80px;
+    }
+
+    /* Navbar text shrink if needed */
+    .navbar-brand {
+        font-size: 16px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+
+        .section-title {
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .section-title h2 {
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        .section-title img {
+            width: 280px;
+            height: auto;
+        }
+
+    }
+
+}

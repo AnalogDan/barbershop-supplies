@@ -1,0 +1,27 @@
+@media (max-width: 768px) {
+
+    .custom-navbar {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .custom-navbar .navbar-brand {
+        font-size: 23px;
+        line-height: 1.1;
+        max-width: 220px;
+        white-space: normal;
+    }
+
+    .custom-navbar .navbar-collapse {
+        margin-top: 15px;
+    }
+
+    .custom-navbar .custom-navbar-nav li {
+        text-align: center;
+    }
+
+    .custom-navbar .custom-navbar-nav li a {
+        padding: 12px 0;
+    }
+
+}

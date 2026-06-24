@@ -135,6 +135,10 @@ if (isset($_GET['subcategory'])) {
     .product-row {
         display: contents;
     }
+
+    .mobile-separator {
+        display: none;
+    }
 </style>
 
 <div class="categ-admin-grid">
@@ -163,6 +167,7 @@ if (isset($_GET['subcategory'])) {
                         <i class="fas fa-trash" style="color: black;"></i>
                     </span>
                 </div>
+                <hr class="mobile-separator">
             </div>
         <?php endforeach; ?>
     <?php else: ?>

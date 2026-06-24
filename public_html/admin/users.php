@@ -44,6 +44,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <?php include 'includes/admin_head.php'; ?>
+<link rel="stylesheet" href="css/orders.mobile.css">
 
 <body>
     <?php $currentPage = 'users'; ?>

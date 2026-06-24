@@ -284,6 +284,11 @@
             showAlertModal("Weight and dimensions must be greater than 0.");
             return;
         }
+        const description = document.getElementById('description').value.trim();
+        if (description.length === 0) {
+            showAlertModal("Description cannot be empty.");
+            return;
+        }
         const thumbnailInput = document.getElementById('thumbnail');
         if (!thumbnailInput.files.length) {
             showConfirmModal(

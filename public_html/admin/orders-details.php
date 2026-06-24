@@ -136,6 +136,104 @@ $products = $stmt2->fetchAll(PDO::FETCH_ASSOC);
         width: fit-content;
         margin: 60px auto;
     }
+
+    @media (max-width: 768px) {
+
+        /* PAGE CONTAINER CLEANUP */
+        main {
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        /* TITLE */
+        .section-title h2 {
+            font-size: 22px;
+        }
+
+        /* REMOVE BIG LEFT INDENTS */
+        .tiny-message,
+        .info-row {
+            margin-left: 0;
+        }
+
+        .tiny-message {
+            margin: 20px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* INFO SECTION STACK */
+        .info-column {
+            gap: 15px;
+            font-size: 15px;
+        }
+
+        .info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .label {
+            min-width: unset;
+            font-size: 13px;
+        }
+
+        .value {
+            font-size: 15px;
+        }
+
+        /* STATUS SELECT */
+        .status-drop {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* TRACKING INPUT */
+        #tracking-number {
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        /* PRODUCT LIST BECOMES CARDS */
+        .product-grid {
+            width: 100%;
+            margin: 20px 0;
+            gap: 12px;
+        }
+
+        .product-row {
+            grid-template-columns: 60px 60px 1fr;
+            gap: 10px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .product-row .price {
+            grid-column: 1 / -1;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .thumbnail img {
+            margin-left: 0;
+            width: 50px;
+            height: 50px;
+        }
+
+        /* BUTTONS STACK */
+        .button-row {
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin: 30px 0;
+        }
+
+        .button-row .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
 </style>
 
 <html lang="en">

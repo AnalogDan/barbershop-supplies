@@ -24,6 +24,10 @@ function buildLinkWithParams(array $overrides = [])
 <!DOCTYPE html>
 <html lang="en">
 <?php include 'includes/admin_head.php'; ?>
+<link rel="stylesheet" href="css/orders.mobile.css">
+<link rel="stylesheet" href="css/products.mobile.css">
+
+
 
 <body>
     <?php $currentPage = 'products'; ?>

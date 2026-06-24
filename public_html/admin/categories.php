@@ -11,6 +11,9 @@ if (empty($_SESSION['admin_logged_in'])) {
 <!DOCTYPE html>
 <html lang="en">
 <?php include 'includes/admin_head.php'; ?>
+<link rel="stylesheet" href="css/categories.mobile.css">
+
+
 
 <body>
     <?php $currentPage = 'categories'; ?>
